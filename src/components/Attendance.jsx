@@ -271,3 +271,60 @@ export function AttendancePolicyPanel({ classId, className }) {
     </div>
   </section>
 }
+
+// ---------------------------------------------------------------------------
+//  BẢNG ĐẾM CHO BẠN ĐƯỢC GIAO VIỆC NHẮC
+// ---------------------------------------------------------------------------
+// Cố tình KHÔNG hiện mức kỷ luật. Bạn đi nhắc cần biết số lần quên và còn mấy
+// lần miễn trừ — đủ để nói "bạn còn một lần nữa thôi nhé". Còn lao động công
+// ích hay mời phụ huynh là việc giữa giáo viên, học sinh và phụ huynh, không
+// phải thứ để một bạn cùng lớp đọc được.
+export function AttendanceTracker({ classId }) {
+  const [rows, setRows] = useState([])
+  const [chiHienDaQuen, setChiHienDaQuen] = useState(true)
+
+  useEffect(() => {
+    if (!classId) return
+    supabase.rpc('class_attendance_tracker', { p_class: classId })
+      .then(({ data }) => setRows(data ?? []))
+  }, [classId])
+
+  if (!rows.length) return null
+  const daQuen = rows.filter((r) => r.so_lan_quen > 0)
+  const sapHet = rows.filter((r) => r.so_lan_quen > 0 && r.con_lai <= 1)
+  const shown = chiHienDaQuen ? daQuen : rows
+
+  return <section className="section-block">
+    <div className="section-title"><div>
+      <h2><ShieldAlert size={19} /> Số lần quên đăng ký</h2>
+      <p>Dùng để nhắc các bạn. Số này tính trong <strong>học kỳ hiện tại</strong>.
+         Bạn nào sắp hết quyền miễn trừ thì nhắc sớm giúp nhé.</p>
+    </div></div>
+
+    {sapHet.length > 0 && <div className="notice warning"><ShieldAlert size={17} /><span>
+      <strong>{sapHet.length} bạn</strong> chỉ còn 1 lần miễn trừ hoặc đã hết:
+      {' '}{sapHet.map((r) => r.full_name).join(' · ')}
+    </span></div>}
+
+    <div className="quick-views">
+      <button type="button" className={`chip-btn ${chiHienDaQuen ? 'on' : ''}`}
+        onClick={() => setChiHienDaQuen(true)}>Bạn đã từng quên ({daQuen.length})</button>
+      <button type="button" className={`chip-btn ${chiHienDaQuen ? '' : 'on'}`}
+        onClick={() => setChiHienDaQuen(false)}>Cả lớp ({rows.length})</button>
+    </div>
+
+    {shown.length === 0
+      ? <div className="empty-state"><p>✓ Chưa bạn nào quên đăng ký trong học kỳ này.</p></div>
+      : <div className="card table-card"><div className="table-wrap"><table className="book-table">
+          <thead><tr><th>Bạn</th><th>Số lần quên</th><th>Còn được miễn trừ</th><th>Lần gần nhất</th></tr></thead>
+          <tbody>{shown.map((r) => <tr key={r.mshs} className={r.con_lai === 0 ? 'row-late' : ''}>
+            <td><strong>{r.full_name}</strong><small>{r.mshs}</small></td>
+            <td><strong>{r.so_lan_quen}</strong></td>
+            <td>{r.con_lai === 0
+              ? <span className="badge danger">đã hết</span>
+              : <span className={`badge ${r.con_lai <= 1 ? 'warning' : 'muted'}`}>còn {r.con_lai} lần</span>}</td>
+            <td>{dmy(r.lan_gan_nhat)}</td>
+          </tr>)}</tbody>
+        </table></div></div>}
+  </section>
+}

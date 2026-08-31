@@ -1056,6 +1056,10 @@ const TA_PERMS=[
   ['can_comment','Viết nhận xét','Gửi thẳng tới học sinh'],
   ['can_review_device','Duyệt đăng ký thiết bị','Đồng ý hoặc từ chối'],
   ['can_approve_plan','Duyệt kế hoạch','Kể cả duyệt hàng loạt — hệ thống ghi rõ ai duyệt'],
+  // Quyền RIÊNG, không kèm "xem kế hoạch lớp": bạn được giao việc nhắc chỉ cần
+  // biết ai chưa đăng ký, không cần đọc nội dung kế hoạch của cả lớp.
+  ['can_track_attendance','Theo dõi & nhắc đăng ký','Xem ai chưa đăng ký và số lần quên — chỉ đọc'],
+  ['can_review_books','Theo dõi chia sẻ sách','Xem lịch và viết nhận xét cán sự thư viện'],
 ]
 
 function AssistantsPanel({classId,perStudent,assistants,onChanged}){
@@ -1065,10 +1069,18 @@ function AssistantsPanel({classId,perStudent,assistants,onChanged}){
   const candidates=perStudent.filter(r=>r.hasAccount)
   const current=candidates.filter(r=>byId[r.id])
 
-  const addTa=async(studentId)=>{
+  // Ba cột can_view_plans / can_view_help / can_chat có DEFAULT true ở CSDL —
+  // cử trợ giảng "trắng" là mở luôn ba quyền đó. Hợp lý cho trợ giảng đầy đủ,
+  // nhưng KHÔNG hợp lý khi thầy cô chỉ muốn giao mỗi việc nhắc đăng ký. Nên ghi
+  // rõ false thay vì trông chờ vào mặc định.
+  const addTa=async(studentId,narrow)=>{
     if(!studentId)return
     setBusy(studentId);setMsg('')
-    const {error}=await supabase.from('class_assistants').insert({class_id:classId,student_id:studentId})
+    const row=narrow
+      ? {class_id:classId,student_id:studentId,
+         can_view_plans:false,can_view_help:false,can_chat:false,can_track_attendance:true}
+      : {class_id:classId,student_id:studentId}
+    const {error}=await supabase.from('class_assistants').insert(row)
     setBusy('')
     if(error)return setMsg('Không cử được trợ giảng.')
     onChanged()
@@ -1097,12 +1109,24 @@ function AssistantsPanel({classId,perStudent,assistants,onChanged}){
       <p>Cử học sinh hỗ trợ khi thầy cô không có mặt. Mỗi ô tick là một quyền riêng — mặc định chỉ mở những việc không đụng vào phần riêng tư của bạn cùng lớp.</p>
     </div></div>
 
-    <div className="ta-add">
-      <label>Cử thêm trợ giảng</label>
-      <select value="" onChange={e=>addTa(e.target.value)}>
-        <option value="">— Chọn học sinh —</option>
-        {candidates.filter(r=>!byId[r.id]).map(r=><option key={r.mshs} value={r.id}>{r.name} ({r.mshs})</option>)}
-      </select>
+    <div className="ta-add two-ways">
+      <div>
+        <label>Cử làm trợ giảng đầy đủ</label>
+        <select value="" onChange={e=>addTa(e.target.value,false)}>
+          <option value="">— Chọn học sinh —</option>
+          {candidates.filter(r=>!byId[r.id]).map(r=><option key={r.mshs} value={r.id}>{r.name} ({r.mshs})</option>)}
+        </select>
+        <small className="muted-text">Mở sẵn: xem kế hoạch lớp, xem yêu cầu hỗ trợ, nhắn tin.</small>
+      </div>
+      <div>
+        <label>Chỉ giao việc nhắc đăng ký</label>
+        <select value="" onChange={e=>addTa(e.target.value,true)}>
+          <option value="">— Chọn học sinh —</option>
+          {candidates.filter(r=>!byId[r.id]).map(r=><option key={r.mshs} value={r.id}>{r.name} ({r.mshs})</option>)}
+        </select>
+        <small className="muted-text">Chỉ thấy <strong>ai chưa đăng ký</strong> và <strong>số lần quên</strong> —
+          không đọc được nội dung kế hoạch, phản tư hay minh chứng của bạn nào.</small>
+      </div>
     </div>
 
     {msg&&<div className="form-error">{msg}</div>}

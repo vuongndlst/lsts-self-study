@@ -1222,6 +1222,65 @@ Sổ `attendance_misses` có RLS chặt hơn phần còn lại: **em chỉ đọ
 lần quên của bạn khác là chuyện riêng của bạn ấy. Không ai ghi tay vào sổ được — policy ghi là
 `false`, chỉ cron và hàm miễn buổi đụng tới được.
 
+## 11e. Giao một bạn việc nhắc đăng ký
+
+Giáo viên giao cho một học sinh việc theo dõi và nhắc: hôm nay ai chưa đăng ký, và mỗi bạn đã
+quên bao nhiêu lần. [`schema-10-tracker.sql`](supabase/schema-10-tracker.sql).
+
+### Một quyền RIÊNG, không kèm "xem kế hoạch lớp"
+
+Cờ `can_track_attendance` trong `class_assistants`, thêm vào đúng chốt quyền duy nhất
+`staff_perm()`. Bạn được giao việc nhắc chỉ cần biết **ai chưa đăng ký** — không cần đọc nội
+dung kế hoạch, phản tư hay minh chứng của cả lớp.
+
+`missing_registrations()` chỉ trả về **tên và tiết còn thiếu**, không hề trả nội dung kế hoạch,
+nên mở cho quyền này là đủ an toàn.
+
+### Ba cột có DEFAULT true — cái bẫy đã sửa
+
+`can_view_plans`, `can_view_help`, `can_chat` đều `default true` ở CSDL. Nghĩa là cử trợ giảng
+"trắng" rồi chỉ tick thêm ô theo dõi thì **em ấy vẫn đọc được kế hoạch cả lớp** — đúng thứ mà
+quyền hẹp lẽ ra phải tránh.
+
+Nên màn *Trợ giảng* nay có **hai đường cử** riêng:
+
+| Đường | Mở sẵn những gì |
+|---|---|
+| *Cử làm trợ giảng đầy đủ* | xem kế hoạch lớp · xem yêu cầu hỗ trợ · nhắn tin |
+| *Chỉ giao việc nhắc đăng ký* | **chỉ** `can_track_attendance` — ba cột kia ghi rõ `false` |
+
+Ghi rõ `false` thay vì trông chờ vào mặc định: một cột đổi default sau này là quyền hẹp âm thầm
+rộng ra.
+
+### Bảng riêng, không dùng chung với bảng của giáo viên
+
+`class_attendance_tracker()` trả về `so_lan_quen` và `con_lai` — đủ để nói *"bạn còn một lần nữa
+thôi nhé"*. **Không** trả mức kỷ luật: lao động công ích hay mời phụ huynh là việc giữa giáo
+viên, học sinh và phụ huynh, không phải thứ để một bạn cùng lớp đọc được. Giáo viên vẫn xem đủ
+qua `class_attendance_board()`.
+
+Đã đo bằng phiên đăng nhập thật, chỉ bật đúng một cờ:
+
+| | Kết quả |
+|---|---|
+| Ai chưa đăng ký | **đọc được** |
+| Bảng số lần quên | **đọc được** (5 cột, không có mức kỷ luật) |
+| Kế hoạch của bạn khác | 0 dòng |
+| Phản tư · minh chứng · yêu cầu hỗ trợ của bạn khác | 0 dòng |
+| Bảng `attendance_misses` đọc thẳng | 0 dòng — RLS vẫn chỉ cho đọc dòng của chính mình |
+| `class_attendance_board()` của giáo viên | 0 dòng |
+| Kế hoạch của chính mình | vẫn đọc được |
+
+### Hai chuyện bắt được lúc kiểm chứng
+
+**Build xanh không có nghĩa là chạy được.** Import `AttendanceTracker` không được chèn (dòng tôi
+nhắm đã bị đổi từ trước), nhưng Vite vẫn dịch thành công vì biến chưa khai báo chỉ nổ lúc chạy.
+Trang trợ giảng trắng hoàn toàn. Chỉ mở trình duyệt ra mới thấy.
+
+**PostgREST cache lược đồ.** Hàm mới tạo chưa xuất hiện với API cho tới khi
+`notify pgrst, 'reload schema'`. Triệu chứng là `PGRST202 — could not find the function`, dễ
+tưởng nhầm là viết sai tên hàm.
+
 ## 12. Quyền dữ liệu
 
 **Học sinh** — chỉ đọc/ghi dữ liệu của chính mình; không đọc danh sách lớp; chỉ tạo kế

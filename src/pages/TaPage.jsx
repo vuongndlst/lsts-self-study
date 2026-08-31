@@ -9,6 +9,7 @@ import ChatPanel, { getOrCreateConversation } from '../components/ChatPanel'
 import RatingStars from '../components/RatingStars'
 import StatusBadge from '../components/StatusBadge'
 import Avatar from '../components/Avatar'
+import { AttendanceTracker } from '../components/Attendance'
 
 const PAGE_SIZE = 25
 
@@ -29,6 +30,7 @@ const PERM_LABEL = {
   can_review_device: 'Duyệt thiết bị',
   can_approve_plan: 'Duyệt kế hoạch',
   can_review_books: 'Theo dõi & nhận xét chia sẻ sách',
+  can_track_attendance: 'Theo dõi & nhắc đăng ký',
 }
 
 export default function TaPage() {
@@ -80,7 +82,7 @@ export default function TaPage() {
   }
 
   const checkMissing = async (d) => {
-    if (!assistant?.can_view_plans || !context.classId) return
+    if (!(assistant?.can_view_plans || assistant?.can_track_attendance) || !context.classId) return
     const { data } = await supabase.rpc('missing_registrations', { p_class: context.classId, p_date: d })
     setMissing(data ?? [])
   }
@@ -200,7 +202,7 @@ export default function TaPage() {
           </article>)}</div>}
     </section>}
 
-    {assistant.can_view_plans && <section className="section-block">
+    {(assistant.can_view_plans || assistant.can_track_attendance) && <section className="section-block">
       <div className="section-title"><div>
         <h2><UserX size={19} /> Bạn chưa đăng ký</h2>
         <p>Chọn ngày để nhắc những bạn chưa có kế hoạch tự học.</p>
@@ -221,6 +223,8 @@ export default function TaPage() {
             </>}
       </div>
     </section>}
+
+    {assistant.can_track_attendance && <AttendanceTracker classId={context.classId} />}
 
     {assistant.can_view_plans ? <section className="section-block">
       <div className="section-title">
