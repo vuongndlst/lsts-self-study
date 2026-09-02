@@ -221,6 +221,7 @@ export default function StudentPage(){
 
     {message&&<div className="notice"><ShieldCheck size={18}/><span>{message}</span></div>}
     {showForm&&<SessionRegister
+      onFixReflections={()=>jumpTo(reminder.overdue>0?'tre_han':'chua_ket_qua')}
       onCancel={()=>setShowForm(false)}
       onDone={()=>{setShowForm(false);setMessage('✓ Đã đăng ký buổi tự học.');load();setAlertKey(k=>k+1)}}/>}
 

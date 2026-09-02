@@ -777,3 +777,19 @@ th,td{padding:11px 12px}
 .ta-add.two-ways select{width:100%;margin:0 0 6px}
 .ta-add.two-ways small{display:block;font-size:11.5px;line-height:1.5}
 @media(max-width:700px){.ta-add.two-ways{grid-template-columns:1fr}}
+
+/* ---------- v11: chan dang ky khi con no ket qua ---------- */
+.gate-card{padding:26px;border-left:4px solid var(--danger);background:#fffaf9}
+.gate-head{display:flex;gap:16px;align-items:flex-start}
+.gate-icon{flex:0 0 auto;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;
+  background:var(--danger-bg);color:#9b3333}
+.gate-head h2{margin:7px 0 8px;font-size:23px;line-height:1.25}
+.gate-head p{margin:0;font-size:13.5px;line-height:1.6}
+.gate-list{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:8px}
+.gate-list li{display:flex;justify-content:space-between;gap:12px;align-items:baseline;
+  background:#fff;border:1px solid #f0cdcd;border-radius:12px;padding:11px 14px;font-size:13.5px}
+.gate-list li span{color:var(--muted);font-size:12.5px;white-space:nowrap}
+@media(max-width:700px){
+  .gate-head{flex-direction:column}
+  .gate-card{padding:18px}
+}

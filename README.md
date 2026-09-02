@@ -1281,6 +1281,68 @@ Trang trợ giảng trắng hoàn toàn. Chỉ mở trình duyệt ra mới th�
 `notify pgrst, 'reload schema'`. Triệu chứng là `PGRST202 — could not find the function`, dễ
 tưởng nhầm là viết sai tên hàm.
 
+## 11f. Bắt buộc cập nhật kết quả
+
+[`schema-11-reflection-gate.sql`](supabase/schema-11-reflection-gate.sql).
+
+Hệ thống đã có **ba lớp nhắc**: popup mỗi lần vào trang, thông báo trong ứng dụng 2 lần/ngày,
+và tự chấm 1 sao sau 120 giờ. Nhưng tất cả đều là *nhắc*, không phải *bắt buộc* — em không mở
+trang thì không có gì xảy ra.
+
+Đòn bẩy thật duy nhất trong một ứng dụng web: **chặn thứ em muốn làm tiếp**. Còn nợ kết quả quá
+hạn thì chưa đăng ký được buổi mới. Đúng vòng Plan–Do–Reflect: nhìn lại việc đã làm rồi mới lên
+kế hoạch mới.
+
+### Công tắc theo lớp, có ngưỡng
+
+Tab *Lịch tự học* → **Bắt buộc cập nhật kết quả trước khi đăng ký buổi mới**, kèm ô *cho nợ tối
+đa* 1–5. Mặc định **tắt** — thầy cô tự quyết định khi nào áp dụng.
+
+### Ba quyết định để chặn mà không tàn nhẫn
+
+1. **Chỉ đếm nhiệm vụ ĐÃ QUÁ HẠN** (mặc định 48 giờ sau tiết), không tính nhiệm vụ vừa xong hôm
+   nay. Chặn ngay trong ngày là quá gắt: em còn đang làm dở.
+2. **Nhiệm vụ hệ thống đã tự chấm 1 sao KHÔNG tính là nợ nữa.** Nó đã có hậu quả riêng rồi; tính
+   thêm lần nữa là phạt hai lần cho một lỗi.
+3. **Món nợ luôn xoá được trong ba chục giây** — em chỉ cần ghi một dòng mình đã làm tới đâu, kể
+   cả *"em chưa làm được vì…"*. Đây là gờ giảm tốc, không phải cánh cửa khoá.
+
+### Chặn ở CSDL, và chặn ở cả hai bảng
+
+Ẩn nút ở giao diện chỉ ngăn được em không biết gọi API. Luật nằm ở trigger `BEFORE INSERT`.
+
+Phải chặn **cả `self_study_sessions` lẫn `plans`**: giao diện tạo buổi trước rồi mới tạo nhiệm
+vụ, nên nếu chỉ chặn ở `plans` thì mỗi lần em thử là để lại một buổi rỗng trong CSDL.
+
+Tên trigger bắt đầu bằng `trg_a_` để chạy **trước** `plans_set_class` — chặn sớm thì không tạo ra
+gì rồi mới báo lỗi.
+
+Trigger bỏ qua khi `auth.uid()` là NULL (service role) hoặc khác `student_id` (giáo viên tạo hộ).
+
+Đã đo bằng phiên đăng nhập thật, nợ 4 nhiệm vụ:
+
+| Cài đặt | Kết quả tạo buổi mới |
+|---|---|
+| Tắt công tắc | **201** — tạo được |
+| Bật, cho nợ tối đa 1 | **400** — *"Em còn 4 nhiệm vụ quá hạn chưa cập nhật kết quả…"* |
+| Bật, cho nợ tối đa 5 | **201** — tạo được (4 < 5) |
+
+### Giao diện chặn ở đúng chỗ
+
+Bị chặn thì **không dựng form đăng ký** — hiện form rồi mới báo lỗi lúc bấm Lưu là bắt em gõ
+xong cả một kế hoạch rồi mới nói "không được". Thay vào đó là một thẻ liệt kê **đúng những
+nhiệm vụ đang nợ** (môn · ngày · tiết) và một nút *Cập nhật kết quả ngay* nhảy thẳng tới danh
+sách đã lọc sẵn.
+
+Đo trên giao diện: ghi một kết quả → nợ **4 → 3** ngay lập tức; hạ ngưỡng xuống 4 → form đăng ký
+hiện lại bình thường.
+
+### Giáo viên nhìn thấy ai đang bị chặn
+
+`class_reflection_debt()` — chặn mà thầy cô không biết ai đang bị chặn thì thành ra em kẹt im
+lặng. Hàm này mở cho cả quyền *theo dõi & nhắc đăng ký*, nên bạn được giao việc nhắc cũng nhắc
+được đúng nhóm này.
+
 ## 12. Quyền dữ liệu
 
 **Học sinh** — chỉ đọc/ghi dữ liệu của chính mình; không đọc danh sách lớp; chỉ tạo kế

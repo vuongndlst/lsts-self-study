@@ -24,15 +24,18 @@ export function ClassScheduleSettings({ classId, className }) {
   const [saving, setSaving] = useState('')
   const [msg, setMsg] = useState('')
   const [allowLate, setAllowLate] = useState(true)
+  const [gate, setGate] = useState({ on: false, limit: 1 })
   const [savingLate, setSavingLate] = useState(false)
 
   const loadSlots = async () => {
     const [{ data }, { data: c }] = await Promise.all([
       supabase.from('class_schedule').select('weekday,period').eq('class_id', classId),
-      supabase.from('classes').select('allow_late_registration').eq('id', classId).maybeSingle(),
+      supabase.from('classes').select('allow_late_registration,require_reflection,reflection_debt_limit')
+        .eq('id', classId).maybeSingle(),
     ])
     setSlots(new Set((data ?? []).map((r) => key(r.weekday, r.period))))
     setAllowLate(c?.allow_late_registration ?? true)
+    setGate({ on: c?.require_reflection ?? false, limit: c?.reflection_debt_limit ?? 1 })
   }
   useEffect(() => { if (classId) loadSlots() }, [classId])
 
@@ -45,6 +48,20 @@ export function ClassScheduleSettings({ classId, className }) {
     setMsg(next
       ? '✓ Đã cho phép đăng ký trễ. Học sinh vẫn có thể đăng ký trong ngày tự học.'
       : '✓ Đã khóa đăng ký trễ. Học sinh cần đăng ký trước khi hết ngày hôm trước.')
+  }
+
+  // Bắt buộc cập nhật kết quả: còn nợ quá hạn thì chưa đăng ký buổi mới được.
+  const saveGate = async (patch) => {
+    const next = { ...gate, ...patch }
+    setSavingLate(true); setMsg('')
+    const { error } = await supabase.from('classes')
+      .update({ require_reflection: next.on, reflection_debt_limit: next.limit }).eq('id', classId)
+    setSavingLate(false)
+    if (error) return setMsg('Không lưu được cài đặt: ' + error.message)
+    setGate(next)
+    setMsg(next.on
+      ? `✓ Đã bật. Học sinh còn ${next.limit} nhiệm vụ quá hạn trở lên sẽ chưa đăng ký được buổi mới.`
+      : '✓ Đã tắt. Học sinh vẫn đăng ký được dù còn nợ kết quả.')
   }
 
   const toggle = async (w, p) => {
@@ -96,6 +113,41 @@ export function ClassScheduleSettings({ classId, className }) {
           ? 'Thầy cô có thể giữ cài đặt này trong vài tuần đầu để các em quen nếp, rồi tắt khi cần.'
           : 'Cài đặt đã được áp dụng cho cả giao diện và dữ liệu đăng ký.'}
       </span></div>
+
+    {/* Bắt buộc cập nhật kết quả. Nhắc thì đã có sẵn (popup, thông báo 2 lần/
+        ngày, tự chấm 1 sao sau 120 giờ) — nhưng nhắc không phải bắt buộc.
+        Đòn bẩy thật là chặn thứ em muốn làm tiếp. */}
+    <div className="toggle-row">
+      <label className="switch">
+        <input type="checkbox" checked={gate.on} disabled={savingLate}
+               onChange={(e) => saveGate({ on: e.target.checked })} /><span />
+      </label>
+      <div>
+        <strong>Bắt buộc cập nhật kết quả trước khi đăng ký buổi mới</strong>
+        <small>{gate.on
+          ? `Đang bật — em còn ${gate.limit} nhiệm vụ quá hạn trở lên thì chưa đăng ký được buổi mới.`
+          : 'Đang tắt — em vẫn đăng ký được dù còn nợ kết quả cũ.'}</small>
+      </div>
+    </div>
+
+    {gate.on && <div className="form-grid two">
+      <div>
+        <label>Cho nợ tối đa</label>
+        <select value={gate.limit} disabled={savingLate}
+                onChange={(e) => saveGate({ limit: Number(e.target.value) })}>
+          {[1, 2, 3, 4, 5].map((n) =>
+            <option key={n} value={n}>{n} nhiệm vụ quá hạn{n === 1 ? ' (chặt nhất)' : ''}</option>)}
+        </select>
+        <small className="muted-text">Chỉ đếm nhiệm vụ đã <strong>quá hạn</strong> (mặc định 48 giờ
+          sau tiết), không tính nhiệm vụ vừa xong hôm nay.</small>
+      </div>
+    </div>}
+
+    {gate.on && <div className="notice compact"><Lock size={16} /><span>
+      Luật này nằm ở <strong>cơ sở dữ liệu</strong>, không phải chỉ ẩn nút — học sinh không lách
+      được. Món nợ luôn xoá được trong ba chục giây: em chỉ cần ghi một dòng mình đã làm tới đâu,
+      kể cả “em chưa làm được vì…”.
+    </span></div>}
 
     {msg && <div className={msg.startsWith('✓') ? 'notice compact' : 'form-error'}>{msg}</div>}
   </section>

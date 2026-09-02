@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, CalendarDays, Check, ClipboardList, Laptop, Layers, Lock, Plus, Trash2 } from 'lucide-react'
+import { AlertTriangle, CalendarDays, Check, ClipboardList, FileCheck2, Laptop, Layers, Lock, Plus, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { isLateRegistration, todayISO } from '../utils/date'
@@ -34,7 +34,7 @@ const fmtDate = (iso) => {
 }
 
 // Đăng ký MỘT buổi tự học với MỘT HOẶC NHIỀU nhiệm vụ.
-export default function SessionRegister({ onDone, onCancel }) {
+export default function SessionRegister({ onDone, onCancel, onFixReflections }) {
   const { profile, context } = useAuth()
   const [date, setDate] = useState('')
   const [period, setPeriod] = useState(null)
@@ -45,6 +45,7 @@ export default function SessionRegister({ onDone, onCancel }) {
   const [error, setError] = useState('')
   const [confirming, setConfirming] = useState(false)
   const [allowLate, setAllowLate] = useState(true)
+  const [debt, setDebt] = useState(null)
 
   useEffect(() => {
     if (!context.classId) return
@@ -52,6 +53,8 @@ export default function SessionRegister({ onDone, onCancel }) {
       .then(({ data }) => setSchedule(data ?? []))
     supabase.from('classes').select('allow_late_registration').eq('id', context.classId).maybeSingle()
       .then(({ data }) => setAllowLate(data?.allow_late_registration ?? true))
+    // Còn nợ kết quả quá hạn thì lớp có thể đang chặn đăng ký buổi mới.
+    supabase.rpc('my_reflection_debt').then(({ data }) => setDebt(data ?? null))
   }, [context.classId])
 
   // Lớp đã khóa đăng ký trễ thì hôm nay không chọn được nữa: mốc chốt là
@@ -153,6 +156,39 @@ export default function SessionRegister({ onDone, onCancel }) {
     setBusy(false); setConfirming(false)
     if (e2) return setError('Không lưu được nhiệm vụ. ' + (e2.message || ''))
     onDone()
+  }
+
+  // Bị chặn thì KHÔNG dựng form. Hiện form rồi mới báo lỗi lúc bấm Lưu là bắt em
+  // gõ xong cả một kế hoạch rồi mới nói "không được" — vừa mất công vừa ức chế.
+  if (debt?.bi_chan) {
+    const ds = debt.danh_sach ?? []
+    return <div className="card register-card gate-card">
+      <div className="gate-head">
+        <span className="gate-icon"><Lock size={22} /></span>
+        <div>
+          <span className="eyebrow">CHƯA ĐĂNG KÝ ĐƯỢC</span>
+          <h2>Em còn {debt.so_no} nhiệm vụ chưa cập nhật kết quả</h2>
+          <p className="muted-text">Lớp mình quy định phải nhìn lại việc đã làm rồi mới lên kế hoạch
+             mới. Em chỉ cần ghi ngắn gọn mình đã làm tới đâu — kể cả “em chưa làm được vì…” cũng
+             được — là đăng ký tiếp được ngay.</p>
+        </div>
+      </div>
+
+      {ds.length > 0 && <ul className="gate-list">
+        {ds.slice(0, 6).map((x) => <li key={x.plan_id}>
+          <strong>{x.subject}</strong>
+          <span>{x.study_date.split('-').reverse().join('/')} · tiết {x.period}</span>
+        </li>)}
+        {ds.length > 6 && <li className="muted-text">… và {ds.length - 6} nhiệm vụ nữa</li>}
+      </ul>}
+
+      <div className="form-actions">
+        <button className="button ghost" onClick={onCancel}>Đóng</button>
+        <button className="button primary large" onClick={() => { onCancel?.(); onFixReflections?.() }}>
+          <FileCheck2 size={18} /> Cập nhật kết quả ngay
+        </button>
+      </div>
+    </div>
   }
 
   return <div className="card register-card">
