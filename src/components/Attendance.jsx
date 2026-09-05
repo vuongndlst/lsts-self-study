@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { CalendarCog, CalendarOff, ShieldAlert, Trash2, UserMinus, Users } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { todayISO } from '../utils/date'
+import Collapsible from './Collapsible'
 
 const dmy = (iso) => (iso ? iso.split('-').reverse().join('/') : '—')
 const shiftISO = (base, n) => {
@@ -52,12 +53,13 @@ export function ExemptionPanel({ classId, roster, date, onChanged }) {
     load(); onChanged?.()
   }
 
-  return <section className="card sched-card">
-    <div className="section-title"><div>
-      <h2><CalendarOff size={19} /> Miễn buổi tự học</h2>
-      <p>Buổi đã miễn thì <strong>không ai bị tính là quên đăng ký</strong>. Miễn sau khi hết ngày
-         cũng được — hệ thống sẽ gỡ luôn những lần quên đã ghi cho buổi đó.</p>
-    </div></div>
+  // Thu gọn mặc định: đây là công cụ dùng thỉnh thoảng, còn thứ chính của tab
+  // này là danh sách em chưa đăng ký ở trên.
+  return <Collapsible storageKey="mien-buoi" defaultOpen={false}
+    icon={<CalendarOff size={19} />} title="Miễn buổi tự học"
+    badge={list.length > 0 ? <span className="badge muted">{list.length} lệnh</span> : null}
+    subtitle={<>Buổi đã miễn thì <strong>không ai bị tính là quên đăng ký</strong>. Miễn sau khi
+      hết ngày cũng được — hệ thống sẽ gỡ luôn những lần quên đã ghi cho buổi đó.</>}>
 
     <div className="exempt-form">
       <div>
@@ -98,7 +100,7 @@ export function ExemptionPanel({ classId, roster, date, onChanged }) {
           <Trash2 size={16} /></button></td>
       </tr>)}</tbody>
     </table></div>}
-  </section>
+  </Collapsible>
 }
 
 // ---------------------------------------------------------------------------
@@ -123,11 +125,11 @@ export function DisciplineBoard({ classId, className }) {
     ['Lao động công ích 5 lượt', rows.filter((r) => r.bac === 1)],
   ]
 
-  return <section className="section-block">
-    <div className="section-title"><div>
-      <h2><ShieldAlert size={19} /> Kỷ luật quên đăng ký — lớp {className}</h2>
-      <p>Mỗi em được miễn trừ 3 lần mỗi học kỳ. Từ lần thứ tư mới tính kỷ luật.</p>
-    </div></div>
+  // Mở mặc định: đây chính là nội dung của tab Kỷ luật.
+  return <Collapsible storageKey="bang-ky-luat" defaultOpen wrapper="section-block"
+    icon={<ShieldAlert size={19} />} title={`Kỷ luật quên đăng ký — lớp ${className}`}
+    badge={viPham.length > 0 ? <span className="badge danger">{viPham.length} em</span> : null}
+    subtitle="Mỗi em được miễn trừ 3 lần mỗi học kỳ. Từ lần thứ tư mới tính kỷ luật.">
 
     {viPham.length === 0
       ? <div className="empty-state"><p>✓ Chưa em nào vượt quá quyền miễn trừ.</p></div>
@@ -153,7 +155,7 @@ export function DisciplineBoard({ classId, className }) {
         <td>{dmy(r.lan_gan_nhat)}</td>
       </tr>)}</tbody>
     </table></div></div>}
-  </section>
+  </Collapsible>
 }
 
 // ---------------------------------------------------------------------------
@@ -202,12 +204,13 @@ export function AttendancePolicyPanel({ classId, className }) {
 
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
 
-  return <section className="card sched-card">
-    <div className="section-title"><div>
-      <h2><CalendarCog size={19} /> Kỷ luật quên đăng ký — lớp {className}</h2>
-      <p>Mỗi lớp tự chọn thời điểm bắt đầu áp dụng. Khi chưa bật, học sinh không thấy hộp nhắc việc
-         và hệ thống không ghi nhận lần quên nào.</p>
-    </div></div>
+  // Đổi tiêu đề: trước đây khối này và bảng kỷ luật ở trên trùng tên nhau y hệt
+  // trong cùng một tab, nhìn tưởng vẽ hai lần. Đây là phần CÀI ĐẶT.
+  return <Collapsible storageKey="cai-dat-ky-luat" defaultOpen={false}
+    icon={<CalendarCog size={19} />} title={`Cài đặt kỷ luật — lớp ${className}`}
+    badge={<span className={`badge ${f.enabled ? 'success' : 'muted'}`}>{f.enabled ? 'Đang bật' : 'Đang tắt'}</span>}
+    subtitle={<>Mỗi lớp tự chọn thời điểm bắt đầu áp dụng. Khi chưa bật, học sinh không thấy hộp
+      nhắc việc và hệ thống không ghi nhận lần quên nào.</>}>
 
     <div className="toggle-row">
       <label className="switch">
@@ -269,7 +272,7 @@ export function AttendancePolicyPanel({ classId, className }) {
       <button className="button primary large" disabled={busy} onClick={save}>
         {busy ? 'Đang lưu…' : 'Lưu cài đặt'}</button>
     </div>
-  </section>
+  </Collapsible>
 }
 
 // ---------------------------------------------------------------------------
@@ -294,12 +297,11 @@ export function AttendanceTracker({ classId }) {
   const sapHet = rows.filter((r) => r.so_lan_quen > 0 && r.con_lai <= 1)
   const shown = chiHienDaQuen ? daQuen : rows
 
-  return <section className="section-block">
-    <div className="section-title"><div>
-      <h2><ShieldAlert size={19} /> Số lần quên đăng ký</h2>
-      <p>Dùng để nhắc các bạn. Số này tính trong <strong>học kỳ hiện tại</strong>.
-         Bạn nào sắp hết quyền miễn trừ thì nhắc sớm giúp nhé.</p>
-    </div></div>
+  return <Collapsible storageKey="theo-doi-quen" defaultOpen wrapper="section-block"
+    icon={<ShieldAlert size={19} />} title="Số lần quên đăng ký"
+    badge={sapHet.length > 0 ? <span className="badge warning">{sapHet.length} bạn sắp hết</span> : null}
+    subtitle={<>Dùng để nhắc các bạn. Số này tính trong <strong>học kỳ hiện tại</strong>.
+      Bạn nào sắp hết quyền miễn trừ thì nhắc sớm giúp nhé.</>}>
 
     {sapHet.length > 0 && <div className="notice warning"><ShieldAlert size={17} /><span>
       <strong>{sapHet.length} bạn</strong> chỉ còn 1 lần miễn trừ hoặc đã hết:
@@ -326,5 +328,5 @@ export function AttendanceTracker({ classId }) {
             <td>{dmy(r.lan_gan_nhat)}</td>
           </tr>)}</tbody>
         </table></div></div>}
-  </section>
+  </Collapsible>
 }

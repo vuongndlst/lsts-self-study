@@ -1404,6 +1404,35 @@ Dưới `.note-meter` là ba mức, kiểu thanh đo độ mạnh mật khẩu �
 Chặn cứng ở một độ dài nào đó chỉ dạy các em gõ cho đủ ký tự. Nói cho biết đang ở đâu thì tôn
 trọng hơn, và vẫn tạo áp lực nhẹ đúng lúc.
 
+## 11h. Khối thu gọn / mở rộng
+
+[`src/components/Collapsible.jsx`](src/components/Collapsible.jsx) — dùng chung cho bốn khối dài
+trên dashboard.
+
+| Khối | Mặc định | Huy hiệu khi thu gọn |
+|---|---|---|
+| Miễn buổi tự học | **thu gọn** — công cụ dùng thỉnh thoảng | *17 lệnh* |
+| Kỷ luật quên đăng ký | mở — đây là nội dung chính của tab | *2 em* |
+| Cài đặt kỷ luật | **thu gọn** — cấu hình một lần rồi thôi | *Đang bật / Đang tắt* |
+| Số lần quên đăng ký (trang trợ giảng) | mở | *N bạn sắp hết* |
+
+### Ba chi tiết
+
+**Nhớ lựa chọn theo từng khối.** Thu gọn xong mà tải lại trang lại bung ra thì thà đừng làm nút.
+Lưu ở `localStorage` theo `storageKey`, bọc `try/catch` vì trình duyệt ở chế độ riêng tư có thể
+ném lỗi khi ghi.
+
+**Huy hiệu thay cho nội dung.** Thu gọn rồi vẫn phải biết bên trong có gì đáng mở — *"17 lệnh"*,
+*"2 em"*, *"Đang bật"*. Không có huy hiệu thì thầy cô phải mở ra mới biết có cần mở hay không.
+
+**Mô tả tự ẩn khi thu gọn.** Gập lại mà vẫn để hai dòng giải thích thì chẳng gọn hơn bao nhiêu.
+
+### Sửa kèm: hai khối trùng tên
+
+Trong tab *Kỷ luật* có hai khối cùng mang tiêu đề **"Kỷ luật quên đăng ký — lớp 8A7"** — bảng
+theo dõi và màn cài đặt. Nhìn tưởng hệ thống vẽ nhầm hai lần. Khối thứ hai đổi thành
+**"Cài đặt kỷ luật — lớp 8A7"**.
+
 ## 12. Quyền dữ liệu
 
 **Học sinh** — chỉ đọc/ghi dữ liệu của chính mình; không đọc danh sách lớp; chỉ tạo kế
