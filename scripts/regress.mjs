@@ -10,15 +10,28 @@ let pass = 0, fail = 0
 const check = (l, ok, x = '') => { if (ok) { pass++; console.log('  PASS  ' + l) } else { fail++; console.log('  FAIL  ' + l + '   ' + x) } }
 const one = async (s) => { try { return (await q(s))?.[0] } catch (e) { return { ERR: e.message.slice(0, 220) } } }
 
+// Bộ test này chạy trên CSDL THẬT, trong lúc học sinh vẫn đang dùng. Nếu đếm
+// tổng số dòng rồi so đầu với cuối thì chỉ cần một em đăng ký giữa chừng là cả
+// bộ báo đỏ — đã xảy ra thật: 4 kế hoạch mới trong 30 phút.
+//
+// Cách đúng: chỉ đếm những dòng CÓ TRƯỚC khi bộ test bắt đầu. Dòng do người
+// khác tạo trong lúc chạy nằm ngoài mốc đó nên không ảnh hưởng; còn nếu chính
+// bộ test lỡ sửa hay xoá dữ liệu cũ thì con số vẫn lệch và vẫn báo đỏ.
+const T0 = new Date().toISOString()
 const snap = () => one(`select
-  (select count(*) from public.students) hs, (select count(*) from public.enrollments) gd,
-  (select count(*) from public.plans) nv, (select count(*) from public.self_study_sessions) buoi,
-  (select count(*) from public.reflections) pt, (select count(*) from public.evidence) mc,
-  (select count(*) from public.profiles) ho_so, (select count(*) from public.classes) lop,
-  (select count(*) from public.school_years) nam`)
+  (select count(*) from public.students where created_at < '${T0}') hs,
+  (select count(*) from public.enrollments where created_at < '${T0}') gd,
+  (select count(*) from public.plans where created_at < '${T0}') nv,
+  (select count(*) from public.self_study_sessions where created_at < '${T0}') buoi,
+  (select count(*) from public.reflections where completed_at < '${T0}') pt,
+  (select count(*) from public.evidence where created_at < '${T0}') mc,
+  (select count(*) from public.profiles where created_at < '${T0}') ho_so,
+  (select count(*) from public.classes where created_at < '${T0}') lop,
+  (select count(*) from public.school_years where created_at < '${T0}') nam`)
 
 const before = await snap()
-console.log('Moc dau lan chay:', JSON.stringify(before), '\n')
+console.log('Moc dau (chi dem du lieu co truoc luc bat dau):', JSON.stringify(before))
+console.log()
 
 console.log('=== CAU TRUC ===')
 const st = await one(`select
@@ -57,7 +70,10 @@ const p = await one(`${auth(ADMIN)}
          (select count(*) from public.my_classes()) lop`)
 check('Du ca hai quyen', p.a && p.t && p.d && p.duyet && p.cham && Number(p.lop) >= 1, JSON.stringify(p))
 const rd = await one(`${auth(ADMIN)}\nselect count(*) n from public.plans`)
-check('Admin doc duoc du lieu lop (khop moc dau)', Number(rd.n) === Number(before.nv), `${rd.n} vs ${before.nv}`)
+// Khong so bang nhau: hoc sinh van dang dang ky trong luc test chay, nen con so
+// chi co the TANG. Dieu can bao dam la admin khong bi thieu du lieu — tuc la
+// khong bao gio it hon moc dau.
+check('Admin doc duoc it nhat toan bo du lieu lop', Number(rd.n) >= Number(before.nv), `${rd.n} vs >=${before.nv}`)
 
 console.log('\n=== HOC SINH BI CHAN DUNG CHO ===')
 const s1 = await one(`${auth(STU)}\nselect public.is_admin() a, public.is_teacher() t, (select count(*) from public.my_classes()) lop`)
@@ -82,14 +98,17 @@ check('Xin khoang 2000-2099 van bi kep ve dung nam hoc',
   JSON.stringify(sa?.k?.pham_vi) + ' vs ' + JSON.stringify(yb))
 const sc = await one(`${auth(ADMIN)}\nselect public.school_analytics('2000-01-01','2099-12-31',null,null) k`)
 check('Toan truong cung bi kep', sc?.k?.pham_vi?.tu === yb.tu && sc?.k?.pham_vi?.den === yb.den, JSON.stringify(sc?.k?.pham_vi))
-check('So lieu toan truong khop moc dau',
-  Number(sc?.k?.kpi?.so_hoc_sinh) === Number(before.hs) && Number(sc?.k?.kpi?.so_lop) === Number(before.lop),
+check('So lieu toan truong khong thieu so voi moc dau',
+  Number(sc?.k?.kpi?.so_hoc_sinh) >= Number(before.hs) && Number(sc?.k?.kpi?.so_lop) >= Number(before.lop),
   JSON.stringify(sc?.k?.kpi))
 
 console.log('\n=== KHONG CO TAC DUNG PHU ===')
 const after = await snap()
-check('Toan bo bo test la chi-doc, du lieu khong doi',
-  JSON.stringify(after) === JSON.stringify(before), JSON.stringify(after))
+// `after` dem lai dung mot moc thoi gian voi `before`, nen dong do hoc sinh tao
+// trong luc chay khong lot vao. Lech o day nghia la CHINH bo test da sua du lieu.
+check('Toan bo bo test la chi-doc, du lieu cu khong doi',
+  JSON.stringify(after) === JSON.stringify(before),
+  `truoc ${JSON.stringify(before)} · sau ${JSON.stringify(after)}`)
 
 console.log(`\n===== ${pass} PASS / ${fail} FAIL =====`)
 process.exit(fail ? 1 : 0)

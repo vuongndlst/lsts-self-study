@@ -7,6 +7,7 @@ import { shrinkImage } from '../lib/image'
 import { selectIn } from '../lib/query'
 import { formatDate, registrationStatus, todayISO } from '../utils/date'
 import { canUpdateReflection, isReflectionDue, reflectionReminder } from '../utils/studentReminders'
+import { promptFor, noteQuality } from '../utils/reflectionPrompts'
 import { sessionTimeLabel } from '../utils/schoolSchedule'
 import { passwordChecks, validateStudentPassword } from '../utils/password'
 import { evidenceUploadError } from '../utils/storageErrors'
@@ -426,6 +427,8 @@ function EditPlanModal({plan,onClose,onSaved}){
 
 function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,onSaved}){
   const [form,setForm]=useState({completion_status:existing?.completion_status||'Hoàn thành',note:existing?.note||'',need_help:existing?.need_help||false,help_note:existing?.help_note||''})
+  const prompt=promptFor(plan.activity_type)
+  const chatLuong=noteQuality(form.note)
   const [ack,setAck]=useState(existing?.student_ack_note||'')
   const [ackBusy,setAckBusy]=useState(false)
   const [ackMsg,setAckMsg]=useState('')
@@ -523,12 +526,28 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
     </div>}
     {canReflect?<>
     <label>Kết quả *</label><select value={form.completion_status} onChange={e=>setForm({...form,completion_status:e.target.value})}><option>Hoàn thành</option><option>Một phần</option><option>Chưa hoàn thành</option></select>
-    <label>Em đã làm được gì? *</label><textarea rows="3" minLength={10} maxLength={1000} value={form.note} onChange={e=>setForm({...form,note:e.target.value})} placeholder="Ví dụ: Em làm xong bài tập 1, 2, 3 (có trong ảnh đính kèm) và tự dò lại đáp án."/>
-    <small className="muted-text reflection-hint">Chỉ cần một vài câu thật và cụ thể. Phần này giúp em nhìn lại việc học, không cần viết dài.</small>
+    {/* Hai câu hỏi CỤ THỂ thay cho một ô trống chung chung. Đo trên dữ liệu thật:
+        phản tư trung bình dài 36 ký tự — sáu, bảy từ, kiểu "em làm xong bài tập".
+        Câu hỏi chung chung thì nhận lại câu trả lời chung chung. */}
+    <label>Em đã làm được gì? *</label>
+    <ul className="prompt-list">{prompt.cauHoi.map(c=><li key={c}>{c}</li>)}</ul>
+    <textarea rows="3" minLength={10} maxLength={1000} value={form.note}
+      onChange={e=>setForm({...form,note:e.target.value})}
+      placeholder={`Ví dụ: ${prompt.viDu}`}/>
+    <div className={`note-meter ${chatLuong.muc}`}>
+      <span className="note-bar"><i/></span>
+      <small>{chatLuong.nhan||'Em viết vài câu trả lời cho hai ý trên nhé.'}
+        {chatLuong.gioiY&&<> {chatLuong.gioiY}</>}</small>
+    </div>
     <div className="toggle-row"><label className="switch"><input type="checkbox" checked={form.need_help} onChange={e=>setForm({...form,need_help:e.target.checked})}/><span/></label><div><strong>Em cần giáo viên hỗ trợ</strong><small>Bật khi em còn vướng và muốn giáo viên biết.</small></div></div>
     {form.need_help&&<input maxLength={500} value={form.help_note} onChange={e=>setForm({...form,help_note:e.target.value})} placeholder="Em cần hỗ trợ về…"/>}
-    <div className="evidence-block"><h3>Minh chứng <span className="muted-text">(khuyến khích · tối đa 3)</span></h3>
-      <p className="muted-text small">Nếu có sản phẩm, em thêm <strong>liên kết</strong> hoặc <strong>ảnh/file</strong>. Không có file cũng không sao.</p>
+    {/* Minh chứng nói theo LOẠI HOẠT ĐỘNG. Ôn tập hay đọc sách thì vốn không có
+        gì để chụp — đòi minh chứng ở đó chỉ khiến em chụp đại một trang giấy cho
+        đủ thủ tục. Nói thẳng "không cần" ở những loại đó thì trung thực hơn. */}
+    <div className="evidence-block"><h3>Sản phẩm kèm theo <span className="muted-text">(không bắt buộc · tối đa 3)</span></h3>
+      <p className="muted-text small">{prompt.sanPham
+        ? <>Việc này thường có sản phẩm. {prompt.goiYSanPham} Không có cũng không sao — phần chữ ở trên mới là chính.</>
+        : <>Việc này thường <strong>không có sản phẩm để nộp</strong>, nên em không cần đính kèm gì. Có thì thêm cũng tốt.</>}</p>
       {evidence.length>0&&<div className="evidence-list">{evidence.map(x=><span key={x.id} className="evidence-row">
         <button type="button" className="evidence-item" onClick={()=>openEvidence(x)}>
           {x.kind==='link'?'🔗':x.kind==='text'?'📝':'📎'} {x.kind==='text'?(x.body_text||'').slice(0,60)+((x.body_text||'').length>60?'…':''):(x.display_name||'Minh chứng')}

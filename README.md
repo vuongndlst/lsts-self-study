@@ -1343,6 +1343,67 @@ hiện lại bình thường.
 lặng. Hàm này mở cho cả quyền *theo dõi & nhắc đăng ký*, nên bạn được giao việc nhắc cũng nhắc
 được đúng nhóm này.
 
+## 11g. Vì sao KHÔNG ép học sinh nộp minh chứng
+
+Câu hỏi ban đầu: *"đa phần không upload minh chứng mà chỉ có nhận xét"*. Đo trên **406 phản tư**
+thật của 8A7 thì tiền đề đó không đứng vững.
+
+| | |
+|---|---|
+| Phản tư do chính học sinh viết | 344 (62 cái còn lại do hệ thống tự tạo khi quá hạn) |
+| Có sản phẩm thật (ảnh/file/link) | **89 = 26 %** |
+| Độ dài phần chữ, trung bình | **36 ký tự** ≈ sáu, bảy từ |
+| Viết dưới 30 ký tự | **109 / 203 = 54 %** |
+
+Hai kết luận:
+
+**1. 26 % là con số hợp lý, không phải con số tệ.** Phần lớn hoạt động tự học *vốn không sinh ra
+thứ gì để chụp*: ôn tập, đọc sách, chuẩn bị nội dung chia sẻ. Ép đủ 100 % chỉ khiến các em chụp
+đại một trang giấy cho tròn thủ tục — thêm việc cho học sinh, thêm dung lượng lưu trữ, mà thầy cô
+chẳng biết thêm gì.
+
+**2. Vấn đề thật nằm ở phần chữ, không nằm ở minh chứng.** Hơn một nửa phản tư dài chưa tới 30 ký
+tự — *"em làm xong bài tập"*. Đó không phải nhìn lại việc học.
+
+### Câu hỏi chung chung cho ra câu trả lời chung chung
+
+Một ô trống kèm nhãn *"Em đã làm được gì?"* là câu hỏi mở với học sinh lớp 8, khi các em chưa quen
+tự đặt câu hỏi cho mình. Nay thay bằng **hai câu hỏi cụ thể theo từng loại hoạt động**
+([`src/utils/reflectionPrompts.js`](src/utils/reflectionPrompts.js)):
+
+| Loại hoạt động | Hai câu hỏi | Có sản phẩm? |
+|---|---|---|
+| Bài tập cá nhân | *Làm được mấy bài, từ bài nào tới bài nào? · Bài nào còn vướng và vướng ở đâu?* | có — gợi ý chụp vở |
+| Ôn tập | *Ôn phần nào? · Phần nào đã chắc, phần nào chưa chắc?* | **không** |
+| Đọc sách | *Đọc tới đâu? · Chi tiết nào làm em nhớ?* | **không** |
+| Công việc nhóm | *Nhóm làm tới đâu? · Phần việc riêng của em xong chưa?* | có — gợi ý dán link |
+| Chuẩn bị chia sẻ | *Chuẩn bị được ý nào? · Còn thiếu gì trước khi lên nói?* | có |
+
+Ô ví dụ cũng đổi theo loại: nhiệm vụ Toán thấy *"Em làm bài 1–8 trang 24, đúng 6 bài. Bài 7 em
+nhầm dấu."* — mẫu câu cụ thể đáng để bắt chước, thay vì một câu chung cho mọi môn.
+
+### Minh chứng nói thật theo từng loại
+
+Đổi tên **"Minh chứng (khuyến khích)"** → **"Sản phẩm kèm theo (không bắt buộc)"**, và câu mô tả
+đổi theo hoạt động. Với ôn tập và đọc sách, hệ thống nói thẳng: *"Việc này thường không có sản
+phẩm để nộp, nên em không cần đính kèm gì."*
+
+Nói thật với học sinh rằng việc này không cần minh chứng thì tốt hơn là để các em đoán rồi thấy
+mình làm thiếu.
+
+### Thanh đo độ dài, không phải rào chặn
+
+Dưới `.note-meter` là ba mức, kiểu thanh đo độ mạnh mật khẩu — **báo, không chặn**:
+
+| Độ dài | Màu | Câu nói |
+|---|---|---|
+| < 10 ký tự | đỏ | *Còn quá ngắn. Cần ít nhất 10 ký tự.* |
+| 10–39 | vàng | *Được rồi — thêm một ý nữa thì tốt hơn.* |
+| ≥ 40 | xanh | *Đủ ý rồi, cảm ơn em.* |
+
+Chặn cứng ở một độ dài nào đó chỉ dạy các em gõ cho đủ ký tự. Nói cho biết đang ở đâu thì tôn
+trọng hơn, và vẫn tạo áp lực nhẹ đúng lúc.
+
 ## 12. Quyền dữ liệu
 
 **Học sinh** — chỉ đọc/ghi dữ liệu của chính mình; không đọc danh sách lớp; chỉ tạo kế
