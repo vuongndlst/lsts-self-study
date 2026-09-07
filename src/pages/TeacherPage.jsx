@@ -71,7 +71,7 @@ export default function TeacherPage(){
     let planQuery=supabase.from('plans').select('*').eq('class_id',context.classId)
     if(since)planQuery=planQuery.gte('study_date',since)
     const [{data:enr},{data:p},{data:ta}]=await Promise.all([
-      supabase.from('enrollments').select('mshs,is_active,students!inner(mshs,full_name,claimed_user_id)')
+      supabase.from('enrollments').select('mshs,is_active,students!inner(mshs,full_name,claimed_user_id,is_test)')
         .eq('class_id',context.classId).eq('is_active',true),
       planQuery.order('study_date',{ascending:false}).order('period'),
       supabase.from('class_assistants').select('*').eq('class_id',context.classId),
@@ -216,6 +216,7 @@ export default function TeacherPage(){
         avatarPath:studentMap[s.claimed_user_id]?.avatar_path??null,
         mustChange:!!studentMap[s.claimed_user_id]?.must_change_password,
         isTa:assistants.some(a=>a.student_id===s.claimed_user_id),
+        isTest:!!s.is_test,
         total:0,ontime:0,done:0,pending:0,help:0,low:0,ratingSum:0,ratingCount:0,avg:null,plannedTomorrow:false,
       })
     }
@@ -242,11 +243,15 @@ export default function TeacherPage(){
   }
 
   const subjects=[...new Set(plans.map(p=>p.subject))].sort()
-  const rosterTotal=roster.length
-  const claimed=roster.filter(x=>x.claimed_user_id).length
-  const unclaimed=roster.filter(x=>!x.claimed_user_id)
+  // Tài khoản thử nghiệm vẫn nằm trong `roster` để nhiệm vụ của nó hiện ở hộp
+  // chấm sao và tab Phân tích — đó là thứ nó sinh ra để thử. Nhưng SĨ SỐ và
+  // DANH SÁCH ĐI NHẮC thì phải trừ nó ra, không thầy cô đi nhắc một cái tên giả.
+  const rosterThat=roster.filter(x=>!x.is_test)
+  const rosterTotal=rosterThat.length
+  const claimed=rosterThat.filter(x=>x.claimed_user_id).length
+  const unclaimed=rosterThat.filter(x=>!x.claimed_user_id)
   // Thay cho email nhắc: đưa thẳng lên dashboard.
-  const noPlanTomorrow=perStudent.filter(r=>r.hasAccount&&!r.plannedTomorrow)
+  const noPlanTomorrow=perStudent.filter(r=>r.hasAccount&&!r.isTest&&!r.plannedTomorrow)
   const withPending=perStudent.filter(r=>r.pending>0)
   const mustChangeList=perStudent.filter(r=>r.mustChange)
   // Trạng thái do CSDL tính (hạn 48h / tự đánh giá 120h).

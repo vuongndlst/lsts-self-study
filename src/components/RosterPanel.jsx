@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Download, FileSpreadsheet, History, Search, UserMinus, Users } from 'lucide-react'
+import { Download, FileSpreadsheet, FlaskConical, History, Search, UserMinus, Users } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { formatDate } from '../utils/date'
 import Avatar from './Avatar'
@@ -15,6 +15,7 @@ export default function RosterPanel({ classId, className, yearName }) {
   const [page, setPage] = useState(1)
   const [importing, setImporting] = useState(false)
   const [removing, setRemoving] = useState(null)
+  const [marking, setMarking] = useState(null)
   const [loading, setLoading] = useState(true)
   const [msg, setMsg] = useState('')
 
@@ -40,7 +41,13 @@ export default function RosterPanel({ classId, className, yearName }) {
 
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE))
   const pageRows = rows.slice((page - 1) * PAGE, page * PAGE)
-  const claimed = roster.filter((r) => r.user_id).length
+  // Sĩ số thật không tính tài khoản thử nghiệm — con số này thầy cô hay đối
+  // chiếu với sổ điểm danh, lệch một em là phải đi tìm. "Đã tạo tài khoản"
+  // cũng phải đếm trên cùng tập đó, không thì ra "31 học sinh · 32 đã tạo".
+  const that = roster.filter((r) => !r.is_test)
+  const soThat = that.length
+  const soThu = roster.length - soThat
+  const claimed = that.filter((r) => r.user_id).length
 
   const remove = async (r) => {
     const { error } = await supabase.rpc('remove_from_class', { p_class: classId, p_mshs: r.mshs })
@@ -50,9 +57,22 @@ export default function RosterPanel({ classId, className, yearName }) {
     load()
   }
 
+  const markTest = async (r, on) => {
+    const { error } = await supabase.rpc('set_test_account',
+      { p_class: classId, p_mshs: r.mshs, p_is_test: on })
+    setMarking(null)
+    if (error) return setMsg('Không đổi được: ' + error.message)
+    setMsg(on
+      ? `✓ Đã đánh dấu ${r.full_name} là tài khoản thử nghiệm. Em này sẽ không còn hiện ở danh sách chưa đăng ký và bảng kỷ luật.`
+      : `✓ ${r.full_name} trở lại là học sinh bình thường, được theo dõi như các bạn.`)
+    load()
+  }
+
   const exportCsv = () => {
     const lines = [['MSHS', 'Họ và tên', 'Tình trạng tài khoản', 'Số nhiệm vụ', 'Hoạt động gần nhất'].join(',')]
-    rows.forEach((r) => lines.push([
+    // Bỏ tài khoản thử nghiệm: file này thầy cô in ra, gửi đi, đối chiếu sổ —
+    // một cái tên giả trong đó là lỗi chứ không phải thông tin.
+    rows.filter((r) => !r.is_test).forEach((r) => lines.push([
       r.mshs, r.full_name,
       r.user_id ? (r.must_change_password ? 'Chờ đổi mật khẩu' : 'Đã kích hoạt') : 'Chưa đăng ký',
       r.so_nhiem_vu, r.hoat_dong_gan_nhat ?? '',
@@ -75,7 +95,8 @@ export default function RosterPanel({ classId, className, yearName }) {
       <div className="section-title">
         <div>
           <h2><Users size={19} /> Danh sách lớp {className}</h2>
-          <p>{roster.length} học sinh · {claimed} đã tạo tài khoản · Năm học {yearName}</p>
+          <p>{soThat} học sinh · {claimed} đã tạo tài khoản
+            {soThu > 0 && <> · {soThu} tài khoản thử nghiệm</>} · Năm học {yearName}</p>
         </div>
         <div className="button-row">
           <button className="button ghost" onClick={exportCsv} disabled={!rows.length}>
@@ -106,7 +127,8 @@ export default function RosterPanel({ classId, className, yearName }) {
                   <tbody>{pageRows.map((r) => <tr key={r.mshs}>
                     <td><span className="cell-with-avatar">
                       <Avatar name={r.full_name} path={r.avatar_path} size={30} />
-                      <span><strong>{r.full_name}</strong></span></span></td>
+                      <span><strong>{r.full_name}</strong>
+                        {r.is_test && <> <span className="chip test">Thử nghiệm</span></>}</span></span></td>
                     <td><code>{r.mshs}</code></td>
                     <td>{r.user_id
                       ? (r.must_change_password
@@ -115,14 +137,24 @@ export default function RosterPanel({ classId, className, yearName }) {
                       : <span className="chip off">Chưa đăng ký</span>}</td>
                     <td>{Number(r.so_nhiem_vu) || '—'}</td>
                     <td><small>{r.hoat_dong_gan_nhat ? formatDate(r.hoat_dong_gan_nhat) : '—'}</small></td>
-                    <td><button className="icon-button danger" title="Chuyển khỏi lớp"
-                                onClick={() => setRemoving(r)}><UserMinus size={16} /></button></td>
+                    <td><span className="row-actions">
+                      <button className={`icon-button${r.is_test ? ' on' : ''}`}
+                              title={r.is_test
+                                ? 'Bỏ đánh dấu thử nghiệm — theo dõi em như bình thường'
+                                : 'Đánh dấu là tài khoản thử nghiệm'}
+                              onClick={() => setMarking(r)}><FlaskConical size={16} /></button>
+                      <button className="icon-button danger" title="Chuyển khỏi lớp"
+                              onClick={() => setRemoving(r)}><UserMinus size={16} /></button>
+                    </span></td>
                   </tr>)}</tbody>
                 </table>{rows.length === 0 && <div className="empty-state">Không tìm thấy học sinh nào.</div>}</div>}
 
             {rows.length > PAGE && <div className="pager">
               <button className="button ghost" disabled={page === 1} onClick={() => setPage((n) => n - 1)}>← Trước</button>
-              <span>Trang <strong>{page}</strong> / {totalPages} · {rows.length} học sinh</span>
+              {/* "dòng" chứ không phải "học sinh": bảng này có thể kèm tài khoản
+                  thử nghiệm, mà tiêu đề ở trên lại đếm sĩ số thật — hai con số
+                  khác nhau cùng gọi là "học sinh" thì thầy cô tưởng đếm sai. */}
+              <span>Trang <strong>{page}</strong> / {totalPages} · {rows.length} dòng</span>
               <button className="button ghost" disabled={page === totalPages} onClick={() => setPage((n) => n + 1)}>Sau →</button>
             </div>}
           </>}
@@ -147,6 +179,40 @@ export default function RosterPanel({ classId, className, yearName }) {
 
     {importing && <StudentImport classId={classId} className={className} yearName={yearName}
       onClose={() => setImporting(false)} onDone={load} />}
+
+    {marking && <div className="modal-backdrop" onMouseDown={() => setMarking(null)}>
+      <div className="modal small" onMouseDown={(e) => e.stopPropagation()}>
+        <div className="modal-head"><div><span className="eyebrow">XÁC NHẬN</span>
+          <h2>{marking.is_test
+            ? `${marking.full_name} trở lại là học sinh thật?`
+            : `Đánh dấu ${marking.full_name} là tài khoản thử nghiệm?`}</h2></div>
+          <button className="icon-button" onClick={() => setMarking(null)}>✕</button></div>
+        {marking.is_test
+          ? <p className="muted-text">
+              Em sẽ được theo dõi trở lại như các bạn: hiện ở <strong>danh sách chưa đăng ký</strong>,
+              được ghi sổ quên và tính bậc kỷ luật. Những lần quên cũ đã bị xoá thì không lấy lại được.
+            </p>
+          : <>
+              <p className="muted-text">
+                Dùng cho tài khoản giả mà thầy cô tạo để xem thử giao diện học sinh. Sau khi đánh dấu,
+                em này <strong>không còn hiện ở danh sách chưa đăng ký, sổ quên, bảng kỷ luật</strong> và
+                bảng của bạn được giao nhắc nhở. Nhiệm vụ và bài chia sẻ sách vẫn hiện bình thường
+                để thầy cô còn thử được.
+              </p>
+              {/* Cảnh báo thật, không phải câu lịch sự: hàm này xoá dữ liệu. */}
+              <p className="form-error">
+                Thao tác này <strong>xoá toàn bộ những lần quên đăng ký đã ghi</strong> cho em.
+                Chỉ dùng cho tài khoản giả — đừng dùng để xoá kỷ luật của một học sinh thật.
+              </p>
+            </>}
+        <div className="form-actions">
+          <button className="button ghost" onClick={() => setMarking(null)}>Hủy</button>
+          <button className={marking.is_test ? 'button primary' : 'button danger'}
+                  onClick={() => markTest(marking, !marking.is_test)}>
+            {marking.is_test ? 'Bỏ đánh dấu' : 'Đánh dấu thử nghiệm'}</button>
+        </div>
+      </div>
+    </div>}
 
     {removing && <div className="modal-backdrop" onMouseDown={() => setRemoving(null)}>
       <div className="modal small" onMouseDown={(e) => e.stopPropagation()}>

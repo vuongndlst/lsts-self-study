@@ -837,3 +837,10 @@ th,td{padding:11px 12px}
   .collapse-hint{display:none}
   .collapse-body{padding:2px 14px 16px}
 }
+
+/* ---------- v14: tai khoan thu nghiem ---------- */
+/* Vien dut net: nhin la biet dong nay khong phai hoc sinh that, khong can doc chu. */
+.chip.test{background:#f4f0ff;border:1px dashed #b9a6ec;color:#5b41a8;font-size:11px;padding:4px 9px}
+.row-actions{display:inline-flex;gap:6px}
+.icon-button.on{background:#f4f0ff;border-color:#c9bbf0;color:#5b41a8}
+.icon-button.on:hover{background:#ece5ff}

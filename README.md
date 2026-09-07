@@ -1433,6 +1433,62 @@ Trong tab *Kỷ luật* có hai khối cùng mang tiêu đề **"Kỷ luật qu�
 theo dõi và màn cài đặt. Nhìn tưởng hệ thống vẽ nhầm hai lần. Khối thứ hai đổi thành
 **"Cài đặt kỷ luật — lớp 8A7"**.
 
+## 11i. Tài khoản thử nghiệm
+
+[`schema-12-test-accounts.sql`](supabase/schema-12-test-accounts.sql).
+
+Mỗi lớp cần một tài khoản giả để thầy cô xem thử giao diện học sinh trước khi công bố. Nhưng
+tài khoản đó nằm trong sĩ số lớp, nên nó **hiện ở danh sách chưa đăng ký, bị cron ghi vào sổ
+quên, rồi leo lên bảng kỷ luật** — thầy cô phải tự nhớ mà bỏ qua nó mỗi lần nhìn bảng.
+
+Cột `students.is_test` đánh dấu những tài khoản như vậy. Đặt trên `students` chứ không phải
+`enrollments`: *"đây là tài khoản giả"* là tính chất của con người, không phải của việc em học
+lớp nào — chuyển lớp thì cờ vẫn đi theo.
+
+### Ranh giới: ẩn ở đâu, giữ ở đâu
+
+Đây là quyết định thiết kế chính, không phải chi tiết cài đặt.
+
+| | Tài khoản thử nghiệm |
+|---|---|
+| Danh sách **chưa đăng ký** (`missing_registrations`) | ẩn |
+| **Sổ ghi quên** (cron `record_attendance_misses`) | không ghi |
+| **Bảng kỷ luật** (`class_attendance_board`) | ẩn |
+| Bảng của **bạn đi nhắc** (`class_attendance_tracker`) | ẩn |
+| **Nợ phản tư** (`class_reflection_debt`) | ẩn |
+| Thẻ *"Chưa có kế hoạch ngày mai"* trên dashboard | ẩn |
+| **Sĩ số lớp** và *"đã tạo tài khoản"* | không tính |
+| **File CSV** xuất danh sách lớp | không có |
+| Hộp **chờ chấm sao**, tab **Phân tích** | giữ |
+| **Chia sẻ sách** | giữ |
+| **Danh sách lớp** trên giao diện | giữ, có nhãn *Thử nghiệm* |
+
+Nguyên tắc: **ẩn ở nơi dùng để nhắc và kỷ luật, giữ ở nơi dùng để xem bài.** Một dòng giả trong
+danh sách đi nhắc là rác — nó làm thầy cô đếm nhầm và làm bạn cán sự đi nhắc một người không có
+thật. Nhưng ẩn nốt khỏi hộp chấm sao thì tài khoản thử nghiệm chẳng thử được gì.
+
+Danh sách lớp vẫn hiện nó, có nhãn tím viền đứt nét. Ẩn nốt ở đây thì nó thành **tài khoản ma**:
+thầy cô không xoá cũng không sửa được.
+
+### Thầy cô tự đánh dấu được
+
+Tab *Học sinh* → nút bình lọ ở cuối mỗi dòng. Không để cờ này chỉ đặt được bằng SQL: mỗi giáo
+viên trong trường sẽ tự tạo một tài khoản thử cho lớp mình, và họ không có ai chạy SQL hộ.
+
+`set_test_account()` chặn ở backend hai lớp — phải phụ trách lớp, và em phải đang học lớp đó.
+Đã kiểm: học sinh gọi thẳng hàm thì nhận *"Thầy/cô không phụ trách lớp này."*
+
+Đánh dấu là **xoá luôn những lần quên đã trót ghi** cho tài khoản đó — nếu không bảng kỷ luật
+vẫn còn số liệu ma. Vì đây là xoá thật nên hộp xác nhận nói rõ, kèm cảnh báo đừng dùng để xoá
+kỷ luật của một học sinh thật. Bỏ đánh dấu thì em được theo dõi trở lại, nhưng **số cũ không
+lấy lại được**.
+
+### Sửa kèm: hai con số cùng tên
+
+Tiêu đề danh sách lớp đếm sĩ số thật (31), còn thanh phân trang đếm số dòng đang hiện (32, có
+cả tài khoản thử). Hai con số khác nhau cùng gọi là *"học sinh"* thì thầy cô tưởng hệ thống đếm
+sai. Thanh phân trang đổi thành **"32 dòng"**.
+
 ## 12. Quyền dữ liệu
 
 **Học sinh** — chỉ đọc/ghi dữ liệu của chính mình; không đọc danh sách lớp; chỉ tạo kế
