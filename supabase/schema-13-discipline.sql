@@ -8,7 +8,10 @@
 --
 --  Hai thứ thêm ở đây:
 --    1. SỔ THEO DÕI: mỗi em một hồ sơ trong học kỳ, đếm lượt đã làm / còn nợ.
---    2. THƯ BÁO: chỗ lưu email phụ huynh, và dấu mốc "đã báo lúc nào".
+--    2. DẤU MỐC "đã báo phụ huynh / học sinh lúc nào".
+--
+--  Email thì KHÔNG lưu gì cả: cả email học sinh lẫn email phụ huynh đều suy ra
+--  được từ MSHS theo quy tắc chung của trường.
 --
 --  Số lượt PHẢI LÀM thì KHÔNG lưu — nó suy ra từ số lần quên hiện tại. Lưu lại
 --  là sai: thầy cô miễn buổi cho em sau đó (em xin phép muộn), số lần quên giảm,
@@ -19,22 +22,21 @@
 
 
 -- ============================================================================
---  70. LIÊN HỆ PHỤ HUYNH
+--  70. KHÔNG LƯU EMAIL PHỤ HUYNH
 -- ============================================================================
--- Email học sinh suy ra được từ MSHS (2406002@lsts.edu.vn), email phụ huynh thì
--- không — phải có chỗ nhập.
-alter table public.students add column if not exists parent_name  text;
-alter table public.students add column if not exists parent_email text;
-
-comment on column public.students.parent_email is
-  'Email phu huynh, dung de soan thu bao ky luat. Chi giao vien cua lop duoc sua.';
-
--- Ràng buộc hình thức email ngay ở CSDL: gõ nhầm thì thư đi vào hư không, mà
--- thầy cô lại tưởng đã báo phụ huynh rồi.
+-- Toàn trường theo một quy tắc: MSHS 2406119 → p2406119@parent.lsts.edu.vn.
+-- Suy ra được thì không lưu. Lưu vào đây là tạo ra nguồn sự thật thứ hai —
+-- trường đổi tên miền là bảng cũ thành sai mà không ai biết để sửa. Quy tắc
+-- nằm ở một chỗ duy nhất: parentEmail() trong src/lib/supabase.js.
+--
+-- Dọn lại nếu đã lỡ chạy bản trước của file này. Cột chưa từng có giao diện
+-- nhập nào ngoài hộp soạn thư vừa gỡ, nên không mất dữ liệu của ai.
+drop function if exists public.set_parent_contact(uuid, text, text, text);
 do $mig$ begin
-  alter table public.students add constraint parent_email_shape
-    check (parent_email is null or parent_email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$');
-exception when duplicate_object then null; end $mig$;
+  alter table public.students drop constraint if exists parent_email_shape;
+  alter table public.students drop column if exists parent_email;
+  alter table public.students drop column if exists parent_name;
+end $mig$;
 
 
 -- ============================================================================
@@ -90,14 +92,16 @@ $fn$;
 --  73. BẢNG THEO DÕI CỦA GIÁO VIÊN
 -- ============================================================================
 -- Trả về đủ để dựng cả bảng lẫn lá thư trong một lượt gọi: số lần quên, bậc,
--- lượt phải làm / đã làm / còn nợ, các NGÀY đã quên (thư phải nêu ngày cụ thể
--- thì phụ huynh mới đối chiếu được), và liên hệ.
-create or replace function public.class_discipline_board(p_class uuid)
+-- lượt phải làm / đã làm / còn nợ, và các NGÀY đã quên — thư phải nêu ngày cụ
+-- thể thì phụ huynh mới đối chiếu được.
+-- Phải DROP: bản trước có thêm hai cột parent_*, mà Postgres không cho đổi kiểu
+-- trả về của hàm đang tồn tại. Quyền mất theo nên mục 79 phải cấp lại.
+drop function if exists public.class_discipline_board(uuid);
+create function public.class_discipline_board(p_class uuid)
 returns table (
   mshs text, full_name text, so_lan_quen int, bac int, nhan text,
   luot_phai_lam int, luot_da_lam int, con_no int,
   cac_ngay_quen date[], lan_gan_nhat date,
-  parent_name text, parent_email text,
   da_bao_ph timestamptz, da_bao_hs timestamptz,
   due_on date, ghi_chu text, hoc_ky text, tu_ngay date
 ) language sql stable security definer set search_path = public as $fn$
@@ -113,10 +117,9 @@ returns table (
            - coalesce(dc.labor_done, 0), 0)::int,
          coalesce(m.ngay, '{}'::date[]),
          m.gan_nhat,
-         -- Email học sinh KHÔNG trả ở đây: nó là MSHS + tên miền trường, mà tên
-         -- miền đã khai một lần ở VITE_STUDENT_EMAIL_DOMAIN. Khai lần thứ hai
-         -- trong SQL là để hai chỗ lệch nhau về sau.
-         s.parent_name, s.parent_email,
+         -- Email học sinh và email phụ huynh KHÔNG trả ở đây: cả hai suy ra từ
+         -- MSHS, và quy tắc đã khai một lần trong src/lib/supabase.js. Khai lần
+         -- thứ hai trong SQL là để hai chỗ lệch nhau về sau.
          dc.parent_notified_at, dc.student_notified_at,
          dc.due_on, dc.note, b.ten, b.tu_ngay
   from public.attendance_policy pol
@@ -230,42 +233,6 @@ $fn$;
 
 
 -- ============================================================================
---  76. NHẬP EMAIL PHỤ HUYNH
--- ============================================================================
--- Bảng students không mở cho giáo viên ghi trực tiếp (chỉ Edge Function và
--- script), nên phải đi qua hàm — và hàm chỉ cho sửa em ĐANG học lớp mình.
-create or replace function public.set_parent_contact(
-  p_class uuid, p_mshs text, p_name text, p_email text
-) returns json language plpgsql security definer set search_path = public as $fn$
-declare v_email text; v_name text;
-begin
-  if not public.teaches_class(p_class) then
-    raise exception 'Thầy/cô không phụ trách lớp này.';
-  end if;
-  if not exists (select 1 from public.enrollments e
-                  where e.class_id = p_class and e.mshs = p_mshs and e.is_active) then
-    raise exception 'Em này không thuộc lớp.';
-  end if;
-
-  v_email := lower(nullif(trim(coalesce(p_email, '')), ''));
-  v_name  := nullif(trim(coalesce(p_name, '')), '');
-  if v_email is not null and v_email !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then
-    raise exception 'Email phụ huynh chưa đúng dạng.';
-  end if;
-
-  update public.students set parent_name = v_name, parent_email = v_email
-   where mshs = p_mshs;
-
-  insert into public.audit_log (actor_id, action, entity, entity_id, metadata)
-  values (auth.uid(), 'student.parent_contact', 'classes', p_class,
-          json_build_object('mshs', p_mshs, 'co_email', v_email is not null));
-
-  return json_build_object('ok', true);
-end;
-$fn$;
-
-
--- ============================================================================
 --  77. HỌC SINH XEM ĐƯỢC PHẦN CỦA MÌNH
 -- ============================================================================
 -- Đã nói với em mức kỷ luật thì phải nói luôn em đã trả được bao nhiêu. Bắt em
@@ -349,7 +316,7 @@ begin
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and p.proname in ('labor_quota','class_discipline_board','set_labor_done',
-                        'mark_discipline_notified','set_parent_contact','my_discipline_case')
+                        'mark_discipline_notified','my_discipline_case')
   loop
     execute format('revoke all on function %s from anon, public', r.sig);
     execute format('grant execute on function %s to authenticated', r.sig);

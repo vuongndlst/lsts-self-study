@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Copy, ExternalLink, HeartHandshake, Mail } from 'lucide-react'
-import { supabase, studentEmail } from '../lib/supabase'
+import { parentEmail, studentEmail, supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { formatDate } from '../utils/date'
 import { mailtoQuaDai, mailtoUrl, outlookWebUrl, thuHocSinh, thuPhuHuynh } from '../utils/disciplineLetter'
@@ -123,40 +123,29 @@ export default function LaborBoard({ classId, className }) {
 // được thì tới lá thứ hai phụ huynh nhận ra ngay là thư hàng loạt.
 function LetterModal({ row, nguoiNhanBanDau, classId, className, freePasses, teacherName, onClose, onDone }) {
   const [nguoiNhan, setNguoiNhan] = useState(nguoiNhanBanDau)
-  const [phName, setPhName] = useState(row.parent_name ?? '')
-  const [phEmail, setPhEmail] = useState(row.parent_email ?? '')
-  const [luuPh, setLuuPh] = useState(false)
   const [daMo, setDaMo] = useState(false)
   const [msg, setMsg] = useState('')
 
   const guiPh = nguoiNhan === 'ca_hai'
-  const soan = (ph, ten) => (ph
-    ? thuPhuHuynh({ ...row, parent_name: ten }, { className, teacherName, freePasses })
+  const soan = (ph) => (ph
+    ? thuPhuHuynh(row, { className, teacherName, freePasses })
     : thuHocSinh(row, { className, teacherName, freePasses }))
 
-  const [tieuDe, setTieuDe] = useState(() => soan(nguoiNhanBanDau === 'ca_hai', phName).subject)
-  const [noiDung, setNoiDung] = useState(() => soan(nguoiNhanBanDau === 'ca_hai', phName).body)
+  const [tieuDe, setTieuDe] = useState(() => soan(nguoiNhanBanDau === 'ca_hai').subject)
+  const [noiDung, setNoiDung] = useState(() => soan(nguoiNhanBanDau === 'ca_hai').body)
 
-  // Đổi người nhận là đổi hẳn giọng thư, nên soạn lại từ mẫu. Không gộp phName
-  // vào đây: thầy cô đang gõ dở tên phụ huynh mà thư bị viết lại thì mất sạch
-  // những chỗ vừa sửa tay.
+  // Đổi người nhận là đổi hẳn giọng thư, nên soạn lại từ mẫu.
   useEffect(() => {
-    const m = soan(nguoiNhan === 'ca_hai', phName)
+    const m = soan(nguoiNhan === 'ca_hai')
     setTieuDe(m.subject); setNoiDung(m.body); setDaMo(false)
   }, [nguoiNhan])
 
+  // Cả hai địa chỉ đều suy ra từ MSHS theo quy tắc chung của trường, không phải
+  // nhập tay và không lưu ở đâu cả.
   const emailHs = studentEmail(row.mshs)
-  const to = guiPh ? [phEmail].filter(Boolean) : [emailHs]
+  const emailPh = parentEmail(row.mshs)
+  const to = guiPh ? [emailPh] : [emailHs]
   const cc = guiPh ? [emailHs] : []
-  const thieuEmailPh = guiPh && !phEmail
-
-  const luuLienHe = async () => {
-    setLuuPh(true)
-    const { error } = await supabase.rpc('set_parent_contact',
-      { p_class: classId, p_mshs: row.mshs, p_name: phName || null, p_email: phEmail || null })
-    setLuuPh(false)
-    setMsg(error ? 'Không lưu được: ' + error.message : '✓ Đã lưu liên hệ phụ huynh.')
-  }
 
   const mo = (url) => { window.open(url, '_blank', 'noopener,noreferrer'); setDaMo(true) }
 
@@ -168,9 +157,11 @@ function LetterModal({ row, nguoiNhanBanDau, classId, className, freePasses, tea
     if (!mailtoQuaDai(goi)) return mo(mailtoUrl(goi))
     try {
       await navigator.clipboard.writeText(noiDung)
-      setMsg('Thư dài hơn mức mailto cho phép. Nội dung đã được sao chép — thầy cô bấm Ctrl+V trong Outlook.')
+      // Chép được là việc ĐÃ XONG, không phải lỗi — nên báo màu xanh. Tô đỏ một
+      // đường đi bình thường thì thầy cô tưởng hỏng và bỏ giữa chừng.
+      setMsg('✓ Đã sao chép nội dung. Thư dài hơn mức Outlook trên máy nhận qua liên kết, thầy cô bấm Ctrl+V trong cửa sổ vừa mở.')
     } catch {
-      setMsg('Thư dài hơn mức mailto cho phép. Thầy cô bấm Sao chép rồi dán vào Outlook giúp em.')
+      setMsg('Thư dài hơn mức Outlook trên máy nhận được, mà trình duyệt lại không cho sao chép. Thầy cô bấm nút Sao chép rồi dán vào Outlook giúp em.')
       return
     }
     mo(mailtoUrl({ ...goi, body: '' }))
@@ -201,27 +192,11 @@ function LetterModal({ row, nguoiNhanBanDau, classId, className, freePasses, tea
           onClick={() => setNguoiNhan('hs')}>Chỉ học sinh</button>
       </div>
 
-      {guiPh && <div className="detail-box">
-        <strong>Liên hệ phụ huynh</strong>
-        <div className="form-grid two" style={{ marginTop: 8 }}>
-          <label>Tên phụ huynh
-            <input value={phName} onChange={(e) => setPhName(e.target.value)} placeholder="Ông/Bà …" /></label>
-          <label>Email phụ huynh
-            <input type="email" value={phEmail} onChange={(e) => setPhEmail(e.target.value)}
-                   placeholder="email@example.com" /></label>
-        </div>
-        <div className="form-actions">
-          <button className="button ghost" disabled={luuPh} onClick={luuLienHe}>Lưu liên hệ</button>
-        </div>
-        {thieuEmailPh && <p className="form-error">
-          Chưa có email phụ huynh. Nhập vào rồi bấm <strong>Lưu liên hệ</strong> — lần sau khỏi nhập lại.
-        </p>}
-      </div>}
-
       <div className="detail-box">
         <strong>Người nhận</strong>
-        <p>{to.join('; ') || <span className="muted-text">— chưa có —</span>}
-          {cc.length > 0 && <><br /><small>Cc: {cc.join('; ')}</small></>}</p>
+        <p>{to.join('; ')}
+          {cc.length > 0 && <><br /><small>Cc: {cc.join('; ')}</small></>}
+          <br /><small className="muted-text">Địa chỉ suy ra từ MSHS theo quy tắc của trường.</small></p>
       </div>
 
       <label>Tiêu đề
@@ -242,10 +217,10 @@ function LetterModal({ row, nguoiNhanBanDau, classId, className, freePasses, tea
       </p>
 
       <div className="button-row letter-actions">
-        <button className="button primary" disabled={thieuEmailPh}
+        <button className="button primary"
                 onClick={() => mo(outlookWebUrl(goi))}>
           <ExternalLink size={16} /> Mở Outlook trên web</button>
-        <button className="button ghost" disabled={thieuEmailPh}
+        <button className="button ghost"
                 onClick={moTrenMay}>Mở Outlook trên máy</button>
         <button className="button ghost" onClick={async () => {
           try {

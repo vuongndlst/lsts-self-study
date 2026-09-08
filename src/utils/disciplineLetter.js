@@ -72,7 +72,10 @@ export function thuPhuHuynh(r, { className, teacherName, freePasses = 3 }) {
   const han = r.due_on ? `\nHạn hoàn thành: ${formatDate(r.due_on)}.` : ''
 
   const body = [
-    `Kính gửi Quý phụ huynh${r.parent_name ? ' ' + r.parent_name : ''},`,
+    // Nêu tên em ngay dòng đầu. Hộp thư phụ huynh của trường theo MSHS nên
+    // không có tên người, mà nhà có hai anh em cùng trường thì phụ huynh phải
+    // đọc hết đoạn mới biết thư nói về đứa nào.
+    `Kính gửi Quý phụ huynh em ${r.full_name} — lớp ${className},`,
     '',
     `Tôi là ${teacherName}, giáo viên chủ nhiệm lớp ${className}.`,
     '',

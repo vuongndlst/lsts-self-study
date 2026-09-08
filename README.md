@@ -1528,6 +1528,27 @@ Liệt kê **từng ngày** chứ không chỉ nói *"đã quên 4 lần"*: có 
 chiếu được, và nếu hệ thống ghi nhầm thì sai sót lộ ra ngay. Cả hai lá thư đều kết bằng một lối
 ra — *nếu có ngày bị ghi nhầm, hãy báo lại để thầy cô sửa*.
 
+### Email không lưu ở đâu cả
+
+Toàn trường theo một quy tắc, nên cả hai địa chỉ đều suy ra từ MSHS:
+
+| | Quy tắc | Ví dụ với MSHS 2406119 |
+|---|---|---|
+| Học sinh | `<MSHS>@lsts.edu.vn` | `2406119@lsts.edu.vn` |
+| Phụ huynh | `p<MSHS>@parent.lsts.edu.vn` | `p2406119@parent.lsts.edu.vn` |
+
+Suy ra được thì **không lưu**. Bản đầu tôi có thêm cột `students.parent_email` và một ô nhập trong
+hộp soạn thư — sai, và đã gỡ. Lưu vào bảng là tạo ra nguồn sự thật thứ hai: trường đổi tên miền
+là hàng trăm dòng cũ thành sai mà không ai biết để sửa. Không lưu cũng có nghĩa hệ thống **không
+giữ thông tin liên lạc của phụ huynh** — bớt được một loại dữ liệu cá nhân phải bảo vệ.
+
+Quy tắc nằm đúng một chỗ: `parentEmail()` trong [`src/lib/supabase.js`](src/lib/supabase.js), khai
+qua `VITE_PARENT_EMAIL_DOMAIN` và `VITE_PARENT_EMAIL_PREFIX` để trường khác dùng được.
+
+Hộp thư phụ huynh đặt theo MSHS nên không mang tên người. Vì vậy thư mở đầu bằng
+*"Kính gửi Quý phụ huynh em &lt;tên&gt; — lớp 8A7"*: nhà có hai anh em cùng trường thì phụ huynh
+biết ngay thư nói về đứa nào.
+
 ### Vì sao Outlook trên web là nút chính
 
 | Nút | Cơ chế | Chắc chắn ra Outlook? |
