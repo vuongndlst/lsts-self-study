@@ -41,8 +41,6 @@ export function mailtoUrl({ to, cc, subject, body }) {
 export const MAILTO_MAX = 1900
 export const mailtoQuaDai = (goi) => mailtoUrl(goi).length > MAILTO_MAX
 
-const bacChu = { 1: 'lần thứ tư', 2: 'lần thứ năm', 3: 'từ lần thứ sáu' }
-
 function bangQuyDinh(freePasses = 3) {
   return [
     `Mỗi em được miễn trừ ${freePasses} lần trong một học kỳ. Từ lần kế tiếp, quy định của lớp là:`,
@@ -52,11 +50,28 @@ function bangQuyDinh(freePasses = 3) {
   ].join('\n')
 }
 
-function danhSachNgay(ngay = []) {
-  if (!ngay.length) return ''
-  // Liệt kê ngày cụ thể, không chỉ nói "đã quên 4 lần". Có ngày thì phụ huynh
-  // và học sinh đối chiếu được — và nếu hệ thống ghi nhầm, sai sót lộ ra ngay.
-  return '\nCác ngày cụ thể:\n' + ngay.map((d) => `  · ${formatDate(d)}`).join('\n') + '\n'
+// Liệt kê buổi cụ thể, không chỉ nói "đã quên 4 lần". Có ngày thì phụ huynh và
+// học sinh đối chiếu được — và nếu hệ thống ghi nhầm, sai sót lộ ra ngay.
+//
+// PHẢI kèm tiết. Sổ ghi quên tính theo TIẾT: bỏ hai tiết trong cùng một buổi là
+// hai lần quên. Nói "4 lần" rồi liệt kê 3 dòng thì phụ huynh đếm là thấy vênh,
+// và cái vênh đó làm hỏng độ tin của cả lá thư.
+function danhSachBuoi(chiTiet = []) {
+  if (!chiTiet?.length) return ''
+  const dong = chiTiet.map(({ ngay, tiet }) => {
+    const t = (tiet ?? []).join(', ')
+    return `  · ${formatDate(ngay)}${t ? ` — tiết ${t}` : ''}`
+  })
+  return '\nCác buổi cụ thể:\n' + dong.join('\n') + '\n'
+}
+
+// "4 lần quên trong 3 buổi" — nói cả hai con số thì không ai phải tự suy ra.
+function cauSoLan(r) {
+  const n = r.so_lan_quen
+  const b = r.so_buoi ?? (r.cac_ngay_quen?.length ?? 0)
+  return b && b !== n
+    ? `${n} lần (mỗi tiết tự học tính một lần), rơi vào ${b} buổi`
+    : `${n} lần`
 }
 
 // ---------------------------------------------------------------------------
@@ -79,8 +94,8 @@ export function thuPhuHuynh(r, { className, teacherName, freePasses = 3 }) {
     '',
     `Tôi là ${teacherName}, giáo viên chủ nhiệm lớp ${className}.`,
     '',
-    `Lớp có giờ tự học, mỗi buổi học sinh đăng ký trước kế hoạch của mình trên hệ thống. Trong ${r.hoc_ky || 'học kỳ này'} (tính từ ${formatDate(r.tu_ngay)}), em ${r.full_name} đã ${r.so_lan_quen} lần không đăng ký kế hoạch tự học.`,
-    danhSachNgay(r.cac_ngay_quen),
+    `Lớp có giờ tự học, mỗi buổi học sinh đăng ký trước kế hoạch của mình trên hệ thống. Trong ${r.hoc_ky || 'học kỳ này'} (tính từ ${formatDate(r.tu_ngay)}), em ${r.full_name} đã không đăng ký kế hoạch tự học ${cauSoLan(r)}.`,
+    danhSachBuoi(r.cac_ngay_quen),
     bangQuyDinh(freePasses),
     '',
     `Hiện em ${r.full_name} ở mức: ${r.nhan}.`,
@@ -109,13 +124,13 @@ export function thuHocSinh(r, { className, teacherName, freePasses = 3 }) {
   const body = [
     `Chào em ${r.full_name},`,
     '',
-    `Thầy/cô ghi nhận trong ${r.hoc_ky || 'học kỳ này'} em đã ${r.so_lan_quen} lần không đăng ký kế hoạch tự học.`,
-    danhSachNgay(r.cac_ngay_quen),
+    `Thầy/cô ghi nhận trong ${r.hoc_ky || 'học kỳ này'} em đã không đăng ký kế hoạch tự học ${cauSoLan(r)}.`,
+    danhSachBuoi(r.cac_ngay_quen),
     `Mỗi bạn được miễn trừ ${freePasses} lần mỗi học kỳ, em đã dùng hết. Mức hiện tại của em: ${r.nhan}.`,
     '',
     `Em cần thực hiện ${r.luot_phai_lam} lượt lao động công ích. Em đã làm ${r.luot_da_lam} lượt, còn lại ${r.con_no} lượt.${han}`,
     '',
-    'Nếu em thấy có ngày nào bị ghi nhầm — hôm đó em nghỉ có phép hoặc lớp có sự kiện — hãy nhắn lại cho thầy/cô để kiểm tra và sửa.',
+    'Nếu em thấy có buổi nào bị ghi nhầm — hôm đó em nghỉ có phép hoặc lớp có sự kiện — hãy nhắn lại cho thầy/cô để kiểm tra và sửa.',
     '',
     'Từ nay em nhớ vào hệ thống đăng ký kế hoạch trước mỗi buổi tự học nhé. Chỉ mất một phút, và em sẽ không phải nhận thư như thế này nữa.',
     '',

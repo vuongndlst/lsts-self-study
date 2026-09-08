@@ -1570,6 +1570,25 @@ bộ nhớ tạm rồi mở cửa sổ soạn thư trống, thầy cô Ctrl+V. �
 lần quên) đã 2.057 ký tự, nên đường *trên máy* gần như luôn đi lối chép — giao diện nói rõ điều đó
 thay vì để thầy cô đoán.
 
+### "4 lần" nhưng chỉ 3 buổi
+
+Bắt được lúc kiểm chứng trên dữ liệu thật. Sổ ghi quên tính theo **tiết**: em bỏ tiết 8 và tiết 9
+trong cùng một buổi là **hai** lần quên. Nên một em có `4 lần quên` mà chỉ có `3 ngày`.
+
+Lá thư bản đầu nói *"đã 4 lần không đăng ký"* rồi liệt kê 3 dòng — phụ huynh đếm là thấy vênh, và
+cái vênh đó làm hỏng độ tin của cả lá thư. Nay hàm trả về chi tiết tới tiết, và thư viết:
+
+```
+… đã không đăng ký kế hoạch tự học 4 lần (mỗi tiết tự học tính một lần), rơi vào 3 buổi.
+
+Các buổi cụ thể:
+  · 26/08/2026 — tiết 5
+  · 03/09/2026 — tiết 5
+  · 04/09/2026 — tiết 8, 9
+```
+
+Cộng lại đúng 4. Không ai phải tự suy ra con số nào.
+
 ### Trạng thái rỗng không được nói dối
 
 Lúc thử, hàm chưa có trên máy chủ nên khối này hiện *"✓ Chưa em nào vượt quá quyền miễn trừ"* —

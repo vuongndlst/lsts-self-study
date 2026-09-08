@@ -101,7 +101,11 @@ create function public.class_discipline_board(p_class uuid)
 returns table (
   mshs text, full_name text, so_lan_quen int, bac int, nhan text,
   luot_phai_lam int, luot_da_lam int, con_no int,
-  cac_ngay_quen date[], lan_gan_nhat date,
+  -- [{"ngay":"2026-09-04","tiet":[8,9]}, …] — CHI TIẾT TỚI TIẾT, không phải chỉ
+  -- danh sách ngày. Vì sổ ghi quên tính theo TIẾT: em bỏ hai tiết trong cùng
+  -- một buổi là hai lần quên. Nếu lá thư nói "4 lần" rồi liệt kê 3 ngày thì phụ
+  -- huynh đếm là thấy vênh, và cái vênh đó làm hỏng độ tin của cả lá thư.
+  cac_ngay_quen jsonb, so_buoi int, lan_gan_nhat date,
   da_bao_ph timestamptz, da_bao_hs timestamptz,
   due_on date, ghi_chu text, hoc_ky text, tu_ngay date
 ) language sql stable security definer set search_path = public as $fn$
@@ -115,7 +119,8 @@ returns table (
          greatest(
            public.labor_quota((public.attendance_level(coalesce(m.n, 0)::int, pol.free_passes)->>'bac')::int)
            - coalesce(dc.labor_done, 0), 0)::int,
-         coalesce(m.ngay, '{}'::date[]),
+         coalesce(m.chi_tiet, '[]'::jsonb),
+         coalesce(m.so_buoi, 0)::int,
          m.gan_nhat,
          -- Email học sinh và email phụ huynh KHÔNG trả ở đây: cả hai suy ra từ
          -- MSHS, và quy tắc đã khai một lần trong src/lib/supabase.js. Khai lần
@@ -126,13 +131,22 @@ returns table (
   cross join b
   join public.enrollments e on e.class_id = pol.class_id and e.is_active
   join public.students   s on s.mshs = e.mshs and not s.is_test
+  -- Gom hai tầng: tầng trong gộp theo NGÀY để biết mỗi buổi thiếu những tiết
+  -- nào, tầng ngoài cộng lại thành tổng số lần quên. Một truy vấn một tầng
+  -- không ra được cả hai con số cùng lúc.
   left join lateral (
-    select count(*) n, max(am.study_date) gan_nhat,
-           array_agg(distinct am.study_date order by am.study_date) ngay
-    from public.attendance_misses am
-    where am.class_id = pol.class_id and am.mshs = s.mshs
-      and am.study_date >= b.tu_ngay
-      and (b.den_ngay is null or am.study_date <= b.den_ngay)
+    select sum(d.n)::int n, count(*)::int so_buoi, max(d.ngay) gan_nhat,
+           jsonb_agg(jsonb_build_object('ngay', d.ngay, 'tiet', d.tiet)
+                     order by d.ngay) chi_tiet
+    from (
+      select am.study_date ngay, count(*) n,
+             array_agg(am.period order by am.period) tiet
+      from public.attendance_misses am
+      where am.class_id = pol.class_id and am.mshs = s.mshs
+        and am.study_date >= b.tu_ngay
+        and (b.den_ngay is null or am.study_date <= b.den_ngay)
+      group by am.study_date
+    ) d
   ) m on true
   left join public.discipline_cases dc
     on dc.class_id = pol.class_id and dc.mshs = s.mshs and dc.term_from = b.tu_ngay
