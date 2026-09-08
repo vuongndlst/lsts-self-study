@@ -844,3 +844,28 @@ th,td{padding:11px 12px}
 .row-actions{display:inline-flex;gap:6px}
 .icon-button.on{background:#f4f0ff;border-color:#c9bbf0;color:#5b41a8}
 .icon-button.on:hover{background:#ece5ff}
+
+/* ---------- v15: lao dong cong ich + thu bao ---------- */
+/* O nhap luot: giu input, dau gach va nut Luu tren mot hang, khong xuong dong. */
+.luot-o{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.luot-o input{width:68px;text-align:center;margin:0}
+.luot-o .button{padding:7px 12px;min-height:34px;font-size:13px}
+
+.letter-body{display:block;margin-top:12px}
+.letter-body textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.5}
+.letter-note{margin-top:12px}
+.letter-actions{margin-top:10px;flex-wrap:wrap}
+.letter-confirm{margin-top:14px}
+
+/* Dai lao dong cong ich tren the diem danh cua hoc sinh. */
+.labor-strip{display:flex;align-items:center;gap:14px;padding:12px 18px;border-top:1px solid var(--line);background:#fffaf1}
+.labor-num{display:flex;flex-direction:column;align-items:center;min-width:58px}
+.labor-num strong{font-size:24px;line-height:1;color:#945d00}
+.labor-num small{font-size:10.5px;color:var(--muted);text-align:center}
+.labor-text{display:flex;flex-direction:column;gap:3px;min-width:0}
+.labor-text small{color:#5a6167;line-height:1.45}
+
+@media(max-width:700px){
+  .luot-o{flex-wrap:wrap;white-space:normal}
+  .letter-actions .button{width:100%}
+}

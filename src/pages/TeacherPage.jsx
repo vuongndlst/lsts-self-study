@@ -15,6 +15,7 @@ import ClassSwitcher from '../components/ClassSwitcher'
 import TeacherOnboarding from '../components/TeacherOnboarding'
 import { ClassAnalytics, StudentAnalytics } from '../components/Analytics'
 import { DisciplineBoard, AttendancePolicyPanel } from '../components/Attendance'
+import LaborBoard from '../components/LaborBoard'
 
 const PAGE_SIZE = 25
 
@@ -380,6 +381,7 @@ export default function TeacherPage(){
     {view==='missing'&&<MissingRegistrations classId={context.classId} roster={roster}/>}
     {view==='discipline'&&<>
       <DisciplineBoard classId={context.classId} className={context.className}/>
+      <LaborBoard classId={context.classId} className={context.className}/>
       <AttendancePolicyPanel classId={context.classId} className={context.className}/>
     </>}
     {view==='roster'&&<RosterPanel classId={context.classId} className={context.className} yearName={context.yearName}/>}

@@ -167,11 +167,16 @@ export function DisciplineRules({ att }) {
 export function MyAttendance({ reloadKey }) {
   const { profile } = useAuth()
   const [att, setAtt] = useState(null)
+  const [ldci, setLdci] = useState(null)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
     if (profile?.role !== 'student') return
     supabase.rpc('my_attendance_status').then(({ data }) => setAtt(data ?? null))
+    // Đã nói với em mức kỷ luật thì phải nói luôn em đã trả được bao nhiêu.
+    // Bắt em lao động mà không cho em biết còn nợ mấy lượt là thứ dễ gây ấm ức
+    // nhất — và em cũng không có cách nào tự kiểm tra lại con số của thầy cô.
+    supabase.rpc('my_discipline_case').then(({ data }) => setLdci(data ?? null))
   }, [profile?.id, reloadKey])
 
   if (!att?.bat) return null
@@ -188,6 +193,26 @@ export function MyAttendance({ reloadKey }) {
       </span>
       <ChevronDown size={20} className={`chev ${open ? 'up' : ''}`} />
     </button>
-    {open && <div className="attend-body"><DisciplineRules att={att} /></div>}
+    {ldci && <div className="labor-strip">
+      <span className="labor-num"><strong>{ldci.con_no}</strong><small>lượt còn nợ</small></span>
+      <span className="labor-text">
+        <strong>Lao động công ích: {ldci.da_lam}/{ldci.phai_lam} lượt</strong>
+        <small>
+          {ldci.con_no === 0
+            ? 'Em đã hoàn thành. Cảm ơn em.'
+            : `Em còn ${ldci.con_no} lượt${ldci.han ? ` — hạn ${ldci.han.split('-').reverse().join('/')}` : ''}.`}
+          {ldci.moi_ph && ' Thầy cô sẽ trao đổi với phụ huynh của em.'}
+        </small>
+      </span>
+    </div>}
+    {open && <div className="attend-body">
+      <DisciplineRules att={att} />
+      {/* Lối ra, đặt ngay dưới bảng luật. Thư kỷ luật mà chỉ có trách thì em đọc
+          xong cũng không biết phải làm gì tiếp. */}
+      <p className="muted-text small">
+        Nếu em thấy có ngày bị ghi nhầm — hôm đó em nghỉ có phép hoặc lớp có sự kiện —
+        hãy nhắn thầy cô để kiểm tra lại.
+      </p>
+    </div>}
   </section>
 }

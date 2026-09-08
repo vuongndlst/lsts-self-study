@@ -1489,6 +1489,72 @@ Tiêu đề danh sách lớp đếm sĩ số thật (31), còn thanh phân trang
 cả tài khoản thử). Hai con số khác nhau cùng gọi là *"học sinh"* thì thầy cô tưởng hệ thống đếm
 sai. Thanh phân trang đổi thành **"32 dòng"**.
 
+## 11j. Lao động công ích và thư báo phụ huynh
+
+[`schema-13-discipline.sql`](supabase/schema-13-discipline.sql).
+
+Hệ thống trước đây chỉ **nói ra** mức kỷ luật — *"5 lượt lao động công ích"* — rồi thôi. Nói xong
+không ai biết em đã làm được mấy lượt, còn nợ mấy lượt, phụ huynh đã được báo chưa. Thầy cô phải
+nhớ trong đầu hoặc ghi ra giấy.
+
+### Số lượt phải làm thì KHÔNG lưu
+
+Bảng `discipline_cases` chỉ lưu **lượt đã làm**, hạn hoàn thành, và mốc đã báo. Số lượt *phải làm*
+suy ra từ số lần quên hiện tại mỗi lần đọc.
+
+Lưu lại là sai: thầy cô miễn buổi cho em sau đó (em xin phép muộn), số lần quên giảm, mà con số
+trong sổ vẫn đứng yên. Chỉ **lượt đã làm** mới là dữ kiện có thật — cùng một nguyên tắc với
+`due_date` của lịch chia sẻ sách.
+
+Một dòng cho mỗi em **mỗi học kỳ**, không phải mỗi lần vi phạm — vì bậc kỷ luật không cộng dồn:
+quên lần thứ 5 là *10 lượt*, không phải 5 + 10. Ghi mỗi lần một dòng rồi cộng lại sẽ ra số sai.
+
+### Thư báo: soạn sẵn, không gửi hộ
+
+Nút *Soạn thư* dựng sẵn một lá thư có đủ dữ kiện — số lần quên, **từng ngày cụ thể**, mức kỷ luật,
+lượt đã làm / còn nợ — rồi mở Outlook. Hệ thống **không gửi**.
+
+Cố ý làm vậy, ba lý do:
+
+- Thư kỷ luật gửi phụ huynh là việc hệ trọng, không nên để máy tự bấm Gửi.
+- Thư đi từ hộp thư của chính thầy cô, phụ huynh trả lời là về đúng người.
+- Không phải xin quyền gửi thư thay ai, không giữ mật khẩu hộp thư của ai.
+
+Nội dung **sửa được** trước khi gửi. Thư mẫu chỉ đúng phần dữ kiện; hoàn cảnh từng em thì chỉ
+thầy cô biết — và một lá thư máy soạn không sửa được thì tới lá thứ hai phụ huynh nhận ra ngay
+là thư hàng loạt.
+
+Liệt kê **từng ngày** chứ không chỉ nói *"đã quên 4 lần"*: có ngày thì phụ huynh và học sinh đối
+chiếu được, và nếu hệ thống ghi nhầm thì sai sót lộ ra ngay. Cả hai lá thư đều kết bằng một lối
+ra — *nếu có ngày bị ghi nhầm, hãy báo lại để thầy cô sửa*.
+
+### Vì sao Outlook trên web là nút chính
+
+| Nút | Cơ chế | Chắc chắn ra Outlook? |
+|---|---|---|
+| **Mở Outlook trên web** | deeplink `outlook.office.com` | có |
+| Mở Outlook trên máy | `mailto:` | **không** — mở ứng dụng thư mặc định, máy nào đặt Gmail thì ra Gmail |
+| Sao chép | bộ nhớ tạm | — |
+
+### Hai chuyện bắt được lúc kiểm chứng
+
+**`URLSearchParams` mã hoá dấu cách thành `+`.** Đúng cho biểu mẫu, sai cho `mailto:` và deeplink —
+không ai giải mã ngược, nên phụ huynh sẽ nhận lá thư mà mọi dấu cách đều là dấu cộng. Đổi sang
+`encodeURIComponent` (`%20`). Đã đo lại: giải mã ngược ra đúng nguyên văn.
+
+**`mailto:` có trần độ dài, mà tiếng Việt rất tốn.** Mỗi chữ có dấu hoá thành 9 ký tự `%XX%XX%XX`,
+nên lá thư 1.250 chữ thành URL 3.535 ký tự. Vượt trần thì thân thư bị cắt cụt **trong im lặng** —
+thứ tệ nhất có thể xảy ra với một lá thư kỷ luật. Nay đo trước: quá ngưỡng thì chép nội dung vào
+bộ nhớ tạm rồi mở cửa sổ soạn thư trống, thầy cô Ctrl+V. Đo thực tế: thư ngắn nhất (học sinh, 4
+lần quên) đã 2.057 ký tự, nên đường *trên máy* gần như luôn đi lối chép — giao diện nói rõ điều đó
+thay vì để thầy cô đoán.
+
+### Trạng thái rỗng không được nói dối
+
+Lúc thử, hàm chưa có trên máy chủ nên khối này hiện *"✓ Chưa em nào vượt quá quyền miễn trừ"* —
+trong khi bảng ngay phía trên đang liệt kê 2 em bị kỷ luật. Gọi hỏng mà hiện như không có ai vi
+phạm là thầy cô đọc xong yên tâm nhầm. Nay lỗi tải hiện thành lỗi, kèm nguyên văn thông báo.
+
 ## 12. Quyền dữ liệu
 
 **Học sinh** — chỉ đọc/ghi dữ liệu của chính mình; không đọc danh sách lớp; chỉ tạo kế
