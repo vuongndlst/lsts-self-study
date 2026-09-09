@@ -53,9 +53,8 @@ function bangQuyDinh(freePasses = 3) {
 // Liệt kê buổi cụ thể, không chỉ nói "đã quên 4 lần". Có ngày thì phụ huynh và
 // học sinh đối chiếu được — và nếu hệ thống ghi nhầm, sai sót lộ ra ngay.
 //
-// PHẢI kèm tiết. Sổ ghi quên tính theo TIẾT: bỏ hai tiết trong cùng một buổi là
-// hai lần quên. Nói "4 lần" rồi liệt kê 3 dòng thì phụ huynh đếm là thấy vênh,
-// và cái vênh đó làm hỏng độ tin của cả lá thư.
+// Mỗi phần tử là MỘT buổi, nên số dòng luôn khớp với số lần quên: phụ huynh đếm
+// tay cũng ra đúng con số trong thư. Vẫn kèm tiết để đối chiếu thời khoá biểu.
 function danhSachBuoi(chiTiet = []) {
   if (!chiTiet?.length) return ''
   const dong = chiTiet.map(({ ngay, tiet }) => {
@@ -63,15 +62,6 @@ function danhSachBuoi(chiTiet = []) {
     return `  · ${formatDate(ngay)}${t ? ` — tiết ${t}` : ''}`
   })
   return '\nCác buổi cụ thể:\n' + dong.join('\n') + '\n'
-}
-
-// "4 lần quên trong 3 buổi" — nói cả hai con số thì không ai phải tự suy ra.
-function cauSoLan(r) {
-  const n = r.so_lan_quen
-  const b = r.so_buoi ?? (r.cac_ngay_quen?.length ?? 0)
-  return b && b !== n
-    ? `${n} lần (mỗi tiết tự học tính một lần), rơi vào ${b} buổi`
-    : `${n} lần`
 }
 
 // ---------------------------------------------------------------------------
@@ -94,7 +84,7 @@ export function thuPhuHuynh(r, { className, teacherName, freePasses = 3 }) {
     '',
     `Tôi là ${teacherName}, giáo viên chủ nhiệm lớp ${className}.`,
     '',
-    `Lớp có giờ tự học, mỗi buổi học sinh đăng ký trước kế hoạch của mình trên hệ thống. Trong ${r.hoc_ky || 'học kỳ này'} (tính từ ${formatDate(r.tu_ngay)}), em ${r.full_name} đã không đăng ký kế hoạch tự học ${cauSoLan(r)}.`,
+    `Lớp có giờ tự học, mỗi buổi học sinh đăng ký trước kế hoạch của mình trên hệ thống. Trong ${r.hoc_ky || 'học kỳ này'} (tính từ ${formatDate(r.tu_ngay)}), em ${r.full_name} đã ${r.so_lan_quen} lần không đăng ký kế hoạch tự học.`,
     danhSachBuoi(r.cac_ngay_quen),
     bangQuyDinh(freePasses),
     '',
@@ -124,7 +114,7 @@ export function thuHocSinh(r, { className, teacherName, freePasses = 3 }) {
   const body = [
     `Chào em ${r.full_name},`,
     '',
-    `Thầy/cô ghi nhận trong ${r.hoc_ky || 'học kỳ này'} em đã không đăng ký kế hoạch tự học ${cauSoLan(r)}.`,
+    `Thầy/cô ghi nhận trong ${r.hoc_ky || 'học kỳ này'} em đã ${r.so_lan_quen} lần không đăng ký kế hoạch tự học.`,
     danhSachBuoi(r.cac_ngay_quen),
     `Mỗi bạn được miễn trừ ${freePasses} lần mỗi học kỳ, em đã dùng hết. Mức hiện tại của em: ${r.nhan}.`,
     '',

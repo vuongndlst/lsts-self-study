@@ -1570,30 +1570,66 @@ bộ nhớ tạm rồi mở cửa sổ soạn thư trống, thầy cô Ctrl+V. �
 lần quên) đã 2.057 ký tự, nên đường *trên máy* gần như luôn đi lối chép — giao diện nói rõ điều đó
 thay vì để thầy cô đoán.
 
-### "4 lần" nhưng chỉ 3 buổi
-
-Bắt được lúc kiểm chứng trên dữ liệu thật. Sổ ghi quên tính theo **tiết**: em bỏ tiết 8 và tiết 9
-trong cùng một buổi là **hai** lần quên. Nên một em có `4 lần quên` mà chỉ có `3 ngày`.
-
-Lá thư bản đầu nói *"đã 4 lần không đăng ký"* rồi liệt kê 3 dòng — phụ huynh đếm là thấy vênh, và
-cái vênh đó làm hỏng độ tin của cả lá thư. Nay hàm trả về chi tiết tới tiết, và thư viết:
+### Thư liệt kê từng buổi, kèm tiết
 
 ```
-… đã không đăng ký kế hoạch tự học 4 lần (mỗi tiết tự học tính một lần), rơi vào 3 buổi.
+… em Kim Nguyễn Gia Phúc đã 4 lần không đăng ký kế hoạch tự học.
 
 Các buổi cụ thể:
   · 26/08/2026 — tiết 5
   · 03/09/2026 — tiết 5
   · 04/09/2026 — tiết 8, 9
+  · 08/09/2026 — tiết 1
 ```
 
-Cộng lại đúng 4. Không ai phải tự suy ra con số nào.
+Bốn dòng, đúng bằng con số trong câu trên. Phụ huynh đếm tay cũng ra.
 
 ### Trạng thái rỗng không được nói dối
 
 Lúc thử, hàm chưa có trên máy chủ nên khối này hiện *"✓ Chưa em nào vượt quá quyền miễn trừ"* —
 trong khi bảng ngay phía trên đang liệt kê 2 em bị kỷ luật. Gọi hỏng mà hiện như không có ai vi
 phạm là thầy cô đọc xong yên tâm nhầm. Nay lỗi tải hiện thành lỗi, kèm nguyên văn thông báo.
+
+## 11k. Đếm theo buổi, không theo tiết
+
+[`schema-14-miss-sessions.sql`](supabase/schema-14-miss-sessions.sql).
+
+Ban đầu mỗi **tiết** thiếu đăng ký là một lần quên. Nhưng giờ tự học thứ Sáu của 8A7 gồm tiết 8 và
+tiết 9 liền nhau — em bỏ buổi đó bị tính **hai** lần, tức mất hai phần ba quyền miễn trừ chỉ trong
+một buổi. Không đúng ý định của quy định: *quên đăng ký* là quên một **buổi**.
+
+### Đổi chỗ ĐẾM, không đổi chỗ GHI
+
+Bảng `attendance_misses` vẫn lưu từng tiết. Ba lý do:
+
+- Đó là dữ kiện thô — xoá đi thì không dựng lại được.
+- Thư báo phụ huynh cần nói rõ *"tiết 8, 9"* mới đối chiếu thời khoá biểu được.
+- Lịch lớp đổi giữa năm cũng không làm số liệu cũ chạy theo.
+
+View `attendance_miss_sessions` gộp các tiết **liền nhau** thành một dòng, và mọi hàm đếm đều đọc
+qua nó: `my_attendance_status`, `class_attendance_board`, `class_attendance_tracker`,
+`class_discipline_board`, `set_labor_done`.
+
+Thủ thuật *gap and islands*: lấy số tiết trừ đi thứ tự chạy trong ngày. Tiết liền nhau (8, 9) cho
+ra cùng một hiệu số; tiết rời (3 rồi 8) cho hiệu số khác. Gom theo hiệu số là ra đúng từng dải
+liền mạch — nên **tiết rời nhau trong cùng một ngày vẫn tính hai lần**, đúng như tên gọi "buổi".
+
+View này bỏ qua RLS của bảng gốc (nó chạy dưới quyền chủ sở hữu), nên đã thu hồi quyền đọc của
+`anon` và `authenticated`. Mọi hàm đọc nó đều là `security definer` và tự kiểm quyền riêng.
+
+### Đổi luật thì số cũ đổi theo
+
+Áp lên dữ liệu thật của 8A7: **28 tiết → 22 buổi**. Ba em đang bị kỷ luật còn **một**.
+
+| Học sinh | Cũ (tiết) | Mới (buổi) | Thay đổi |
+|---|---|---|---|
+| Kim Nguyễn Gia Phúc | 5 | 4 | vẫn *Lao động công ích 5 lượt* |
+| Hoàng Minh Khôi | 4 | 3 | **hết kỷ luật** — còn quyền miễn trừ |
+| Nguyễn Lê Quỳnh Anh | 4 | 3 | **hết kỷ luật** — còn quyền miễn trừ |
+| Nguyễn Quang Đăng · Phạm Đức Nghĩa · Vũ Linh Lan | 2 | 1 | — |
+
+Không sửa dữ liệu cũ, chỉ đếm lại. Vì vậy nếu sau này quay về cách đếm theo tiết thì số cũ vẫn
+còn nguyên.
 
 ## 12. Quyền dữ liệu
 
