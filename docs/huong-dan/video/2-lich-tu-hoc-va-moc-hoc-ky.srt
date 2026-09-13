@@ -1,0 +1,43 @@
+1
+00:00:00,000 --> 00:00:05,893
+Việc quan trọng nhất khi thiết lập: khai lịch tự học của lớp.
+
+2
+00:00:05,893 --> 00:00:08,297
+Chọn các tiết tự học theo từng thứ trong tuần.
+
+3
+00:00:08,297 --> 00:00:10,699
+Chưa khai lịch thì hệ thống không biết ngày nào là ngày tự học.
+
+4
+00:00:10,699 --> 00:00:14,217
+Và như vậy sẽ không tính được ai quên đăng ký.
+
+5
+00:00:14,217 --> 00:00:16,634
+Ngay trên đó là hai công tắc về luật đăng ký.
+
+6
+00:00:16,634 --> 00:00:19,044
+Cho phép đăng ký trễ: em vẫn đăng ký được sau hạn, chỉ bị đánh dấu Trễ.
+
+7
+00:00:19,044 --> 00:00:21,450
+Bắt buộc cập nhật kết quả: em còn nợ kết quả thì chưa đăng ký buổi mới được.
+
+8
+00:00:21,450 --> 00:00:25,382
+Công tắc thứ hai nên bật sau vài tuần, khi các em đã quen nếp.
+
+9
+00:00:25,382 --> 00:00:28,698
+Cuối cùng là mốc học kỳ, nằm trong thẻ Kỷ luật.
+
+10
+00:00:28,698 --> 00:00:31,108
+Đặt ngày bắt đầu tính, ngày đầu và cuối mỗi học kỳ, và số lần được miễn trừ.
+
+11
+00:00:31,108 --> 00:00:35,020
+Ngày bắt đầu thường là ngày lớp vào nếp tự học, không phải ngày khai giảng.

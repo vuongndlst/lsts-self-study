@@ -80,7 +80,7 @@ const than = () => {
   tua2('4.1 Nhập danh sách lớp từ Excel'),
   buoc(1, 'Vào thẻ **Học sinh**.'),
   buoc(2, 'Bấm **Nhập danh sách từ Excel**.'),
-  buoc(3, 'Tải file mẫu, điền hai cột **MSHS** và **Họ và tên**, rồi chọn file.'),
+  buoc(3, 'Bấm **Tải file mẫu Excel**, điền ba cột **STT**, **MSHS**, **Họ và tên học sinh** — giữ nguyên tên cột ở dòng đầu — rồi chọn file.'),
   buoc(4, 'Hệ thống hiện **bản xem trước**: em nào thêm mới, em nào đã có, dòng nào bị bỏ qua và vì sao. Đọc kỹ bảng này rồi mới bấm nhập.'),
   ...hinh('gv-10-nhap-excel', 'Cửa sổ nhập danh sách từ Excel.'),
   ...hopVaCach('luuY', [

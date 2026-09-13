@@ -1,0 +1,35 @@
+1
+00:00:00,000 --> 00:00:06,310
+Phần chia sẻ sách chỉ hiện khi người quản trị đã cấp cho lớp.
+
+2
+00:00:06,310 --> 00:00:08,711
+Dải trên cùng cho biết ai tới lượt tuần này và các tuần kế tiếp.
+
+3
+00:00:08,711 --> 00:00:12,032
+Kèm luôn tình trạng nộp bài.
+
+4
+00:00:12,032 --> 00:00:16,554
+Thẻ Xếp lịch và chấm để phân công cả năm.
+
+5
+00:00:16,554 --> 00:00:18,958
+Mỗi tuần chọn một em và đặt ngày báo cáo.
+
+6
+00:00:18,958 --> 00:00:21,374
+Hạn nộp luôn là ngày báo cáo trừ ba ngày, hệ thống tự tính.
+
+7
+00:00:21,374 --> 00:00:23,790
+Tuần ôn thi, thi, nghỉ Tết thì đặt là tuần nghỉ.
+
+8
+00:00:23,790 --> 00:00:27,111
+Tuần trống còn lại để dự phòng, dùng khi cần dời lịch.
+
+9
+00:00:27,111 --> 00:00:33,120
+Thẻ Kết quả là nơi cả lớp xem bài của nhau.

@@ -1,0 +1,35 @@
+1
+00:00:00,000 --> 00:00:05,918
+Mỗi ngày thầy cô chỉ mất chừng năm phút.
+
+2
+00:00:05,918 --> 00:00:09,243
+Thẻ Chưa đăng ký liệt kê những em chưa có kế hoạch.
+
+3
+00:00:09,243 --> 00:00:13,060
+Nên xem Ngày mai thay vì Hôm nay.
+
+4
+00:00:13,060 --> 00:00:15,462
+Nhắc trước khi hết hạn thì các em còn kịp đăng ký.
+
+5
+00:00:15,462 --> 00:00:18,775
+Không ai bị tính là quên.
+
+6
+00:00:18,775 --> 00:00:21,176
+Ngay dưới là phần Miễn buổi tự học.
+
+7
+00:00:21,176 --> 00:00:23,578
+Lớp đi hội trại thì miễn cả lớp. Em nghỉ ốm thì miễn riêng em đó.
+
+8
+00:00:23,578 --> 00:00:25,989
+Buổi đã miễn thì không ai bị tính là quên đăng ký.
+
+9
+00:00:25,989 --> 00:00:29,881
+Miễn sau khi hết ngày cũng được — hệ thống gỡ luôn lần quên đã trót ghi.
