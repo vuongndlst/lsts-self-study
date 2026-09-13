@@ -222,7 +222,7 @@ export async function taoTrinh() {
       // trên mép. Cuộn lại lần nữa RỒI mới đo, và lùi thêm để thanh điều hướng
       // dính trên đầu không đè lên mép khung.
       if (chon) {
-        await chay(`const e=document.querySelector(${JSON.stringify(chon)});
+        await chay(`const e=document.querySelector(${JSON.stringify(Array.isArray(chon) ? chon[0] : chon)});
                     if (e) { e.scrollIntoView({ block: 'start' }); window.scrollBy(0, -96) }
                     return 1`)
         await doi(400)
@@ -235,20 +235,49 @@ export async function taoTrinh() {
     }
     let clip
     if (chon) {
+      // `chon` nhận một selector, hoặc một MẢNG selector thì lấy khung bao trùm
+      // tất cả. Cần mảng khi hai thứ phải cùng có mặt mà thẻ cha chung của chúng
+      // lại thừa ra một mảng trống lớn — ví dụ thẻ đăng nhập: phải thấy cả dải
+      // chọn "Học sinh / Giáo viên" lẫn biểu mẫu, nhưng .auth-card thì dưới đáy
+      // trống gần nửa thẻ.
+      const ds = Array.isArray(chon) ? chon : [chon]
       const r = await chay(
-        `const e=document.querySelector(${JSON.stringify(chon)}); if(!e) return null;
-         const b=e.getBoundingClientRect();
+        `const ds=${JSON.stringify(ds)};
+         const bs=ds.map(s=>document.querySelector(s)).filter(Boolean)
+                    .map(e=>e.getBoundingClientRect());
+         if (!bs.length) return null;
+         const t=Math.min(...bs.map(b=>b.top)), d=Math.max(...bs.map(b=>b.bottom));
+         const l=Math.min(...bs.map(b=>b.left)), ph=Math.max(...bs.map(b=>b.right));
          // getBoundingClientRect cho toạ độ theo KHUNG NHÌN, còn clip của
          // captureScreenshot tính theo TRANG. Trang đang cuộn thì hai hệ lệch
          // nhau đúng bằng scrollY — ảnh ra đúng kích thước nhưng chụp nhầm chỗ,
          // nhìn tưởng cửa sổ bị cắt cụt. Cộng scroll vào là khớp.
-         return {x:Math.max(b.left+window.scrollX-16,0),
-                 y:Math.max(b.top+window.scrollY-16,0),
-                 width:Math.min(b.width+32, window.innerWidth),
-                 height:Math.min(b.height+32, window.innerHeight)}`)
+         return {x:Math.max(l+window.scrollX-16,0),
+                 y:Math.max(t+window.scrollY-16,0),
+                 width:Math.min(ph-l+32, window.innerWidth),
+                 height:Math.min(d-t+32, window.innerHeight)}`)
       // scale PHẢI là 1: deviceScaleFactor đã cho ảnh gấp đôi rồi. Để scale=2 ở
       // đây là nhân hai lần, ảnh phóng to gấp bốn và cắt mất nửa nội dung.
       if (r) clip = { ...r, scale: 1 }
+
+      // Ô đánh số nằm NGOÀI vùng cắt thì ảnh ra thiếu ô đó, mà tài liệu vẫn chú
+      // giải "① là …" — người đọc dò mãi không thấy. Đã dính đúng lỗi này ở hai
+      // ảnh màn hình đăng nhập: cắt theo <form> nên mất hẳn ô ① là cái thẻ chọn
+      // Học sinh / Giáo viên nằm trên form. Báo ngay lúc chụp, đừng để lọt vào
+      // file Word rồi mới phát hiện.
+      if (clip && khung.length) {
+        const ngoai = await chay(
+          `const c=${JSON.stringify({ x: clip.x, y: clip.y, w: clip.width, h: clip.height })};
+           return [...document.querySelectorAll('.__anno')].filter(e=>{
+             const b=e.getBoundingClientRect();
+             const x=b.left+window.scrollX, y=b.top+window.scrollY;
+             return x < c.x - 1 || y < c.y - 1
+                 || x + b.width > c.x + c.w + 1 || y + b.height > c.y + c.h + 1;
+           }).map(e=>e.firstChild.textContent)`)
+        if (ngoai?.length) {
+          console.warn(`   ! ${ten}: ô ${ngoai.join(', ')} nằm ngoài vùng cắt — ảnh sẽ thiếu ô đó.`)
+        }
+      }
       if (process.env.SHOOT_DEBUG) console.log('     do:', JSON.stringify(r),
         'vh=', await chay('return window.innerHeight'))
     }
