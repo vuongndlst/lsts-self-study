@@ -36,10 +36,20 @@ const chu = (text, o = {}) => new TextRun({
 })
 
 // Cho phép viết "Bấm **Lưu kết quả** rồi đóng" — in đậm chen giữa câu mà không
-// phải tự tay tách thành nhiều TextRun.
+// phải tự tay tách thành nhiều TextRun. Một dấu sao là in nghiêng: *Trễ hạn*.
+//
+// Phải tách ** TRƯỚC rồi mới tách *, không thì "**đậm**" bị hiểu thành hai lần
+// nghiêng rỗng. Quên chỗ này thì dấu sao hiện nguyên trong tài liệu — đã dính.
 function chuoi(text, o = {}) {
-  return String(text).split(/\*\*/).map((phan, i) =>
-    chu(phan, { ...o, bold: o.bold || i % 2 === 1 }))
+  const ra = []
+  String(text).split(/\*\*/).forEach((phan, i) => {
+    const dam = o.bold || i % 2 === 1
+    phan.split(/\*/).forEach((p, j) => {
+      if (p === '') return
+      ra.push(chu(p, { ...o, bold: dam, italics: o.italics || j % 2 === 1 }))
+    })
+  })
+  return ra.length ? ra : [chu('', o)]
 }
 
 const doan = (text, o = {}) => new Paragraph({

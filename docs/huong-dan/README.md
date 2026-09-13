@@ -13,8 +13,9 @@ node scripts/db.mjs . scripts/demo-class-data.sql
 # máy chủ phải chạy BẢN BUILD (không phải dev): cổng 4173
 npm run build && npm run preview -- --port 4173
 
-DEMO_MK=<mật khẩu học sinh> node scripts/shoot-hs.mjs    # chụp 17 ảnh
-node scripts/docx-hs.cjs                                  # dựng file Word
+DEMO_MK=<mật khẩu học sinh> node scripts/shoot-hs.mjs    # 17 ảnh bản học sinh
+GV_MK=<mật khẩu giáo viên>  node scripts/shoot-gv.mjs    # 24 ảnh bản giáo viên
+npm run docs-word                                         # dựng cả hai file Word
 
 node scripts/demo-class.mjs --down        # xoá sạch lớp minh hoạ
 ```
@@ -35,3 +36,19 @@ Tài liệu có hàng chục hình. Giao diện đổi một chút là phải ch
 chụp tay thì lần sau không ai làm nổi. `scripts/shoot.mjs` lái Chrome qua
 DevTools Protocol (không cài thêm gói nào), và vẽ khung đánh số **ngay trong
 trang** trước khi chụp, nên khung luôn đúng vị trí thật.
+
+## Vì sao dựng file Word hai lượt
+
+Trường mục lục của Word chỉ có nội dung sau khi Word tự cập nhật trường — chuyển
+sang PDF thì ra một **trang trắng**. Tài liệu này gửi cho hàng chục giáo viên, ai
+mở bằng gì cũng phải thấy mục lục, nên mục lục được dựng tĩnh: lượt đầu đo xem
+mỗi mục rơi vào trang nào, lượt sau ghi số trang thật vào.
+
+Hệ quả: bộ đếm hình phải tạo mới trong mỗi lượt, nếu không lượt hai đếm tiếp và
+cả tài liệu ghi "Hình 18" tới "Hình 34".
+
+## Video
+
+Quay được, chưa làm. `scripts/quay.mjs` đã có sẵn phần ghi hình (Page.startScreencast
+→ ffmpeg), phụ đề và con trỏ chuột vẽ tay. Máy chỉ có giọng đọc tiếng Anh nên video
+sẽ không tiếng, kèm file `.srt` riêng để đưa vào công cụ lồng tiếng.

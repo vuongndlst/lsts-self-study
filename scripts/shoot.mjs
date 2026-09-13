@@ -67,16 +67,20 @@ function noiCDP(url) {
   const sock = new WebSocket(url)
   let id = 0
   const cho = new Map()
-  const nghe = new Map()
+  const nghe = new Map()       // nghe một lần rồi bỏ
+  const nghemai = new Map()    // nghe suốt — dùng cho luồng khung hình khi quay
   const sanSang = new Promise((ok) => sock.addEventListener('open', ok))
   sock.addEventListener('message', (e) => {
     const m = JSON.parse(e.data)
     if (m.id && cho.has(m.id)) {
       const { ok, loi } = cho.get(m.id); cho.delete(m.id)
       m.error ? loi(new Error(m.error.message)) : ok(m.result)
-    } else if (m.method && nghe.has(m.method)) {
-      nghe.get(m.method).forEach((f) => f(m.params))
-      nghe.delete(m.method)
+    } else if (m.method) {
+      if (nghemai.has(m.method)) nghemai.get(m.method).forEach((f) => f(m.params))
+      if (nghe.has(m.method)) {
+        nghe.get(m.method).forEach((f) => f(m.params))
+        nghe.delete(m.method)
+      }
     }
   })
   return {
@@ -90,6 +94,10 @@ function noiCDP(url) {
       if (!nghe.has(method)) nghe.set(method, [])
       nghe.get(method).push(ok)
     }),
+    nghe: (method, fn) => {
+      if (!nghemai.has(method)) nghemai.set(method, [])
+      nghemai.get(method).push(fn)
+    },
     dong: () => sock.close(),
   }
 }
@@ -137,6 +145,19 @@ window.__khung = (items) => {
 window.__xoaKhung = () => document.querySelectorAll('.__anno').forEach(e => e.remove());
 window.__nut = (t) => [...document.querySelectorAll('button,a')]
   .find(b => b.textContent.trim().includes(t));
+// Đánh dấu khối cần cắt bằng NỘI DUNG chữ bên trong. Nhiều trang có vài khối
+// cùng class .card.sched-card, chọn theo thứ tự thì đổi bố cục một cái là cắt
+// nhầm khối khác. Lấy khối NHỎ NHẤT có chứa chữ đó — khối lớn hơn bao giờ cũng
+// là cả trang.
+window.__danhDau = (chua, sel = '.card,.section-block,.bell-panel') => {
+  const cu = document.getElementById('__muc');
+  if (cu) cu.removeAttribute('id');
+  const el = [...document.querySelectorAll(sel)]
+    .filter(e => e.textContent.includes(chua))
+    .sort((a, b) => a.textContent.length - b.textContent.length)[0];
+  if (el) el.id = '__muc';
+  return !!el;
+};
 window.__dat = (el, v) => {
   const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
   set.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true }));
@@ -244,7 +265,7 @@ export async function taoTrinh() {
   }
 
   return {
-    den, chay, chup, doiChu,
+    cdp, den, chay, chup, doiChu,
     cuon: (y) => chay(`window.scrollTo(0, ${y}); return 1`),
     cuonToi: (sel) => chay(
       `const e=document.querySelector(${JSON.stringify(sel)}); if(e) e.scrollIntoView({block:'center'}); return !!e`),

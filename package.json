@@ -13,8 +13,8 @@
     "classes": "node scripts/setup-class.mjs --list",
     "regress": "node scripts/regress.mjs",
     "demo-class": "node scripts/demo-class.mjs",
-    "docs-chup": "node scripts/shoot-hs.mjs",
-    "docs-word": "node scripts/docx-hs.cjs"
+    "docs-chup": "node scripts/shoot-hs.mjs && node scripts/shoot-gv.mjs",
+    "docs-word": "node scripts/docx-hs.cjs && node scripts/docx-gv.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.2",
