@@ -11,7 +11,10 @@
     "create-teacher": "node scripts/create-teacher.mjs",
     "setup-class": "node scripts/setup-class.mjs",
     "classes": "node scripts/setup-class.mjs --list",
-    "regress": "node scripts/regress.mjs"
+    "regress": "node scripts/regress.mjs",
+    "demo-class": "node scripts/demo-class.mjs",
+    "docs-chup": "node scripts/shoot-hs.mjs",
+    "docs-word": "node scripts/docx-hs.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.2",
@@ -22,6 +25,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "4.7.0",
+    "docx": "^9.7.1",
     "vite": "6.4.3"
   }
 }
