@@ -65,8 +65,21 @@ try {
 
   if (nen('gv-04')) {
     await tab('Theo kế hoạch')
+    // Lọc còn vài dòng. Chụp cả bảng 12 dòng thì ảnh cao 1900 px, nhét vào trang
+    // A4 phải thu còn 29% — bảng chữ nhỏ li ti, in ra không ai đọc được. Bảng
+    // 4–5 dòng minh hoạ đủ mà vẫn giữ được cỡ chữ.
+    await t.chay(`
+      const s = [...document.querySelectorAll('select')]
+        .find(e => e.options && [...e.options].some(o => o.textContent.includes('Tất cả học sinh')));
+      if (!s) return false;
+      const o = [...s.options].find(o => o.textContent.includes('Bùi Gia Hân'));
+      if (!o) return false;
+      const set = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+      set.call(s, o.value); s.dispatchEvent(new Event('change', { bubbles: true }));
+      return true`)
+    await doi(1600)
     await t.cuonToi('.card.table-card')
-    await t.chup('gv-04-bang-ke-hoach', { chon: '.card.table-card', cao: 1900 })
+    await t.chup('gv-04-bang-ke-hoach', { chon: '.card.table-card', cao: 1500 })
   }
 
   if (nen('gv-05')) {
@@ -77,15 +90,33 @@ try {
     await dongCuaSo()
   }
 
-  if (nen('gv-06')) {
+  if (nen('gv-06') || nen('gv-06b')) {
     await tab('Theo kế hoạch')
-    // Chọn vài kế hoạch để thanh thao tác hàng loạt hiện lên.
-    await t.chay(`
-      const o = [...document.querySelectorAll('.card.table-card input[type=checkbox]')].slice(1, 5);
-      o.forEach(c => { if (!c.checked) c.click() }); return o.length`)
-    await doi(900)
-    await t.cuonToi('.bulk-bar')
-    await t.chup('gv-06-cham-sao-hang-loat', { chon: '.bulk-bar', cao: 1200 })
+    // Bấm đúng nút "Chọn N chờ chấm sao". Tích bừa vài dòng đầu bảng thì trúng
+    // toàn bài CHỜ DUYỆT, thanh thao tác hiện nút Duyệt chứ không hiện nút chấm
+    // sao — đúng thứ mục này cần minh hoạ lại không có trong ảnh.
+    const co = await t.chay(`
+      const b = [...document.querySelectorAll('button')]
+        .find(e => e.textContent.includes('chờ chấm sao'));
+      if (b) b.click(); return !!b`)
+    if (!co) console.warn('   ! không thấy nút "Chọn N chờ chấm sao"')
+    await doi(1100)
+    if (nen('gv-06')) {
+      await t.cuonToi('.bulk-bar')
+      await t.chup('gv-06-cham-sao-hang-loat', { chon: '.bulk-bar', cao: 1200, khung: [
+        { sel: '.bulk-bar button', text: 'Chấm sao', n: 1 },
+      ] })
+    }
+    if (nen('gv-06b')) {
+      await t.chay(`
+        const b = [...document.querySelectorAll('.bulk-bar button')]
+          .find(e => e.textContent.includes('Chấm sao'));
+        if (b) b.click(); return !!b`)
+      await doi(1400)
+      const mo = await t.chay(`return !!document.querySelector('.modal')`)
+      if (mo) { await t.chup('gv-06b-cua-so-cham-hang-loat', { chon: '.modal', cao: 2000 }); await dongCuaSo() }
+      else console.warn('   ! không mở được cửa sổ chấm sao hàng loạt')
+    }
   }
 
   // ======================= Theo học sinh · Phân tích =======================

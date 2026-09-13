@@ -127,9 +127,13 @@ try {
     await doi(1400)
     if (nen('hs-09')) await t.chup('hs-09-cap-nhat-ket-qua', { chon: '.modal', cao: 2200 })
     if (nen('hs-10')) {
-      await t.chay(`document.querySelector('.modal')?.scrollTo(0, 99999); return 1`)
-      await doi(500)
-      await t.chup('hs-10-minh-chung', { chon: '.modal', cao: 2200 })
+      // Chỉ khối đính kèm, không chụp lại cả cửa sổ. Màn hình ảo nay đủ cao nên
+      // cả cửa sổ lọt vào một ảnh — chụp thêm lần nữa là ra đúng tấm vừa chụp.
+      //
+      // Bám thẳng vào class của khối, KHÔNG dò theo chữ: __danhDau lấy phần tử
+      // nhỏ nhất chứa chữ đó, mà nhỏ nhất chính là dòng tiêu đề — ảnh ra đúng
+      // một dòng chữ, không có nội dung nào.
+      await t.chup('hs-10-minh-chung', { chon: '.modal .evidence-block', cao: 2200 })
     }
   }
 
@@ -183,7 +187,11 @@ try {
     await vao(EM.guongMau)
     await dongPopup()
     await t.den('/#/books', 'Chia sẻ sách')
-    await t.chup('hs-16-ket-qua-ca-lop', { cao: 1500 })
+    // Cắt vào đúng bảng kết quả. Chụp cả màn hình cao 1500 thì nhét vào trang A4
+    // phải thu còn 36% cỡ thật, chữ trong bảng bé không đọc được.
+    await t.chay(`return window.__danhDau('Kết quả chia sẻ sách')`)
+    await doi(400)
+    await t.chup('hs-16-ket-qua-ca-lop', { chon: '#__muc', cao: 1300 })
   }
 
   // ---------- Hỏi giáo viên ----------

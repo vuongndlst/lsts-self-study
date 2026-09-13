@@ -17,8 +17,18 @@ const {
 const PHONG = 'Arial'
 const MUC = { xanh: '1C4E80', cam: 'C05621', xam: '5A6472', den: '1A1A1A' }
 
-// Khổ A4, lề 2,5 cm → bề ngang chữ 16 cm. Ảnh rộng nhất cũng chỉ tới đó.
-const RONG_ANH = 605      // 16 cm quy ra điểm ảnh ở 96 dpi
+// Khổ A4, lề 2,5 cm → khung chữ 16 × 24,7 cm, tức 605 × 933 điểm ảnh ở 96 dpi.
+//
+// Ảnh KHÔNG được lấp hết chiều cao đó. Chỉ giới hạn bề ngang thôi thì một ảnh
+// cao như cửa sổ bật lên sẽ chiếm trọn một trang, lật sang trang sau mới thấy
+// chú thích — đọc rất mệt. Giới hạn cả hai chiều, ảnh luôn còn chỗ cho chú
+// thích và vài dòng chữ bên dưới.
+//
+// Ảnh NGANG thì bề ngang quyết định, ảnh DỌC thì chiều cao quyết định. Ảnh vừa
+// rộng vừa cao (bảng nhiều dòng) sẽ bị thu quá nhỏ để đọc — với những ảnh đó
+// phải chụp lại cho ngắn bớt, chứ không phải ép nó vào khung.
+const RONG_ANH = 605      // = 16 cm, trọn bề ngang khung chữ
+const CAO_ANH  = 545      // ≈ 14,4 cm, tức nhiều nhất 58% chiều cao trang
 
 // Đọc kích thước PNG từ 24 byte đầu — khỏi kéo thêm thư viện ảnh chỉ để biết
 // mỗi chiều rộng và chiều cao.
@@ -88,15 +98,21 @@ const gach = (text) => new Paragraph({
 function taoDemHinh() {
   let n = 0
   return {
-    hinh(tep, chuThich, { rong = RONG_ANH } = {}) {
+    hinh(tep, chuThich, { rong = RONG_ANH, cao = CAO_ANH } = {}) {
       if (!fs.existsSync(tep)) throw new Error(`Thiếu ảnh: ${tep}`)
       const { rong: rw, cao: rh } = coPng(tep)
-      const w = Math.min(rong, rw / 2)          // ảnh chụp ở 2x, chia đôi là cỡ thật
-      const h = Math.round((rh / rw) * w)
+      // Ảnh chụp ở 2x nên cỡ thật là một nửa; rồi thu vừa khung, giữ nguyên tỉ
+      // lệ — thu nhỏ chứ không cắt xén.
+      const ty = Math.min(rong / (rw / 2), cao / (rh / 2), 1)
+      const w = Math.round((rw / 2) * ty)
+      const h = Math.round((rh / 2) * ty)
       n++
       return [
         new Paragraph({
           alignment: AlignmentType.CENTER, spacing: { before: 200, after: 60 },
+          // keepNext: giữ ảnh dính với dòng chú thích ngay dưới. Không có nó thì
+          // Word đẩy "Hình 7 — …" sang trang sau, thành ra hình một nơi tên một nẻo.
+          keepNext: true, keepLines: true,
           children: [new ImageRun({
             type: 'png', data: fs.readFileSync(tep),
             transformation: { width: w, height: h },
@@ -104,6 +120,7 @@ function taoDemHinh() {
         }),
         new Paragraph({
           alignment: AlignmentType.CENTER, spacing: { after: 220 },
+          keepNext: true,
           children: [
             chu(`Hình ${n} — `, { size: 19, bold: true, color: MUC.xam }),
             ...chuoi(chuThich, { size: 19, color: MUC.xam, italics: true }),
