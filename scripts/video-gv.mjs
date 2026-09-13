@@ -1,13 +1,17 @@
-// Bảy đoạn video hướng dẫn cho giáo viên.
+// Video hướng dẫn cho giáo viên: bảy phân đoạn, ghép thành MỘT cuốn phim.
 //
-//   GV_MK=<mật khẩu> node scripts/video-gv.mjs         quay tất cả
-//   GV_MK=<mật khẩu> node scripts/video-gv.mjs 4       chỉ quay đoạn 4
+//   GV_MK=<mật khẩu> node scripts/video-gv.mjs         quay tất cả rồi ghép
+//   GV_MK=<mật khẩu> node scripts/video-gv.mjs 4       chỉ quay lại đoạn 4
 //
-// Mỗi đoạn một việc, dài 30–60 giây. Cố ý KHÔNG gộp thành một video dài: thầy cô
-// cần tra một chức năng thì mở đúng đoạn đó, không phải tua hai mươi phút.
+// Ra ba thứ:
+//   · Toan-bo-huong-dan-giao-vien.mp4 — bản gộp, mỗi phân đoạn có thẻ tên mở
+//     đầu, một nền nhạc chạy suốt từ đầu tới cuối;
+//   · bảy tệp .mp4 rời — thầy cô cần tra một chức năng thì mở đúng đoạn đó,
+//     không phải tua cả cuốn;
+//   · .srt đi kèm từng thứ, để đưa vào công cụ lồng tiếng.
 //
-// Mỗi đoạn ra hai tệp: .mp4 (phụ đề in sẵn, nhạc nền, tiếng click) và .srt rời
-// để đưa vào công cụ lồng tiếng.
+// Quay MỘT lần, dựng hai bản. Nhạc không nướng sẵn vào từng đoạn: nếu nướng thì
+// nối bảy đoạn lại sẽ nghe nhạc vào rồi tắt bảy lần.
 //
 // Máy chủ phải chạy bản build ở http://localhost:4173, và lớp minh hoạ 8A0 phải
 // có dữ liệu (xem docs/huong-dan/README.md).
@@ -15,19 +19,30 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { taoTrinh, dangNhap, doi } from './shoot.mjs'
-import { taoMayQuay, taoKichBan, LOP_PHU } from './quay.mjs'
+import { taoMayQuay, taoKichBan, LOP_PHU, longAm, noiDoan, doDai,
+         theThanhDoan, vietSrt, HTML_THE, HTML_BIA } from './quay.mjs'
 
-const MK = process.env.GV_MK
-if (!MK) throw new Error('Đặt GV_MK=<mật khẩu giáo viên lớp mẫu> trước khi chạy.')
 const TK = process.env.GV_TK || 'gv.minhhoa@lsts.edu.vn'
 const RA = 'docs/huong-dan/video'
 const TAM = process.env.TAM || path.join(process.env.TEMP || '.', 'quay-tam')
+const SO_TAY = path.join(TAM, 'so-tay.json')
 
-const loc = process.argv[2] ?? ''
+const doiSo = process.argv[2] ?? ''
+// Trộn lại tiếng từ nguyên liệu lần quay trước — không mở trình duyệt, không
+// quay lại gì cả. Chỉnh nhạc to nhỏ mà phải quay lại sáu phút thì không ai
+// chỉnh, nên giữ lại hình câm và sổ tay mốc thời gian để làm việc này.
+// --tron : trộn lại tiếng (đổi nhạc, đổi âm lượng)
+// --ghep : dựng lại thẻ tên rồi nối và trộn lại — đổi chữ trên thẻ thì dùng cái
+//          này, chỉ mở trình duyệt để chụp thẻ, không quay lại màn hình nào.
+const chiTronLai = doiSo === '--tron'
+const chiGhepLai = doiSo === '--ghep'
+const khongQuay = chiTronLai || chiGhepLai
+const loc = khongQuay ? '' : doiSo
 
-const t = await taoTrinh()
-const may = taoMayQuay(t.cdp, TAM)
-const K = taoKichBan(t, may)
+const MK = process.env.GV_MK
+if (!MK && !khongQuay) throw new Error('Đặt GV_MK=<mật khẩu giáo viên lớp mẫu> trước khi chạy.')
+
+let t, may, K
 
 const tab = async (ten, cho = null) => {
   await t.chay(`window.__nut(${JSON.stringify(ten)})?.click(); return 1`)
@@ -56,7 +71,7 @@ const veTrangChu = async () => {
 
 const DOAN = [
   // ======================================================================= 1
-  ['1-nhap-danh-sach-lop', 'Đầu năm: nhập danh sách lớp', async () => {
+  ['1-nhap-danh-sach-lop', 'Đầu năm: nhập danh sách lớp', 'Thẻ Học sinh · nhập danh sách từ Excel · đọc bản xem trước rồi mới nhập.', async () => {
     await veTrangChu()
     await may.bat()
     await K.noi('Việc đầu tiên của năm học: đưa danh sách lớp vào hệ thống.')
@@ -76,7 +91,7 @@ const DOAN = [
   }],
 
   // ======================================================================= 2
-  ['2-lich-tu-hoc-va-moc-hoc-ky', 'Đầu năm: lịch tự học và mốc học kỳ', async () => {
+  ['2-lich-tu-hoc-va-moc-hoc-ky', 'Đầu năm: lịch tự học và mốc học kỳ', 'Khai lịch tự học cố định · hai công tắc luật đăng ký · mốc học kỳ và quyền miễn trừ.', async () => {
     await veTrangChu()
     await may.bat()
     await K.noi('Việc quan trọng nhất khi thiết lập: khai lịch tự học của lớp.')
@@ -100,7 +115,7 @@ const DOAN = [
   }],
 
   // ======================================================================= 3
-  ['3-viec-hang-ngay', 'Việc hằng ngày', async () => {
+  ['3-viec-hang-ngay', 'Việc hằng ngày', 'Xem ai chưa đăng ký · miễn buổi cho cả lớp hoặc cho một em.', async () => {
     await veTrangChu()
     await may.bat()
     await K.noi('Mỗi ngày thầy cô chỉ mất chừng năm phút.')
@@ -121,7 +136,7 @@ const DOAN = [
   }],
 
   // ======================================================================= 4
-  ['4-cham-sao', 'Chấm sao', async () => {
+  ['4-cham-sao', 'Chấm sao', 'Chấm từng bài · chấm hàng loạt · nhận xét chung không đè nhận xét riêng.', async () => {
     await veTrangChu()
     await may.bat()
     await K.noi('Hằng tuần, việc chính của thầy cô là chấm sao.')
@@ -147,7 +162,7 @@ const DOAN = [
   }],
 
   // ======================================================================= 5
-  ['5-ky-luat-va-thu-phu-huynh', 'Kỷ luật và thư phụ huynh', async () => {
+  ['5-ky-luat-va-thu-phu-huynh', 'Kỷ luật và thư phụ huynh', 'Bảng kỷ luật · sổ lao động công ích · soạn sẵn thư rồi mở Outlook.', async () => {
     await veTrangChu()
     await may.bat()
     await K.noi('Em không đăng ký gì vào ngày có tiết tự học thì bị ghi một lần quên.')
@@ -178,7 +193,7 @@ const DOAN = [
   }],
 
   // ======================================================================= 6
-  ['6-chia-se-sach', 'Chia sẻ sách', async () => {
+  ['6-chia-se-sach', 'Chia sẻ sách', 'Xếp lịch cả năm · hạn nộp tự tính · trang kết quả cả lớp cùng xem.', async () => {
     await veTrangChu()
     await may.bat()
     await K.noi('Phần chia sẻ sách chỉ hiện khi người quản trị đã cấp cho lớp.')
@@ -198,7 +213,7 @@ const DOAN = [
   }],
 
   // ======================================================================= 7
-  ['7-giao-viec-can-su', 'Giao việc cho cán sự', async () => {
+  ['7-giao-viec-can-su', 'Giao việc cho cán sự', 'Cấp từng quyền riêng · cán sự thấy gì và không được thấy gì.', async () => {
     await veTrangChu()
     await may.bat()
     await K.noi('Thầy cô giao được một phần việc cho học sinh trong lớp.')
@@ -213,22 +228,177 @@ const DOAN = [
   }],
 ]
 
+
+const TUA = DOAN.map(([, nhan]) => nhan)
+
+// Vẽ thẻ tên bằng chính trình duyệt đang quay: dấu tiếng Việt chắc chắn đúng,
+// và thẻ trông cùng một nhà với hai tài liệu Word.
+const veThe = async (html, tep) => {
+  await t.cdp.goi('Page.navigate', { url: 'about:blank' })
+  await doi(300)
+  await t.chay(`document.open(); document.write(${JSON.stringify(html)}); document.close(); return 1`)
+  await doi(500)
+  const { data } = await t.cdp.goi('Page.captureScreenshot', { format: 'png' })
+  fs.mkdirSync(path.dirname(tep), { recursive: true })
+  fs.writeFileSync(tep, Buffer.from(data, 'base64'))
+  return tep
+}
+
+
+const DAI_BIA = 5.4     // thẻ mở đầu có danh sách bảy phần, cần thời gian đọc
+const DAI_THE = 2.8
+const RA_GOP = path.join(RA, 'Toan-bo-huong-dan-giao-vien.mp4')
+
 fs.mkdirSync(RA, { recursive: true })
+fs.mkdirSync(TAM, { recursive: true })
+
+// ---------------------------------------------------------------------------
+//  Ghép bảy đoạn thành một cuốn
+// ---------------------------------------------------------------------------
+// Nhận nguyên liệu đã có (hình câm + mốc thời gian), nên dùng được cả ngay sau
+// khi quay lẫn lúc dựng lại từ sổ tay của lần quay trước.
+async function ghepTatCa(ds) {
+  process.stdout.write('\n▶ Ghép thành một cuốn\n')
+  const manh = []          // các mảnh hình câm, theo đúng thứ tự nối
+  const mocClick = []      // mốc từng cú bấm, tính từ đầu cuốn phim
+  const phuDe = []         // { t, chu } — để xuất .srt cho cả cuốn
+  let moc = 0
+
+  // Thời lượng in trên bìa phải TÍNH RA, không viết tay — và phải tính từ
+  // thời lượng ĐO ĐƯỢC của từng mảnh. Viết tay thì sai (đã ghi "khoảng bốn
+  // phút" cho một cuốn dài năm phút rưỡi), mà cộng con số dự tính thì cũng
+  // vẫn thiếu, vì mỗi đoạn còn giữ khung cuối thêm hơn một giây.
+  const tongGiay = DAI_BIA + DAI_THE * ds.length
+    + ds.reduce((a, d) => a + doDai(d.tep), 0)
+
+  const bia = theThanhDoan(
+    await veThe(HTML_BIA({
+      tua: 'Hướng dẫn sử dụng hệ thống',
+      phu: `${ds.length} phần · khoảng ${Math.round(tongGiay / 60)} phút`
+         + ' · không lời, có phụ đề',
+      muc: ds.map((d) => d.nhan),
+    }), path.join(TAM, 'the-0.png')),
+    path.join(TAM, 'the-0.mp4'), DAI_BIA)
+  manh.push(bia)
+  phuDe.push({ t: 0, chu: 'Hướng dẫn sử dụng hệ thống quản lý giờ tự học, dành cho giáo viên.' })
+  // Đo thời lượng THẬT của tệp vừa dựng thay vì cộng dồn con số dự tính: cộng
+  // dồn thì sai số tích lại, tới đoạn cuối là tiếng click lệch khỏi cú bấm.
+  moc += doDai(bia)
+
+  for (let i = 0; i < ds.length; i++) {
+    const d = ds[i]
+    const the = theThanhDoan(
+      await veThe(HTML_THE({ so: i + 1, tong: ds.length, tua: d.nhan, phu: d.phu }),
+        path.join(TAM, `the-${i + 1}.png`)),
+      path.join(TAM, `the-${i + 1}.mp4`), DAI_THE)
+    manh.push(the)
+    phuDe.push({ t: moc, chu: `Phần ${i + 1}: ${d.nhan}.` })
+    moc += doDai(the)
+
+    manh.push(d.tep)
+    for (const c of d.mocClick) mocClick.push(moc + c)
+    for (const pd of d.phuDe) phuDe.push({ t: moc + pd.t, chu: pd.chu })
+    moc += doDai(d.tep)
+  }
+
+  const cam = noiDoan(manh, path.join(TAM, 'gop-cam.mp4'), TAM)
+  const daiThat = doDai(cam)
+  longAm(cam, RA_GOP, { moc: mocClick, dai: daiThat, tam: TAM })
+  const soDong = vietSrt(RA_GOP.replace(/\.mp4$/, '.srt'), phuDe, daiThat)
+
+  const phut = Math.floor(daiThat / 60), giay = Math.round(daiThat % 60)
+  console.log(`   ${phut} phút ${String(giay).padStart(2, '0')}s · ${manh.length} mảnh`
+    + ` · ${mocClick.length} tiếng click · ${soDong} dòng phụ đề`
+    + ` · ${(fs.statSync(RA_GOP).size / 1048576).toFixed(1)} MB`)
+  console.log(`   ✓ ${RA_GOP}`)
+  return { cam, dai: daiThat, mocClick }
+}
+
+const docSoTay = () => {
+  if (!fs.existsSync(SO_TAY)) {
+    throw new Error(`Không thấy ${SO_TAY}. Phải quay đủ một lượt trước đã.`)
+  }
+  return JSON.parse(fs.readFileSync(SO_TAY, 'utf8'))
+}
+
+// ---------------------------------------------------------- chỉ trộn lại tiếng
+if (chiTronLai) {
+  const st = docSoTay()
+  for (const d of st.doan) {
+    longAm(d.tep, path.join(RA, `${d.ten}.mp4`), { moc: d.mocClick, dai: d.dai, tam: TAM })
+    console.log(`   ✓ ${d.ten}.mp4`)
+  }
+  longAm(st.gop.cam, RA_GOP, { moc: st.gop.mocClick, dai: st.gop.dai, tam: TAM })
+  console.log(`   ✓ ${RA_GOP}`)
+  console.log('')
+  console.log('Đã trộn lại tiếng, hình quay màn hình giữ nguyên.')
+  process.exit(0)
+}
+
+// ------------------------------------------- dựng lại thẻ tên rồi ghép lại
+if (chiGhepLai) {
+  const st = docSoTay()
+  t = await taoTrinh()
+  try {
+    st.gop = await ghepTatCa(st.doan)
+    fs.writeFileSync(SO_TAY, JSON.stringify(st, null, 2))
+  } finally {
+    await t.dong()
+  }
+  console.log('')
+  console.log('Đã dựng lại thẻ tên và ghép lại, không quay lại đoạn nào.')
+  process.exit(0)
+}
+
+// ---------------------------------------------------------------------- quay
+t = await taoTrinh()
+may = taoMayQuay(t.cdp, TAM)
+K = taoKichBan(t, may)
+
+const soTay = { doan: [], gop: null }
 const ketQua = []
 try {
   await dangNhap(t, { vai: 'gv', tk: TK, mk: MK })
-  for (const [ten, nhan, chay] of DOAN) {
+
+  for (const [ten, nhan, phu, chay] of DOAN) {
     if (loc && !ten.startsWith(loc)) continue
     process.stdout.write(`\n▶ ${nhan}\n`)
     await chay()
     await may.tat()
-    const r = await may.xuat(path.join(RA, ten + '.mp4'))
-    console.log(`   ${r.giay}s · ${r.click} tiếng click · ${r.phuDe} dòng phụ đề · ${r.mb} MB`)
-    ketQua.push({ ten, ...r })
+    const r = await may.ghiDoan(path.join(TAM, `cam-${ten}.mp4`))
+
+    // Bản rời: nhạc vào đầu đoạn, tắt cuối đoạn.
+    longAm(r.tep, path.join(RA, `${ten}.mp4`), { moc: r.mocClick, dai: r.dai, tam: TAM })
+    const soDong = vietSrt(path.join(RA, `${ten}.srt`), r.phuDe, r.dai)
+    const mb = (fs.statSync(path.join(RA, `${ten}.mp4`)).size / 1048576).toFixed(1)
+    console.log(`   ${r.dai.toFixed(1)}s · ${r.mocClick.length} tiếng click`
+      + ` · ${soDong} dòng phụ đề · ${mb} MB`)
+    // Sổ tay giữ đủ thứ cần để dựng lại mọi thứ SAU khâu quay: đổi nhạc, đổi
+    // chữ trên thẻ tên, xếp lại thứ tự — đều không phải quay lại.
+    ketQua.push({ ten, nhan, phu, ...r })
+    soTay.doan.push({ ten, nhan, phu, tep: r.tep, dai: r.dai,
+                      mocClick: r.mocClick, phuDe: r.phuDe })
   }
+
+  if (loc) {
+    console.log('\n(Chỉ quay lại một đoạn nên không dựng lại bản gộp.'
+      + ' Chạy `node scripts/video-gv.mjs --ghep` để ghép lại từ nguyên liệu.)')
+  } else {
+    soTay.gop = await ghepTatCa(ketQua)
+  }
+  fs.writeFileSync(SO_TAY, JSON.stringify(soTay, null, 2))
 } finally {
-  await t.dong()
+  if (t) await t.dong()
+  // Chỉ dọn ảnh thẻ tên. Hình câm và sổ tay thì GIỮ, để lần sau đổi nhạc hay
+  // đổi chữ trên thẻ chỉ mất vài chục giây thay vì quay lại bảy phút.
+  for (const f of fs.existsSync(TAM) ? fs.readdirSync(TAM) : []) {
+    if (/^the-\d+\.png$/.test(f) || f === 'noi.txt') {
+      try { fs.rmSync(path.join(TAM, f), { force: true }) } catch {}
+    }
+  }
 }
 
 console.log(`\nXong ${ketQua.length} đoạn, tổng ${
-  ketQua.reduce((a, b) => a + Number(b.giay), 0).toFixed(0)}s.`)
+  ketQua.reduce((a, b) => a + b.dai, 0).toFixed(0)}s hình quay màn hình.`)
+console.log(`Nguyên liệu giữ ở ${TAM} —`
+  + ' `--tron` để đổi nhạc, `--ghep` để đổi chữ trên thẻ tên. Không phải quay lại.')
