@@ -59,7 +59,10 @@ try {
     await t.den('/#/login', 'Học sinh')
     await t.chay(`window.__nut('Học sinh')?.click(); return 1`)
     await doi(500)
-    await t.chup('hs-03-dang-nhap', { chon: 'form', khung: [
+    // Cắt theo .auth-card chứ không phải form: hai thẻ "Học sinh" / "Giáo viên"
+    // nằm NGOÀI form. Cắt theo form thì chú thích dặn "nhớ chọn đúng thẻ Học
+    // sinh" mà trong ảnh chẳng có cái thẻ nào.
+    await t.chup('hs-03-dang-nhap', { chon: ['.segmented', 'form'], khung: [
       { sel: 'input', idx: 0, n: 1 },
       { sel: 'input[type=password]', idx: 0, n: 2 },
       { sel: 'button', text: 'Đăng nhập học sinh', n: 3 },

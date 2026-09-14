@@ -1,0 +1,27 @@
+1
+00:00:00,000 --> 00:00:03,612
+Đăng nhập xong, tất cả những gì em cần đều nằm ở màn hình này.
+
+2
+00:00:03,612 --> 00:00:07,229
+Nút xanh đậm này để đăng ký một buổi tự học mới.
+
+3
+00:00:07,229 --> 00:00:09,644
+Thẻ điểm danh cho biết học kỳ này em đã quên đăng ký mấy lần.
+
+4
+00:00:09,644 --> 00:00:13,264
+Và còn mấy lần được miễn trừ.
+
+5
+00:00:13,264 --> 00:00:15,679
+Dải bộ lọc nhanh: bấm một cái là hiện đúng nhóm nhiệm vụ đó.
+
+6
+00:00:15,679 --> 00:00:18,091
+Mỗi lần vào trang, em nhìn hai con số: Trễ hạn và Cần viết phản hồi.
+
+7
+00:00:18,091 --> 00:00:20,508
+Hai con số đó bằng không nghĩa là em không nợ việc gì.

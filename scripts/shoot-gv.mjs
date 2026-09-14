@@ -39,7 +39,9 @@ try {
     await t.den('/#/login', 'Đăng nhập')
     await t.chay(`window.__nut('Giáo viên')?.click(); return 1`)
     await doi(600)
-    await t.chup('gv-01-dang-nhap', { chon: 'form', khung: [
+    // Cắt theo .auth-card chứ không phải form: ô ① là THẺ "Giáo viên", nằm
+    // ngoài form. Cắt theo form thì ảnh mất hẳn ô ① mà lời dẫn vẫn chỉ vào nó.
+    await t.chup('gv-01-dang-nhap', { chon: ['.segmented', 'form'], khung: [
       { sel: 'button', text: 'Giáo viên', n: 1 },
       { sel: 'input[type=email]', n: 2 },
       { sel: 'input[type=password]', n: 3 },

@@ -1,0 +1,23 @@
+1
+00:00:00,000 --> 00:00:03,295
+Thầy cô chấm từ một tới năm sao và viết nhận xét cho từng nhiệm vụ.
+
+2
+00:00:03,295 --> 00:00:07,709
+Bấm vào một buổi đã chấm để xem đầy đủ.
+
+3
+00:00:07,709 --> 00:00:10,111
+Cửa sổ hiện số sao, nhận xét của thầy cô, và phần em đã ghi.
+
+4
+00:00:10,111 --> 00:00:12,513
+Bị một hoặc hai sao thì em cần viết một dòng cho biết sẽ điều chỉnh thế nào.
+
+5
+00:00:12,513 --> 00:00:15,746
+Đây không phải hình phạt — đó là cách để lần sau em làm tốt hơn.
+
+6
+00:00:15,746 --> 00:00:18,154
+Em vẫn sửa lại kết quả đã ghi được. Thầy cô sẽ chấm lại.

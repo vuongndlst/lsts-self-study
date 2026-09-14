@@ -1,0 +1,47 @@
+{
+  "dai": 276,
+  "chuong": [
+    {
+      "so": 1,
+      "tua": "Đầu năm: nhập danh sách lớp",
+      "phu": "Thẻ Học sinh · nhập danh sách từ Excel · đọc bản xem trước rồi mới nhập.",
+      "batDau": 5.4
+    },
+    {
+      "so": 2,
+      "tua": "Đầu năm: lịch tự học và mốc học kỳ",
+      "phu": "Khai lịch tự học cố định · hai công tắc luật đăng ký · mốc học kỳ và quyền miễn trừ.",
+      "batDau": 41.3
+    },
+    {
+      "so": 3,
+      "tua": "Việc hằng ngày",
+      "phu": "Xem ai chưa đăng ký · miễn buổi cho cả lớp hoặc cho một em.",
+      "batDau": 80.3
+    },
+    {
+      "so": 4,
+      "tua": "Chấm sao",
+      "phu": "Chấm từng bài · chấm hàng loạt · nhận xét chung không đè nhận xét riêng.",
+      "batDau": 114.2
+    },
+    {
+      "so": 5,
+      "tua": "Kỷ luật và thư phụ huynh",
+      "phu": "Bảng kỷ luật · sổ lao động công ích · soạn sẵn thư rồi mở Outlook.",
+      "batDau": 162.1
+    },
+    {
+      "so": 6,
+      "tua": "Chia sẻ sách",
+      "phu": "Xếp lịch cả năm · hạn nộp tự tính · trang kết quả cả lớp cùng xem.",
+      "batDau": 212.8
+    },
+    {
+      "so": 7,
+      "tua": "Giao việc cho cán sự",
+      "phu": "Cấp từng quyền riêng · cán sự thấy gì và không được thấy gì.",
+      "batDau": 249.8
+    }
+  ]
+}
