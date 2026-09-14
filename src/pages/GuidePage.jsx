@@ -1,15 +1,26 @@
 import { useState } from 'react'
 import { AlertTriangle, CalendarCheck2, CheckCircle2, ClipboardList, Clock, FileCheck2, GraduationCap, ImagePlus, KeyRound, Laptop, Layers, ListPlus, Lock, LockKeyhole, Mail, MessageSquare, ShieldCheck, Star, UploadCloud, UserPlus } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import HuongDanTaiLieu from '../components/HuongDanTaiLieu'
 
-// Một trang cho CẢ HAI bộ hướng dẫn, chọn bằng hai thẻ ở đầu trang.
+// Một trang cho cả hai bộ hướng dẫn.
 //
-// Tách thành hai địa chỉ riêng thì gọn hơn về mặt mã nguồn, nhưng giáo viên mới
-// sẽ phải được cho biết là có địa chỉ thứ hai. Để chung một chỗ thì ai vào cũng
-// thấy có phần dành cho mình.
+// Ai thấy gì:
+//   · khách chưa đăng nhập và học sinh → chỉ phần học sinh;
+//   · giáo viên (và quản trị) → thêm thẻ để xem phần giáo viên, và vẫn xem
+//     được phần học sinh, vì thầy cô hay phải chỉ lại cho các em.
+//
+// Chọn thẻ chứ không tách thành hai địa chỉ: tách ra thì giáo viên mới sẽ phải
+// được cho biết là có địa chỉ thứ hai.
 export default function GuidePage() {
-  const [vai, setVai] = useState('hocSinh')
+  const { isStaff, session } = useAuth()
+  const [chon, setChon] = useState('hocSinh')
+
+  // SUY RA chứ không đặt bằng useEffect. Thầy cô đang mở thẻ Giáo viên rồi đăng
+  // xuất thì trang tự rơi về phần học sinh ngay, không cần thêm hiệu ứng nào —
+  // mà cũng không có kẽ hở một nhịp nào để phần giáo viên còn nằm trên màn hình.
+  const vai = isStaff ? chon : 'hocSinh'
 
   return <div className="page narrow-page guide-page">
     <section className="page-heading centered-heading">
@@ -18,25 +29,35 @@ export default function GuidePage() {
       <p>{vai === 'hocSinh'
         ? 'Đọc một lần trước khi bắt đầu. Sau đó mỗi tuần chỉ cần khoảng một phút để lập kế hoạch, và vài phút sau giờ tự học để ghi lại kết quả.'
         : 'Thiết lập một lần vào đầu năm, rồi mỗi ngày khoảng năm phút. Video và tài liệu dưới đây đi theo đúng thứ tự thao tác.'}</p>
-      <div className="segmented guide-chon">
+
+      {isStaff && <div className="segmented guide-chon">
         <button type="button" className={vai === 'hocSinh' ? 'active' : ''}
-                onClick={() => setVai('hocSinh')}><GraduationCap size={17} /> Học sinh</button>
+                onClick={() => setChon('hocSinh')}><GraduationCap size={17} /> Học sinh</button>
         <button type="button" className={vai === 'giaoVien' ? 'active' : ''}
-                onClick={() => setVai('giaoVien')}><ShieldCheck size={17} /> Giáo viên</button>
-      </div>
+                onClick={() => setChon('giaoVien')}><ShieldCheck size={17} /> Giáo viên</button>
+      </div>}
+
       {vai === 'hocSinh' && <div className="hero-actions centered-actions">
         <Link className="button primary" to="/register">Tạo tài khoản lần đầu</Link>
         <Link className="button ghost" to="/login">Đăng nhập</Link>
       </div>}
     </section>
 
-    {vai === 'giaoVien' ? <PhanGiaoVien /> : <PhanHocSinh />}
+    {vai === 'giaoVien' ? <PhanGiaoVien /> : <PhanHocSinh moiGiaoVien={!session} />}
   </div>
 }
 
-function PhanHocSinh() {
+function PhanHocSinh({ moiGiaoVien }) {
   return <>
     <HuongDanTaiLieu bo="hocSinh" />
+
+    {/* Không có dòng này thì giáo viên vào trang chỉ thấy phần học sinh và
+        tưởng hệ thống không có tài liệu cho mình. Chỉ hiện với KHÁCH chưa đăng
+        nhập — học sinh đã đăng nhập rồi mà vẫn bị mời đăng nhập thì vô duyên. */}
+    {moiGiaoVien && <p className="guide-doi-vai">
+      <ShieldCheck size={16} />
+      <span>Thầy cô <Link to="/login">đăng nhập</Link> để xem phần hướng dẫn dành cho giáo viên.</span>
+    </p>}
 
     <section className="card deadline-card">
       <div className="deadline-head"><Lock size={22}/><div>

@@ -912,7 +912,12 @@ th,td{padding:11px 12px}
   .tl-nut .button{width:100%}
 }
 
-/* Hai thẻ chọn bộ hướng dẫn ở đầu trang */
+/* Hai thẻ chọn bộ hướng dẫn ở đầu trang — chỉ hiện với giáo viên */
 .guide-chon{max-width:430px;margin:0 auto 30px}
+
+/* Lời mời giáo viên đăng nhập, đặt dưới khối video của bản học sinh */
 .guide-doi-vai{display:flex;gap:9px;align-items:center;justify-content:center;
-  flex-wrap:wrap;margin:-14px 0 30px;color:var(--muted);font-size:13px}
+  flex-wrap:wrap;margin:-14px 0 30px;padding:11px 14px;border-radius:12px;
+  background:var(--brand-bg);border:1px solid #d5e2ec;color:#4a5560;font-size:13px}
+.guide-doi-vai svg{color:var(--brand);flex:0 0 auto}
+.guide-doi-vai a{color:var(--brand);font-weight:750;text-decoration:underline}
