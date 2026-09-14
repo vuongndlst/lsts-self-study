@@ -1,27 +1,28 @@
-# Video hướng dẫn cho giáo viên
+# Video hướng dẫn
 
-Cùng một lần quay, dựng ra hai kiểu xem:
+Hai bộ, mỗi bộ một thư mục:
+
+| Thư mục | Cho ai | Dài | Số phần |
+|---|---|---|---|
+| [`hoc-sinh/`](hoc-sinh) | Học sinh, xưng "em" | 4:22 | 8 |
+| [`giao-vien/`](giao-vien) | Giáo viên chủ nhiệm | 4:36 | 7 |
+
+Trong mỗi thư mục:
 
 | Tệp | Dùng khi nào |
 |---|---|
-| `Toan-bo-huong-dan-giao-vien.mp4` | **Xem một mạch.** Bảy phần nối liền, mỗi phần có thẻ tên mở đầu, một nền nhạc chạy suốt. Dùng cho buổi tập huấn đầu năm. |
-| `1-…` … `7-….mp4` | **Tra một chức năng.** Cần xem lại cách soạn thư phụ huynh thì mở đúng đoạn 5, không phải tua cả cuốn. |
+| `Toan-bo-….mp4` | **Xem một mạch.** Các phần nối liền, mỗi phần có thẻ tên mở đầu, một nền nhạc chạy suốt. Đây cũng là bản nhúng trên trang **Hướng dẫn** của hệ thống. |
+| `1-…` … `8-….mp4` | **Tra một chức năng.** Cần xem lại cách soạn thư phụ huynh thì mở đúng đoạn đó, không phải tua cả cuốn. |
 | `*.srt` | Lời thoại kèm mốc thời gian, để đưa vào công cụ lồng tiếng. Có cho cả bản gộp lẫn từng đoạn. |
+| `*.chuong.json` | Mốc mở đầu từng phần. Trang web đọc file này để làm nút nhảy tới từng phần ngay trên bản gộp. |
 
-Bảy phần:
-
-1. Đầu năm: nhập danh sách lớp
-2. Đầu năm: lịch tự học và mốc học kỳ
-3. Việc hằng ngày
-4. Chấm sao
-5. Kỷ luật và thư phụ huynh
-6. Chia sẻ sách
-7. Giao việc cho cán sự
+Trên trang web chỉ nhúng **bản gộp** — nút nhảy từng phần thay được cho mười lăm
+tệp rời, nên khỏi phải tải gấp đôi dung lượng mà người xem chẳng được thêm gì.
 
 ## Vì sao nhạc không nướng sẵn vào từng đoạn
 
 Bản gộp phải có **một** nền nhạc chạy từ đầu tới cuối. Nếu mỗi đoạn đã có nhạc
-riêng vào đầu và tắt cuối, nối bảy đoạn lại sẽ nghe nhạc lên xuống bảy lần.
+riêng vào đầu và tắt cuối, nối các đoạn lại sẽ nghe nhạc lên xuống bảy tám lần.
 
 Nên `ghiDoan()` chỉ dựng **hình câm** cộng danh sách mốc từng cú bấm, rồi
 `longAm()` lồng tiếng riêng cho mỗi bản: bản rời nhạc vào–tắt theo đoạn, bản gộp
@@ -42,7 +43,7 @@ Máy dựng chỉ cài giọng đọc tiếng Anh. Cho giọng Anh đọc tiến
 không ai nghe nổi — thà im lặng còn hơn. Hai lối đi:
 
 1. **Xem như hiện tại** — phụ đề đọc nhanh hơn nghe, và xem được trong phòng hội
-   đồng mà không cần tai nghe.
+   đồng hay trong lớp mà không cần loa.
 2. **Lồng tiếng sau** — đưa tệp `.srt` vào công cụ chuyển chữ thành giọng nói,
    hoặc tự thu giọng mình rồi ghép. Mốc thời gian trong `.srt` khớp từng giây
    với hình, và bản gộp có sẵn dòng đọc tên từng phần.
@@ -66,24 +67,28 @@ MUC_DICH=-23 node scripts/video-gv.mjs --tron    # cả video nhỏ lại (mặc
 ## Quay lại khi giao diện đổi
 
 ```
-npm run build && npm run preview -- --port 4173     # máy chủ bản thật
-GV_MK=<mật khẩu giáo viên lớp mẫu> node scripts/video-gv.mjs
-GV_MK=<mật khẩu> node scripts/video-gv.mjs 4        # chỉ quay lại đoạn 4
+npm run build && npm run preview -- --port 4173      # máy chủ bản thật
+DEMO_MK=<mật khẩu học sinh lớp mẫu> node scripts/video-hs.mjs
+GV_MK=<mật khẩu giáo viên lớp mẫu>  node scripts/video-gv.mjs
+GV_MK=<mật khẩu> node scripts/video-gv.mjs 4         # chỉ quay lại đoạn 4
 ```
 
 Lớp minh hoạ 8A0 phải có dữ liệu trước — xem [`../README.md`](../README.md).
 
-Quay lại **một** đoạn thì bản gộp không tự dựng lại; chạy `--ghep` sau đó.
+Quay lại **một** đoạn thì bản gộp không tự dựng lại; chạy `--ghep` sau đó. Sổ
+tay nhớ theo tên đoạn nên đoạn vừa quay lại sẽ thay đúng chỗ của nó, các đoạn
+khác giữ nguyên.
 
 ## Sửa mà không phải quay lại
 
-Quay đủ một lượt mất bảy phút. Đổi nhạc hay sửa một chữ trên thẻ tên mà phải
-chờ bảy phút thì sẽ không ai sửa, nên lần quay giữ lại hình câm và một cuốn sổ
-tay (`so-tay.json` trong thư mục tạm) ghi đủ mốc từng cú bấm và từng dòng phụ đề:
+Quay đủ một bộ mất bảy tám phút. Đổi nhạc hay sửa một chữ trên thẻ tên mà phải
+chờ chừng ấy thì sẽ không ai sửa, nên lần quay giữ lại hình câm và một cuốn sổ
+tay (`so-tay-<tên bản gộp>.json` trong thư mục tạm) ghi đủ mốc từng cú bấm và
+từng dòng phụ đề:
 
 ```
-node scripts/video-gv.mjs --tron    # đổi nhạc, đổi âm lượng — vài giây
-node scripts/video-gv.mjs --ghep    # đổi chữ trên thẻ tên, xếp lại — vài chục giây
+node scripts/video-hs.mjs --tron    # đổi nhạc, đổi âm lượng — vài giây
+node scripts/video-hs.mjs --ghep    # đổi chữ trên thẻ tên, xếp lại — vài chục giây
 ```
 
 Cả hai đều **không** quay lại màn hình, nên hình y nguyên. `--ghep` chỉ mở
@@ -104,13 +109,13 @@ trình duyệt đúng lúc chụp mấy tấm thẻ tên.
 Nhịp video lấy theo mốc thời gian thật của từng khung hình, nên đoạn trang đứng
 yên không bị tua nhanh và đoạn có hoạt ảnh không bị giật.
 
-## Ba cái bẫy đã dính
+## Bốn cái bẫy đã dính
 
 **Con trỏ đặt trước khi trang trượt xong.** `scrollIntoView({behavior:'smooth'})`
 chưa chạy xong thì `getBoundingClientRect()` còn trả vị trí cũ. Đặt con trỏ theo
 vị trí đó rồi trang trượt ra dưới nó — video thành ra mũi tên chỉ vào khoảng
-không còn cú bấm nổ ở chỗ khác. Nay `__troToi` đặt lại con trỏ vài lần trong lúc
-trang còn trượt, và `__bamCoHieuUng` đặt lại lần nữa ngay trước khi bấm.
+không còn cú bấm nổ ở chỗ khác. Nay `__troToiPhanTu` đặt lại con trỏ vài lần
+trong lúc trang còn trượt, và `__bamCoHieuUng` đặt lại lần nữa ngay trước khi bấm.
 
 **Một `requestAnimationFrame` là chưa đủ** để khởi động một transition CSS vừa
 đặt: trình duyệt có thể gộp hai lần đổi kiểu vào cùng một lượt tính, thế là
@@ -127,5 +132,12 @@ dải tiếng, nên mỗi đoạn rời còn bị cụt mất mấy giây cuối
 
 Nay giữ đúng khoảng cách thật giữa hai khung, khung nào dày quá thì để bộ lọc
 `fps=30` bỏ bớt — đó là việc của nó. Kiểm lại bằng cách lấy khung hình ở đúng
-mốc từng tiếng click trong bản gộp: cả mười lăm cú đều thấy vòng sáng nằm đúng
-trên nút vừa bấm.
+mốc từng tiếng click trong bản gộp: cú nào cũng thấy vòng sáng nằm đúng trên
+nút vừa bấm.
+
+**Bấm bằng `el.click()` thì không có gì để xem.** Vài cảnh phải bấm vào thứ
+không chỉ ra được bằng một selector (ví dụ "thẻ buổi học nào có chữ Lão Hạc"),
+nên lúc đầu viết thẳng `el.click()`. Kết quả: màn hình tự đổi, không vòng sáng,
+không tiếng click — đúng thứ mà con trỏ giả sinh ra để tránh. Nay có
+`window.__troToiPhanTu(el)` nhận phần tử tìm được bằng cách nào cũng được, rồi
+`K.bam()` lo phần còn lại.

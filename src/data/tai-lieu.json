@@ -1,0 +1,118 @@
+{
+  "hocSinh": {
+    "nhan": "Học sinh",
+    "pdf": "Huong-dan-hoc-sinh.pdf",
+    "pdfMb": 1.7,
+    "pdfTrang": 13,
+    "video": "Toan-bo-huong-dan-hoc-sinh.mp4",
+    "videoMb": 17.3,
+    "srt": "Toan-bo-huong-dan-hoc-sinh.srt",
+    "anhBia": "bia-hocSinh.jpg",
+    "dai": 261.9,
+    "chuong": [
+      {
+        "so": 1,
+        "tua": "Tạo tài khoản và đăng nhập",
+        "phu": "Đăng ký lần đầu bằng MSHS · đặt mật khẩu · quên mật khẩu thì làm gì.",
+        "batDau": 5.4
+      },
+      {
+        "so": 2,
+        "tua": "Màn hình chính của em",
+        "phu": "Nút đăng ký · thẻ điểm danh · bộ lọc nhanh · cửa sổ nhắc việc.",
+        "batDau": 49.4
+      },
+      {
+        "so": 3,
+        "tua": "Đăng ký một buổi tự học",
+        "phu": "Hạn 24:00 hôm trước · chọn ngày và tiết · ghi mục tiêu đo được.",
+        "batDau": 75.4
+      },
+      {
+        "so": 4,
+        "tua": "Cập nhật kết quả — phần quan trọng nhất",
+        "phu": "Viết gì cho đủ ý · bật cần hỗ trợ · đính kèm sản phẩm.",
+        "batDau": 110
+      },
+      {
+        "so": 5,
+        "tua": "Xem thầy cô chấm sao và nhận xét",
+        "phu": "Mở một buổi đã chấm · vì sao một hai sao lại phải viết phản hồi.",
+        "batDau": 149.1
+      },
+      {
+        "so": 6,
+        "tua": "Quên đăng ký và lao động công ích",
+        "phu": "Hai tiết liền nhau tính một lần · thang kỷ luật · xin miễn buổi.",
+        "batDau": 172.8
+      },
+      {
+        "so": 7,
+        "tua": "Chia sẻ sách",
+        "phu": "Tới lượt thì nộp gì · bài học rút ra · mở quyền xem cho liên kết.",
+        "batDau": 203.9
+      },
+      {
+        "so": 8,
+        "tua": "Hỏi thầy cô",
+        "phu": "Nhắn riêng trong hệ thống · ai đọc được tin nhắn của em.",
+        "batDau": 241.3
+      }
+    ]
+  },
+  "giaoVien": {
+    "nhan": "Giáo viên",
+    "pdf": "Huong-dan-giao-vien.pdf",
+    "pdfMb": 2.5,
+    "pdfTrang": 15,
+    "video": "Toan-bo-huong-dan-giao-vien.mp4",
+    "videoMb": 20.4,
+    "srt": "Toan-bo-huong-dan-giao-vien.srt",
+    "anhBia": "bia-giaoVien.jpg",
+    "dai": 276,
+    "chuong": [
+      {
+        "so": 1,
+        "tua": "Đầu năm: nhập danh sách lớp",
+        "phu": "Thẻ Học sinh · nhập danh sách từ Excel · đọc bản xem trước rồi mới nhập.",
+        "batDau": 5.4
+      },
+      {
+        "so": 2,
+        "tua": "Đầu năm: lịch tự học và mốc học kỳ",
+        "phu": "Khai lịch tự học cố định · hai công tắc luật đăng ký · mốc học kỳ và quyền miễn trừ.",
+        "batDau": 41.3
+      },
+      {
+        "so": 3,
+        "tua": "Việc hằng ngày",
+        "phu": "Xem ai chưa đăng ký · miễn buổi cho cả lớp hoặc cho một em.",
+        "batDau": 80.3
+      },
+      {
+        "so": 4,
+        "tua": "Chấm sao",
+        "phu": "Chấm từng bài · chấm hàng loạt · nhận xét chung không đè nhận xét riêng.",
+        "batDau": 114.2
+      },
+      {
+        "so": 5,
+        "tua": "Kỷ luật và thư phụ huynh",
+        "phu": "Bảng kỷ luật · sổ lao động công ích · soạn sẵn thư rồi mở Outlook.",
+        "batDau": 162.1
+      },
+      {
+        "so": 6,
+        "tua": "Chia sẻ sách",
+        "phu": "Xếp lịch cả năm · hạn nộp tự tính · trang kết quả cả lớp cùng xem.",
+        "batDau": 212.8
+      },
+      {
+        "so": 7,
+        "tua": "Giao việc cho cán sự",
+        "phu": "Cấp từng quyền riêng · cán sự thấy gì và không được thấy gì.",
+        "batDau": 249.8
+      }
+    ]
+  }
+}

@@ -142,9 +142,17 @@ window.__phuDe = (t) => {
 // Đưa con trỏ tới giữa một phần tử. Trả về false nếu không tìm thấy, để kịch bản
 // biết mà báo lỗi thay vì quay ra một video bấm vào khoảng không.
 window.__troToi = (sel, text) => {
-  let el = text
+  const el = text
     ? [...document.querySelectorAll(sel || 'button,a')].find(e => e.textContent.trim().includes(text))
     : document.querySelector(sel);
+  return window.__troToiPhanTu(el);
+};
+
+// Nhắm vào một phần tử đã tìm được bằng cách khác. Cần khi thứ phải bấm không
+// chỉ ra được bằng một selector — ví dụ "thẻ buổi học nào có chữ Lão Hạc".
+// Không có hàm này thì những chỗ đó phải gọi thẳng el.click(), tức là bấm mà
+// không có vòng sáng cũng không có tiếng click, người xem không thấy gì xảy ra.
+window.__troToiPhanTu = (el) => {
   if (!el) return false;
   el.scrollIntoView({ block: 'center', behavior: 'smooth' });
   window.__dangTro = el;
@@ -391,7 +399,7 @@ export const HTML_THE = ({ so, tua, phu, tong }) => `
 <div class="chan">Hệ thống quản lý giờ tự học · Trường THCS &amp; THPT Đinh Thiện Lý</div>`
 
 // Thẻ mở đầu cả cuốn phim.
-export const HTML_BIA = ({ tua, phu, muc }) => `
+export const HTML_BIA = ({ nhan, tua, phu, muc }) => `
 <style>
   html,body{margin:0;height:100%;font-family:Arial,system-ui,sans-serif}
   .khung{height:100%;display:flex;flex-direction:column;justify-content:center;
@@ -405,7 +413,7 @@ export const HTML_BIA = ({ tua, phu, muc }) => `
   .chan{position:fixed;left:96px;bottom:60px;font-size:18px;color:#9dbada}
 </style>
 <div class="khung">
-  <div class="nhan">HƯỚNG DẪN DÀNH CHO GIÁO VIÊN</div>
+  <div class="nhan">${nhan}</div>
   <h1>${tua}</h1>
   <p class="phu">${phu}</p>
   <ol>${muc.map((m) => `<li>${m}</li>`).join('')}</ol>

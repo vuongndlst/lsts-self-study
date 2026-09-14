@@ -1,5 +1,9 @@
 node_modules
 dist
+
+# Dựng lại từ docs/huong-dan mỗi lần build (scripts/gom-tai-lieu.mjs). Giữ hai
+# bản của mấy chục MB video trong git thì kiểu gì cũng có lúc lệch nhau.
+public/tai-lieu
 .DS_Store
 
 # Mọi file .env chứa secret — KHÔNG commit.
@@ -24,3 +28,13 @@ admin/*.csv
 .claude/
 
 _test-session.mjs
+
+# Danh sách mật khẩu tạm. KHO NÀY CÔNG KHAI trên GitHub — một lần commit nhầm là
+# mật khẩu của cả tổ giáo viên nằm vĩnh viễn trong lịch sử, xoá file đi cũng
+# không gỡ được. Chặn theo thư mục và theo tên, phòng cả hai đường.
+docs/huong-dan/*.xlsx
+docs/huong-dan/*.csv
+*[Mm]at khau*
+*[Mm]at-khau*
+*[Pp]assword*.xlsx
+*[Pp]assword*.csv

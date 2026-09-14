@@ -1,0 +1,53 @@
+{
+  "dai": 261.9,
+  "chuong": [
+    {
+      "so": 1,
+      "tua": "Tạo tài khoản và đăng nhập",
+      "phu": "Đăng ký lần đầu bằng MSHS · đặt mật khẩu · quên mật khẩu thì làm gì.",
+      "batDau": 5.4
+    },
+    {
+      "so": 2,
+      "tua": "Màn hình chính của em",
+      "phu": "Nút đăng ký · thẻ điểm danh · bộ lọc nhanh · cửa sổ nhắc việc.",
+      "batDau": 49.4
+    },
+    {
+      "so": 3,
+      "tua": "Đăng ký một buổi tự học",
+      "phu": "Hạn 24:00 hôm trước · chọn ngày và tiết · ghi mục tiêu đo được.",
+      "batDau": 75.4
+    },
+    {
+      "so": 4,
+      "tua": "Cập nhật kết quả — phần quan trọng nhất",
+      "phu": "Viết gì cho đủ ý · bật cần hỗ trợ · đính kèm sản phẩm.",
+      "batDau": 110
+    },
+    {
+      "so": 5,
+      "tua": "Xem thầy cô chấm sao và nhận xét",
+      "phu": "Mở một buổi đã chấm · vì sao một hai sao lại phải viết phản hồi.",
+      "batDau": 149.1
+    },
+    {
+      "so": 6,
+      "tua": "Quên đăng ký và lao động công ích",
+      "phu": "Hai tiết liền nhau tính một lần · thang kỷ luật · xin miễn buổi.",
+      "batDau": 172.8
+    },
+    {
+      "so": 7,
+      "tua": "Chia sẻ sách",
+      "phu": "Tới lượt thì nộp gì · bài học rút ra · mở quyền xem cho liên kết.",
+      "batDau": 203.9
+    },
+    {
+      "so": 8,
+      "tua": "Hỏi thầy cô",
+      "phu": "Nhắn riêng trong hệ thống · ai đọc được tin nhắn của em.",
+      "batDau": 241.3
+    }
+  ]
+}

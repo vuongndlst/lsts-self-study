@@ -6,7 +6,9 @@
   "scripts": {
     "test": "node --test",
     "dev": "vite",
+    "predev": "node scripts/gom-tai-lieu.mjs",
     "build": "vite build",
+    "prebuild": "node scripts/gom-tai-lieu.mjs",
     "preview": "vite preview",
     "create-teacher": "node scripts/create-teacher.mjs",
     "setup-class": "node scripts/setup-class.mjs",
@@ -14,7 +16,10 @@
     "regress": "node scripts/regress.mjs",
     "demo-class": "node scripts/demo-class.mjs",
     "docs-chup": "node scripts/shoot-hs.mjs && node scripts/shoot-gv.mjs",
-    "docs-word": "node scripts/docx-hs.cjs && node scripts/docx-gv.cjs"
+    "docs-word": "node scripts/docx-hs.cjs && node scripts/docx-gv.cjs",
+    "docs-pdf": "node scripts/docs-pdf.cjs",
+    "docs-video": "node scripts/video-hs.mjs && node scripts/video-gv.mjs",
+    "tai-lieu": "node scripts/gom-tai-lieu.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.2",

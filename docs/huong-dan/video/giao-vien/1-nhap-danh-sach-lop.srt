@@ -1,0 +1,39 @@
+1
+00:00:00,000 --> 00:00:05,495
+Việc đầu tiên của năm học: đưa danh sách lớp vào hệ thống.
+
+2
+00:00:05,495 --> 00:00:08,803
+Thẻ Học sinh là nơi quản lý danh sách lớp.
+
+3
+00:00:08,803 --> 00:00:12,711
+Bấm Nhập danh sách từ Excel.
+
+4
+00:00:12,711 --> 00:00:15,113
+Tải file mẫu, điền ba cột: số thứ tự, mã số học sinh, họ và tên.
+
+5
+00:00:15,113 --> 00:00:17,515
+Chọn file xong, hệ thống hiện bản xem trước.
+
+6
+00:00:17,515 --> 00:00:19,928
+Bản xem trước nói rõ em nào thêm mới, em nào đã có, dòng nào bị bỏ qua và vì sao.
+
+7
+00:00:19,928 --> 00:00:23,137
+Đọc kỹ bảng đó rồi mới bấm nhập.
+
+8
+00:00:23,137 --> 00:00:25,542
+Lưu ý: nhập danh sách KHÔNG tạo tài khoản cho học sinh.
+
+9
+00:00:25,542 --> 00:00:27,954
+Các em tự tạo tài khoản bằng mã số của mình.
+
+10
+00:00:27,954 --> 00:00:30,357
+Nhập lại lần hai cũng không nhân đôi học sinh, và không mất dữ liệu cũ.

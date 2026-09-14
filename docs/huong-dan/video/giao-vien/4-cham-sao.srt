@@ -1,0 +1,47 @@
+1
+00:00:00,000 --> 00:00:03,297
+Hằng tuần, việc chính của thầy cô là chấm sao.
+
+2
+00:00:03,297 --> 00:00:07,615
+Bấm ô Chờ chấm sao ở hộp việc cần xử lý.
+
+3
+00:00:07,615 --> 00:00:11,218
+Danh sách lọc ngay còn những bài đang chờ.
+
+4
+00:00:11,218 --> 00:00:15,327
+Bấm vào tên môn để mở chi tiết.
+
+5
+00:00:15,327 --> 00:00:17,733
+Cửa sổ hiện đủ nhiệm vụ, mục tiêu, và phần em tự ghi.
+
+6
+00:00:17,733 --> 00:00:20,136
+Đọc xong thì chọn số sao và viết nhận xét.
+
+7
+00:00:20,136 --> 00:00:23,346
+Nhận xét ngắn mà cụ thể có tác dụng hơn nhận xét dài.
+
+8
+00:00:23,346 --> 00:00:26,653
+Khi có hàng chục bài cùng mức, chấm từng bài thì quá lâu.
+
+9
+00:00:26,653 --> 00:00:30,461
+Bấm Chọn tất cả bài chờ chấm sao.
+
+10
+00:00:30,461 --> 00:00:36,881
+Thanh thao tác hiện ở cuối màn hình.
+
+11
+00:00:36,881 --> 00:00:39,287
+Cửa sổ liệt kê rõ sẽ chấm cho những em nào.
+
+12
+00:00:39,287 --> 00:00:42,502
+Để trống ô nhận xét chung thì nhận xét riêng của từng tiết vẫn được giữ.

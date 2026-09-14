@@ -1,17 +1,42 @@
-import { AlertTriangle, CalendarCheck2, CheckCircle2, Clock, FileCheck2, ImagePlus, KeyRound, Laptop, Layers, ListPlus, Lock, LockKeyhole, MessageSquare, Star, UploadCloud, UserPlus } from 'lucide-react'
+import { useState } from 'react'
+import { AlertTriangle, CalendarCheck2, CheckCircle2, ClipboardList, Clock, FileCheck2, GraduationCap, ImagePlus, KeyRound, Laptop, Layers, ListPlus, Lock, LockKeyhole, Mail, MessageSquare, ShieldCheck, Star, UploadCloud, UserPlus } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import HuongDanTaiLieu from '../components/HuongDanTaiLieu'
 
+// Một trang cho CẢ HAI bộ hướng dẫn, chọn bằng hai thẻ ở đầu trang.
+//
+// Tách thành hai địa chỉ riêng thì gọn hơn về mặt mã nguồn, nhưng giáo viên mới
+// sẽ phải được cho biết là có địa chỉ thứ hai. Để chung một chỗ thì ai vào cũng
+// thấy có phần dành cho mình.
 export default function GuidePage() {
+  const [vai, setVai] = useState('hocSinh')
+
   return <div className="page narrow-page guide-page">
     <section className="page-heading centered-heading">
-      <span className="pill-label">HƯỚNG DẪN HỌC SINH</span>
-      <h1>Những điều em cần biết</h1>
-      <p>Đọc một lần trước khi bắt đầu. Sau đó mỗi tuần chỉ cần khoảng một phút để lập kế hoạch, và vài phút sau giờ tự học để ghi lại kết quả.</p>
-      <div className="hero-actions centered-actions">
+      <span className="pill-label">HƯỚNG DẪN SỬ DỤNG</span>
+      <h1>{vai === 'hocSinh' ? 'Những điều em cần biết' : 'Hướng dẫn dành cho giáo viên'}</h1>
+      <p>{vai === 'hocSinh'
+        ? 'Đọc một lần trước khi bắt đầu. Sau đó mỗi tuần chỉ cần khoảng một phút để lập kế hoạch, và vài phút sau giờ tự học để ghi lại kết quả.'
+        : 'Thiết lập một lần vào đầu năm, rồi mỗi ngày khoảng năm phút. Video và tài liệu dưới đây đi theo đúng thứ tự thao tác.'}</p>
+      <div className="segmented guide-chon">
+        <button type="button" className={vai === 'hocSinh' ? 'active' : ''}
+                onClick={() => setVai('hocSinh')}><GraduationCap size={17} /> Học sinh</button>
+        <button type="button" className={vai === 'giaoVien' ? 'active' : ''}
+                onClick={() => setVai('giaoVien')}><ShieldCheck size={17} /> Giáo viên</button>
+      </div>
+      {vai === 'hocSinh' && <div className="hero-actions centered-actions">
         <Link className="button primary" to="/register">Tạo tài khoản lần đầu</Link>
         <Link className="button ghost" to="/login">Đăng nhập</Link>
-      </div>
+      </div>}
     </section>
+
+    {vai === 'giaoVien' ? <PhanGiaoVien /> : <PhanHocSinh />}
+  </div>
+}
+
+function PhanHocSinh() {
+  return <>
+    <HuongDanTaiLieu bo="hocSinh" />
 
     <section className="card deadline-card">
       <div className="deadline-head"><Lock size={22}/><div>
@@ -161,5 +186,90 @@ export default function GuidePage() {
       <strong>Lưu ý quan trọng</strong>
       <p>Không dùng tên, MSHS hoặc tài khoản của bạn khác. Không tạo tài khoản lần hai. Kế hoạch và kết quả là của riêng em — hãy ghi trung thực, vì mục đích là để em nhìn thấy sự tiến bộ của chính mình, không phải để lấy điểm.</p>
     </div></div>
-  </div>
+  </>
+}
+
+// Bản giáo viên: phần chữ chỉ nêu những điều dễ làm sai. Chi tiết từng bước đã
+// nằm trong video và tài liệu PDF ở trên; chép lại ra HTML nữa là ba chỗ cùng
+// một nội dung, sửa một chỗ quên hai chỗ.
+function PhanGiaoVien() {
+  return <>
+    <HuongDanTaiLieu bo="giaoVien" />
+
+    <section className="card deadline-card">
+      <div className="deadline-head"><ClipboardList size={22} /><div>
+        <span className="eyebrow">LÀM MỘT LẦN ĐẦU NĂM</span>
+        <h2>Bốn việc thiết lập, xong là cả năm không phải đụng lại</h2>
+      </div></div>
+      <div className="timeline-rule">
+        <div><span className="step-dot ok">1</span><div>
+          <strong>Nhập danh sách lớp từ Excel</strong>
+          <small>Ba cột: STT · MSHS · Họ và tên học sinh. Nhập danh sách <strong>không</strong> tạo tài khoản — các em tự tạo bằng MSHS của mình.</small>
+        </div></div>
+        <div><span className="step-dot ok">2</span><div>
+          <strong>Khai lịch tự học cố định</strong>
+          <small>Việc quan trọng nhất. Chưa khai lịch thì hệ thống không biết ngày nào là ngày tự học, nên không tính được ai quên đăng ký và toàn bộ phần kỷ luật không chạy.</small>
+        </div></div>
+        <div><span className="step-dot warn">3</span><div>
+          <strong>Hai công tắc luật đăng ký</strong>
+          <small><em>Cho phép đăng ký trễ</em> và <em>Bắt buộc cập nhật kết quả</em>. Công tắc thứ hai mạnh nhất, nhưng nên bật sau vài tuần khi các em đã quen nếp.</small>
+        </div></div>
+        <div><span className="step-dot ok">4</span><div>
+          <strong>Mốc học kỳ và quyền miễn trừ</strong>
+          <small>Ngày bắt đầu tính thường là ngày lớp vào nếp tự học, không phải ngày khai giảng. Mỗi lớp đặt mốc riêng.</small>
+        </div></div>
+      </div>
+    </section>
+
+    <div className="guide-list modern-guide">
+      <article className="guide-step"><span className="step-number">1</span><div>
+        <h3><CheckCircle2 size={20} /> Hộp việc cần xử lý là chỗ bắt đầu mỗi ngày</h3>
+        <p>Mỗi ô trong hộp <strong>bấm được</strong> — bấm một cái là danh sách bên dưới lọc ra đúng nhóm đó.</p>
+        <div className="guide-tip"><AlertTriangle size={16} /><span>
+          Các con số trong hộp <strong>luôn đếm trên toàn bộ dữ liệu</strong>, không theo bộ lọc đang bật.
+          Nhờ vậy lọc xong rồi số vẫn đúng — nếu chúng tụt về 0 theo bộ lọc thì thầy cô sẽ tưởng đã hết việc.
+        </span></div>
+      </div></article>
+
+      <article className="guide-step"><span className="step-number">2</span><div>
+        <h3><CalendarCheck2 size={20} /> Miễn buổi tự học</h3>
+        <p>Buổi đã miễn thì <strong>không ai bị tính là quên đăng ký</strong>. Dùng khi cả lớp đi hội trại, hoặc khi một em nghỉ có phép.</p>
+        <div className="guide-tip">Miễn <strong>sau khi hết ngày cũng được</strong> — hệ thống gỡ luôn những lần quên đã trót ghi cho buổi đó, nên em xin phép muộn vẫn không bị oan.</div>
+      </div></article>
+
+      <article className="guide-step"><span className="step-number">3</span><div>
+        <h3><Star size={20} /> Chấm sao hàng loạt</h3>
+        <p>Tích chọn nhiều dòng rồi chấm một lượt. Cửa sổ liệt kê rõ <strong>sẽ chấm cho những em nào</strong> trước khi thầy cô bấm.</p>
+        <div className="guide-tip"><AlertTriangle size={16} /> Để trống ô <strong>Nhận xét chung</strong> thì nhận xét riêng của từng tiết <strong>được giữ nguyên</strong>. Chỉ khi thầy cô gõ vào ô đó, nhận xét cũ mới bị thay.</div>
+      </div></article>
+
+      <article className="guide-step"><span className="step-number">4</span><div>
+        <h3><Mail size={20} /> Thư báo phụ huynh</h3>
+        <p>Hệ thống <strong>không tự gửi thư</strong>. Nó soạn sẵn nội dung rồi mở Outlook — thầy cô đọc lại, sửa nếu cần, và tự bấm Gửi bên đó. Thư đi từ hộp thư của chính thầy cô nên phụ huynh trả lời là về đúng người.</p>
+        <div className="guide-tip"><Mail size={16} /><span>
+          Dùng nút <strong>Mở Outlook trên web</strong>. Nút <em>trên máy</em> đi qua liên kết thư mặc định
+          của máy, nên máy nào đặt Gmail làm mặc định thì sẽ ra Gmail — đúng thứ không muốn.
+        </span></div>
+        <div className="guide-tip">Địa chỉ phụ huynh <strong>suy ra từ MSHS</strong> theo quy tắc của trường: không phải nhập tay, và không lưu ở đâu cả.</div>
+      </div></article>
+
+      <article className="guide-step"><span className="step-number">5</span><div>
+        <h3><Layers size={20} /> Hai tiết liền nhau chỉ tính một lần quên</h3>
+        <p>Thứ Sáu tiết 8 và 9 mà em không đăng ký gì là <strong>một</strong> lần quên, không phải hai. Thang kỷ luật <strong>không cộng dồn</strong>: quên lần thứ năm là 10 lượt, không phải 5 + 10.</p>
+        <div className="guide-tip">Số lượt <strong>phải làm</strong> không lưu cố định — nó tính lại từ số lần quên hiện tại. Miễn buổi cho em sau đó thì định mức tự giảm theo. Chỉ <strong>lượt đã làm</strong> là con số thầy cô ghi.</div>
+      </div></article>
+
+      <article className="guide-step"><span className="step-number">6</span><div>
+        <h3><UserPlus size={20} /> Giao việc cho cán sự</h3>
+        <p>Mỗi quyền cấp riêng, không phải gói chung: xem kế hoạch, xem yêu cầu hỗ trợ, nhắn tin, theo dõi đăng ký, chấm sao, theo dõi chia sẻ sách.</p>
+        <div className="guide-tip"><LockKeyhole size={16} /> Bạn được giao việc nhắc <strong>không thấy mức kỷ luật</strong> của các bạn khác — chỉ thấy số lần quên và số lần miễn trừ còn lại.</div>
+      </div></article>
+    </div>
+
+    <section className="card privacy-card">
+      <h2><ClipboardList size={20} /> Muốn bấm thử mà không sợ hỏng</h2>
+      <p className="muted-text">Mọi màn hình trong video và tài liệu đều chụp từ <strong>lớp minh hoạ 8A0</strong> — mười học sinh hoàn toàn hư cấu, không có một chữ nào của học sinh thật.</p>
+      <p className="muted-text">Thầy cô muốn bấm thử mọi nút mà không sợ hỏng dữ liệu lớp mình thì xin tài khoản lớp này từ người quản trị.</p>
+    </section>
+  </>
 }

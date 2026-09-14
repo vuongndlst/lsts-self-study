@@ -1,0 +1,39 @@
+1
+00:00:00,000 --> 00:00:02,391
+Hạn đăng ký là 24 giờ của ngày hôm trước.
+
+2
+00:00:02,391 --> 00:00:05,703
+Đăng ký sau mốc đó thì buổi của em bị đánh dấu Trễ.
+
+3
+00:00:05,703 --> 00:00:11,119
+Bấm Đăng ký giờ tự học.
+
+4
+00:00:11,119 --> 00:00:13,521
+Chọn ngày trước, rồi phần chọn tiết mới hiện ra.
+
+5
+00:00:13,521 --> 00:00:15,923
+Hệ thống chỉ mở những tiết lớp em thực sự có giờ tự học.
+
+6
+00:00:15,923 --> 00:00:19,456
+Thứ nào lớp không có giờ tự học thì không chọn được — như vậy là đúng.
+
+7
+00:00:19,456 --> 00:00:21,858
+Rồi ghi nhiệm vụ: môn gì, làm việc cụ thể nào, mục tiêu là gì.
+
+8
+00:00:21,858 --> 00:00:24,260
+Mục tiêu nên đo được. "Học bài" thì không biết thế nào là xong.
+
+9
+00:00:24,260 --> 00:00:26,671
+"Làm bài 1 đến 8 trang 24, đúng ít nhất 6 bài" thì cuối buổi em tự biết mình đạt chưa.
+
+10
+00:00:26,671 --> 00:00:29,075
+Buổi đó cần máy tính hay điện thoại thì bật Cần dùng thiết bị và ghi rõ dùng để làm gì.
