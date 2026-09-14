@@ -52,16 +52,21 @@ const BO = [
   },
 ]
 
-const FFMPEG = ['C:/ffmpeg/bin/ffmpeg.exe', 'ffmpeg']
-  .find((p) => p === 'ffmpeg' || fs.existsSync(p))
+// Máy dựng của GitHub Actions KHÔNG có ffmpeg lẫn pdfinfo, mà nó là máy dựng ra
+// bản lên mạng. Nên hai hàm dưới đây phải sống được khi thiếu công cụ: thiếu thì
+// lấy lại con số của lần trước thay vì trả về rỗng. Đặt qua biến môi trường để
+// máy nào cài chỗ khác vẫn chỉ được, và để thử được nhánh thiếu công cụ.
+const FFMPEG = process.env.FFMPEG
+  || ['C:/ffmpeg/bin/ffmpeg.exe', 'ffmpeg'].find((p) => p === 'ffmpeg' || fs.existsSync(p))
+const PDFINFO = process.env.PDFINFO
+  || ['C:/poppler-25.07.0/Library/bin/pdfinfo.exe', 'pdfinfo']
+     .find((p) => p === 'pdfinfo' || fs.existsSync(p))
 
 const soTrangPdf = (tep) => {
-  for (const lenh of ['C:/poppler-25.07.0/Library/bin/pdfinfo.exe', 'pdfinfo']) {
-    try {
-      const m = execFileSync(lenh, [tep], { encoding: 'utf8' }).match(/^Pages:\s+(\d+)/m)
-      if (m) return Number(m[1])
-    } catch {}
-  }
+  try {
+    const m = execFileSync(PDFINFO, [tep], { encoding: 'utf8' }).match(/^Pages:\s+(\d+)/m)
+    if (m) return Number(m[1])
+  } catch {}
   return null
 }
 
@@ -89,14 +94,16 @@ const chep = (tuongDoi) => {
 // kho riêng tư như mấy tệp kia, mà tệp trên kho thì lấy từ docs.
 function anhBia(tepVideo, tenRa) {
   const den = path.join(NGUON, tenRa)
-  if (!fs.existsSync(tepVideo)) return null
+  if (!fs.existsSync(tepVideo)) return fs.existsSync(den) ? tenRa : null
   if (fs.existsSync(den)
       && fs.statSync(den).mtimeMs >= fs.statSync(tepVideo).mtimeMs) return tenRa
   try {
     execFileSync(FFMPEG, ['-y', '-v', 'error', '-ss', '2', '-i', tepVideo,
       '-frames:v', '1', '-vf', 'scale=640:-2', '-q:v', '4', den], { stdio: 'ignore' })
-    return fs.existsSync(den) ? tenRa : null
-  } catch { return null }
+  } catch {}
+  // Dựng không được thì dùng lại tấm đã có trong kho. Tấm cũ còn hơn không có
+  // tấm nào: thiếu ảnh bìa thì trước khi bấm phát, trang chỉ hiện một ô đen.
+  return fs.existsSync(den) ? tenRa : null
 }
 
 // Bản ghi của lần trước. Cần nó vì src/data/tai-lieu.json NẰM TRONG git còn tệp
@@ -127,7 +134,7 @@ for (const b of BO) {
   if (fs.existsSync(tepPdf)) {
     muc.pdf = b.congKhai ? chep(b.pdf) : path.basename(b.pdf)
     muc.pdfMb = mb(fs.statSync(tepPdf).size)
-    muc.pdfTrang = soTrangPdf(tepPdf)
+    muc.pdfTrang = soTrangPdf(tepPdf) ?? truoc[b.khoa]?.pdfTrang ?? null
   } else thieu.push(b.pdf)
 
   const tepVideo = path.join(NGUON, b.video)
