@@ -1,23 +1,71 @@
 import { useEffect, useRef, useState } from 'react'
-import { Download, ExternalLink, FileText, Film, Subtitles } from 'lucide-react'
+import { AlertTriangle, Download, ExternalLink, FileText, Film, Loader2, Subtitles } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 import taiLieu from '../data/tai-lieu.json'
 
 // Video và tài liệu PDF của một bộ hướng dẫn ("hocSinh" hoặc "giaoVien").
+//
+// Hai bộ lấy tệp từ hai nơi khác nhau:
+//
+//   Bản HỌC SINH  — công khai trong public/, trỏ thẳng vào tệp.
+//   Bản GIÁO VIÊN — nằm trong bucket riêng tư trên Supabase. Ở đây xin một
+//       đường dẫn ký hạn ngắn; Supabase chỉ cấp cho ai thật sự là giáo viên
+//       (chính sách trong supabase/schema-15-tai-lieu-gv.sql). Học sinh gọi
+//       hàm này cũng chỉ nhận về lỗi, không phải chỉ là không thấy nút.
 //
 // Dữ liệu (tên tệp, số trang, dung lượng, mốc từng phần) do
 // scripts/gom-tai-lieu.mjs sinh ra khi build, không viết tay — viết tay thì
 // quay lại video xong là mọi con số sai hết mà không ai biết.
 
-// base:'./' trong vite.config nên BASE_URL là './' khi chạy ở gốc và là đường
+// base:'./' trong vite.config nên BASE_URL là '/' khi chạy ở gốc và là đường
 // dẫn kho khi chạy trên GitHub Pages. Cứ nối vào là đúng cả hai nơi.
 const goc = `${import.meta.env.BASE_URL}tai-lieu/`
 
+// Hai giờ. Đường dẫn ký hạn là thứ ai cầm cũng mở được, nên để càng ngắn càng
+// tốt; hai giờ đủ cho một buổi tập huấn, mà chép cho người ngoài thì mai đã hỏng.
+const HAN_GIAY = 7200
+
 const phutGiay = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`
+
+// Thêm tham số download để trình duyệt tải về thay vì mở trong thẻ mới. Thuộc
+// tính `download` của thẻ <a> KHÔNG có tác dụng khi tệp nằm khác tên miền, mà
+// đường dẫn ký hạn thì đúng là khác tên miền.
+const deTaiVe = (url, ten) =>
+  url ? `${url}${url.includes('?') ? '&' : '?'}download=${encodeURIComponent(ten)}` : null
 
 export default function HuongDanTaiLieu({ bo }) {
   const d = taiLieu?.[bo]
   const video = useRef(null)
   const [dangO, setDangO] = useState(-1)
+  const [link, setLink] = useState(null)   // null = chưa xin xong
+  const [loi, setLoi] = useState('')
+
+  const kho = d && !d.congKhai ? d.kho : null
+
+  // Xin đường dẫn ký hạn cho bản giáo viên.
+  useEffect(() => {
+    if (!d) return
+    if (!kho) {
+      setLink(Object.fromEntries(['pdf', 'video', 'srt', 'anhBia']
+        .filter((k) => d[k]).map((k) => [k, goc + d[k]])))
+      return
+    }
+    let con = true
+    setLink(null); setLoi('')
+    const ten = ['pdf', 'video', 'srt', 'anhBia'].filter((k) => d[k])
+    supabase.storage.from(kho)
+      .createSignedUrls(ten.map((k) => d[k]), HAN_GIAY)
+      .then(({ data, error }) => {
+        if (!con) return
+        if (error) { setLoi(error.message); return }
+        const theoTen = Object.fromEntries((data ?? []).map((o) => [o.path, o.signedUrl]))
+        // Một tệp hỏng thì chỉ mất tệp đó, phần còn lại vẫn xem được.
+        const thieu = ten.filter((k) => !theoTen[d[k]])
+        if (thieu.length === ten.length) { setLoi('Không lấy được tài liệu.'); return }
+        setLink(Object.fromEntries(ten.map((k) => [k, theoTen[d[k]] ?? null])))
+      })
+    return () => { con = false }
+  }, [d, kho])
 
   // Tô đậm phần đang chạy. Dùng sự kiện timeupdate của chính thẻ video thay vì
   // hẹn giờ, để người xem tua tay thì danh sách cũng nhảy theo.
@@ -35,9 +83,25 @@ export default function HuongDanTaiLieu({ bo }) {
       v.removeEventListener('timeupdate', theoDoi)
       v.removeEventListener('seeked', theoDoi)
     }
-  }, [d])
+  }, [d, link])
 
   if (!d || (!d.video && !d.pdf)) return null
+
+  if (loi) return <section className="tai-lieu-block">
+    <div className="card tl-loi">
+      <AlertTriangle size={18} />
+      <div>
+        <strong>Chưa mở được tài liệu dành cho giáo viên.</strong>
+        {/* In nguyên lỗi ra. Nuốt đi rồi ghi "có lỗi xảy ra" thì lần sau hỏng
+            lại phải mò từ đầu. */}
+        <p className="muted-text small">{loi}</p>
+      </div>
+    </div>
+  </section>
+
+  if (!link) return <section className="tai-lieu-block">
+    <div className="card tl-cho"><Loader2 size={18} className="quay" /> Đang mở tài liệu…</div>
+  </section>
 
   const nhay = (giay) => {
     const v = video.current
@@ -48,7 +112,7 @@ export default function HuongDanTaiLieu({ bo }) {
   }
 
   return <section className="tai-lieu-block">
-    {d.video && <div className="tl-video card">
+    {d.video && link.video && <div className="tl-video card">
       <div className="tl-head">
         <Film size={18} />
         <div>
@@ -67,8 +131,8 @@ export default function HuongDanTaiLieu({ bo }) {
         controls
         preload="metadata"
         playsInline
-        poster={d.anhBia ? goc + d.anhBia : undefined}
-        src={goc + d.video}
+        poster={link.anhBia ?? undefined}
+        src={link.video}
       />
 
       {d.chuong?.length > 0 && <ol className="tl-chuong">
@@ -88,16 +152,16 @@ export default function HuongDanTaiLieu({ bo }) {
       </ol>}
 
       <div className="tl-nut">
-        <a className="button ghost" href={goc + d.video} download>
+        <a className="button ghost" href={deTaiVe(link.video, d.video)} download={d.video}>
           <Download size={16} /> Tải video ({d.videoMb} MB)
         </a>
-        {d.srt && <a className="button ghost" href={goc + d.srt} download>
+        {link.srt && <a className="button ghost" href={deTaiVe(link.srt, d.srt)} download={d.srt}>
           <Subtitles size={16} /> Tệp phụ đề .srt
         </a>}
       </div>
     </div>}
 
-    {d.pdf && <div className="tl-pdf card">
+    {d.pdf && link.pdf && <div className="tl-pdf card">
       <div className="tl-head">
         <FileText size={18} />
         <div>
@@ -112,17 +176,22 @@ export default function HuongDanTaiLieu({ bo }) {
       {/* Khung xem nhúng chỉ hiện trên màn hình rộng — điện thoại phần lớn
           không dựng được PDF trong iframe, chỉ ra một ô trắng. Hai nút bên dưới
           luôn hiện, nên máy nào cũng mở được. */}
-      <iframe className="tl-khung-pdf" src={`${goc + d.pdf}#view=FitH`}
+      <iframe className="tl-khung-pdf" src={`${link.pdf}#view=FitH`}
               title={`Hướng dẫn ${d.nhan} (PDF)`} />
 
       <div className="tl-nut">
-        <a className="button primary" href={goc + d.pdf} target="_blank" rel="noreferrer">
+        <a className="button primary" href={link.pdf} target="_blank" rel="noreferrer">
           <ExternalLink size={16} /> Mở PDF trong thẻ mới
         </a>
-        <a className="button ghost" href={goc + d.pdf} download>
+        <a className="button ghost" href={deTaiVe(link.pdf, d.pdf)} download={d.pdf}>
           <Download size={16} /> Tải về máy
         </a>
       </div>
     </div>}
+
+    {kho && <p className="tl-rieng">
+      Tài liệu này chỉ giáo viên mở được. Đường dẫn có hạn hai giờ, hết hạn thì
+      tải lại trang.
+    </p>}
   </section>
 }

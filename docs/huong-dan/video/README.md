@@ -2,10 +2,16 @@
 
 Hai bộ, mỗi bộ một thư mục:
 
-| Thư mục | Cho ai | Dài | Số phần |
-|---|---|---|---|
-| [`hoc-sinh/`](hoc-sinh) | Học sinh, xưng "em" | 4:22 | 8 |
-| [`giao-vien/`](giao-vien) | Giáo viên chủ nhiệm | 4:36 | 7 |
+| Thư mục | Cho ai | Dài | Số phần | Trong git |
+|---|---|---|---|---|
+| [`hoc-sinh/`](hoc-sinh) | Học sinh, xưng "em" | 4:22 | 8 | có |
+| `giao-vien/` | Giáo viên chủ nhiệm | 4:36 | 7 | **không** |
+
+Video bản giáo viên **không nằm trong kho mã nguồn** — kho này công khai, mà
+phần giáo viên thì chỉ giáo viên đăng nhập mới được xem. Nó nằm trong bucket
+riêng tư `tai-lieu-gv` trên Supabase; quay lại xong thì đẩy lên bằng
+`npm run tai-len-tai-lieu`. Chỉ `*.chuong.json` (tên và mốc từng phần) là ở lại,
+vì trang web cần nó lúc build.
 
 Trong mỗi thư mục:
 

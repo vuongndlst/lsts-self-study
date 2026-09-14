@@ -1,13 +1,14 @@
 {
   "hocSinh": {
     "nhan": "Học sinh",
+    "congKhai": true,
     "pdf": "Huong-dan-hoc-sinh.pdf",
     "pdfMb": 1.7,
     "pdfTrang": 13,
     "video": "Toan-bo-huong-dan-hoc-sinh.mp4",
     "videoMb": 17.3,
     "srt": "Toan-bo-huong-dan-hoc-sinh.srt",
-    "anhBia": "bia-hocSinh.jpg",
+    "anhBia": "bia-hoc-sinh.jpg",
     "dai": 261.9,
     "chuong": [
       {
@@ -62,13 +63,15 @@
   },
   "giaoVien": {
     "nhan": "Giáo viên",
+    "congKhai": false,
+    "kho": "tai-lieu-gv",
     "pdf": "Huong-dan-giao-vien.pdf",
     "pdfMb": 2.5,
     "pdfTrang": 15,
     "video": "Toan-bo-huong-dan-giao-vien.mp4",
     "videoMb": 20.4,
     "srt": "Toan-bo-huong-dan-giao-vien.srt",
-    "anhBia": "bia-giaoVien.jpg",
+    "anhBia": "bia-giao-vien.jpg",
     "dai": 276,
     "chuong": [
       {

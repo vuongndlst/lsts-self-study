@@ -921,3 +921,13 @@ th,td{padding:11px 12px}
   background:var(--brand-bg);border:1px solid #d5e2ec;color:#4a5560;font-size:13px}
 .guide-doi-vai svg{color:var(--brand);flex:0 0 auto}
 .guide-doi-vai a{color:var(--brand);font-weight:750;text-decoration:underline}
+
+/* Trạng thái chờ / lỗi của khối tài liệu, và ghi chú cho bản riêng tư */
+.tl-cho,.tl-loi{display:flex;gap:11px;align-items:center;padding:18px 20px;color:var(--muted)}
+.tl-loi{align-items:flex-start;border-color:#efc5c5;background:var(--danger-bg);color:#8f3030}
+.tl-loi strong{display:block}
+.tl-loi p{margin:4px 0 0}
+.tl-rieng{margin:0;padding:10px 14px;border-radius:11px;background:#f6f8fa;
+  border:1px solid var(--line);color:var(--muted);font-size:12.5px;line-height:1.5}
+.quay{animation:tl-quay 1s linear infinite}
+@keyframes tl-quay{to{transform:rotate(360deg)}}

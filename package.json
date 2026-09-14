@@ -19,7 +19,9 @@
     "docs-word": "node scripts/docx-hs.cjs && node scripts/docx-gv.cjs",
     "docs-pdf": "node scripts/docs-pdf.cjs",
     "docs-video": "node scripts/video-hs.mjs && node scripts/video-gv.mjs",
-    "tai-lieu": "node scripts/gom-tai-lieu.mjs"
+    "tai-lieu": "node scripts/gom-tai-lieu.mjs",
+    "tai-len-tai-lieu": "node scripts/tai-len-tai-lieu.mjs",
+    "thu-quyen-tai-lieu": "node scripts/thu-quyen-tai-lieu.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.112.2",

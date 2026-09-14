@@ -2,7 +2,19 @@
 
 Hai bộ — một cho giáo viên, một cho học sinh — mỗi bộ gồm **tài liệu Word/PDF**
 và **video**. Cả hai bộ đều nhúng sẵn trên trang **Hướng dẫn** của hệ thống
-(`/#/guide`, chọn thẻ Học sinh hoặc Giáo viên).
+(`/#/guide`).
+
+**Hai bộ đi hai đường khác hẳn nhau:**
+
+| | Học sinh | Giáo viên |
+|---|---|---|
+| Ai xem được | mọi người, không cần đăng nhập | **chỉ giáo viên đã đăng nhập** |
+| Tệp nằm ở | `public/tai-lieu/`, trang trỏ thẳng vào | bucket riêng tư `tai-lieu-gv` trên Supabase |
+| Trong git | có | **không** |
+| Trang lấy tệp bằng | đường dẫn thường | đường dẫn ký hạn 2 giờ, Supabase chỉ cấp cho giáo viên |
+
+Bản học sinh để công khai là có chủ ý: bắt các em đăng nhập mới xem được hướng
+dẫn đăng nhập thì thành vòng luẩn quẩn.
 
 **Không sửa tay file .docx, .pdf hay .mp4** — tất cả đều dựng lại từ mã nguồn,
 sửa tay là lần chạy sau mất hết.
@@ -13,7 +25,8 @@ sửa tay là lần chạy sau mất hết.
 | Tài liệu Word | `Huong-dan-*.docx` | `npm run docs-word` |
 | Tài liệu PDF | `Huong-dan-*.pdf` | `npm run docs-pdf` |
 | Video | `video/hoc-sinh/`, `video/giao-vien/` | `npm run docs-video` |
-| Bản chép sang trang web | `public/tai-lieu/` | `npm run tai-lieu` (tự chạy trước mỗi lần build) |
+| Bản chép sang trang web (chỉ bản học sinh) | `public/tai-lieu/` | `npm run tai-lieu` (tự chạy trước mỗi lần build) |
+| Bản giáo viên lên kho riêng tư | bucket `tai-lieu-gv` | `npm run tai-len-tai-lieu` |
 
 ## Dựng lại khi giao diện đổi
 
@@ -45,6 +58,27 @@ Trang web nhúng được PDF ngay trong khung, người xem không phải tải
 Word. Và PDF thì máy nào mở cũng ra đúng một kiểu — `.docx` mở bằng Google Docs
 hay WPS là bố cục xô lệch, mà cả tài liệu này là hình với chú thích nên xô lệch
 là hỏng.
+
+## Bản giáo viên: chặn ở đâu
+
+Chặn ở **tầng cơ sở dữ liệu**, không phải ở tầng giao diện. Bucket `tai-lieu-gv`
+để riêng tư; chính sách trong [`supabase/schema-15-tai-lieu-gv.sql`](../../supabase/schema-15-tai-lieu-gv.sql)
+chỉ cho `is_teacher()` đọc và chỉ cho `is_admin()` ghi. Trang web gọi
+`createSignedUrl`, mà Supabase bắt người gọi phải có quyền đọc chính đối tượng
+đó — nên học sinh gọi cũng chỉ nhận về lỗi, không phải chỉ là không thấy nút.
+
+Kiểm lại bất cứ lúc nào:
+
+```
+DEMO_MK=<mk học sinh> GV_MK=<mk giáo viên> npm run thu-quyen-tai-lieu
+```
+
+Nó đăng nhập lần lượt bằng bốn vai (khách, học sinh, giáo viên, quản trị), xin
+đường dẫn rồi **tải thử** — xin được link mà tệp vẫn 403 thì cũng là không xem
+được. Chạy lại mỗi khi đụng vào file schema đó.
+
+Đẩy tệp lên bằng tài khoản **quản trị** chứ không bằng service_role key, nên
+không phải có thêm một khoá toàn quyền nằm trên máy.
 
 ## Vì sao public/tai-lieu không nằm trong git
 

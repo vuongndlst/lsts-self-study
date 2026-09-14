@@ -38,3 +38,17 @@ docs/huong-dan/*.csv
 *[Mm]at-khau*
 *[Pp]assword*.xlsx
 *[Pp]assword*.csv
+
+# Tài liệu và video dành cho GIÁO VIÊN. Kho này công khai, mà phần giáo viên thì
+# chỉ giáo viên đăng nhập mới được xem — để trong git là mở toang cho cả thế
+# giới. Nó nằm trong bucket riêng tư trên Supabase:
+#   supabase/schema-15-tai-lieu-gv.sql   chính sách truy cập
+#   scripts/tai-len-tai-lieu.mjs         đẩy lên sau khi dựng lại
+#
+# GIỮ LẠI .chuong.json: chỉ là tên và mốc từng phần, trang web cần nó lúc build
+# để dựng danh sách nhảy tới từng phần.
+docs/huong-dan/Huong-dan-giao-vien.docx
+docs/huong-dan/Huong-dan-giao-vien.pdf
+docs/huong-dan/bia-giao-vien.jpg
+docs/huong-dan/video/giao-vien/*.mp4
+docs/huong-dan/video/giao-vien/*.srt
