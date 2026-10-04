@@ -16,7 +16,7 @@ const EM = {
   noPhanTu: '2400006',   // Ngô Bảo Long  — 3 nhiệm vụ quá hạn, sẽ bật popup nhắc
   canHoTro: '2400003',   // Hồ Ngọc Diệp  — có bài bấm "cần hỗ trợ"
   sapChiaSe: '2400004',  // Lê Anh Tuấn   — tới lượt chia sẻ sách, chưa nộp
-  biKyLuat: '2400008',   // Trần Đức Huy  — đang phải lao động công ích
+  biTamDung: '2400008',  // Trần Đức Huy  — vi phạm thiết bị lần 2, đang bị tạm dừng
 }
 
 const loc = process.argv[2] ?? ''
@@ -89,7 +89,7 @@ try {
     await t.cuon(0)
     await t.chup('hs-06-tong-quan', { khung: [
       { sel: 'button', text: 'Đăng ký giờ tự học', n: 1 },
-      { sel: '.attend-card', n: 2 },
+      { sel: '.device-card', n: 2 },
       { sel: '.quick-views', n: 3 },
     ] })
   }
@@ -106,9 +106,11 @@ try {
     // Điền sẵn một ngày tự học để phần chọn tiết hiện ra. Chụp lúc còn trống thì
     // ảnh chỉ có dòng "Chọn ngày trước đã", không minh hoạ được bước 2.
     await t.chay(`const d=document.querySelector('.register-card input[type=date]');
-                  if (d) window.__dat(d, '2026-09-16'); return !!d`)
+                  /* thứ Tư sắp tới — ngày đã qua thì form báo Trễ */ const n=new Date(); let v=''; for(let i=1;i<9;i++){const x=new Date(n.getTime()+i*864e5);
+                      if(x.getDay()===3){v=[x.getFullYear(),String(x.getMonth()+1).padStart(2,'0'),String(x.getDate()).padStart(2,'0')].join('-');break}}
+                    if (d) window.__dat(d, v); return !!d`)
     await doi(1000)
-    await t.chup('hs-07-dang-ky-buoi', { chon: '.register-card', cao: 1700 })
+    await t.chup('hs-07-dang-ky-buoi', { chon: '.register-card', cao: 2300 })
   }
 
   // ---------- Danh sách nhiệm vụ ----------
@@ -153,23 +155,42 @@ try {
     await t.chup('hs-11-xem-danh-gia', { chon: '.modal', cao: 2200 })
   }
 
-  // ---------- Điểm danh và kỷ luật ----------
+  // ---------- Thiết bị điện tử: tạm dừng, lao động, quy định ----------
+  // Từ 10/2026 thẻ điểm danh (quên đăng ký) tắt; thay bằng thẻ thiết bị.
   if (nen('hs-12') || nen('hs-13')) {
-    await vao(EM.biKyLuat)
+    await vao(EM.biTamDung)
     await dongPopup()
-    await t.cuonToi('.attend-card')
+    await t.cuonToi('.device-card')
     if (nen('hs-12')) {
-      await t.chup('hs-12-the-diem-danh', { chon: '.attend-card', khung: [
-        { sel: '.attend-count', n: 1 },
-        { sel: '.labor-strip', n: 2 },
+      await t.chup('hs-12-the-thiet-bi', { chon: '.device-card', khung: [
+        { sel: '.device-card .attend-count', n: 1 },
+        { sel: '.device-card .attend-main', n: 2 },
+        { sel: '.device-card .labor-strip', n: 3 },
       ] })
     }
     if (nen('hs-13')) {
-      await t.chay(`document.querySelector('.attend-summary')?.click(); return 1`)
+      await t.chay(`document.querySelector('.device-card .attend-summary')?.click(); return 1`)
       await doi(700)
-      await t.cuonToi('.attend-card')
-      await t.chup('hs-13-quy-dinh-ky-luat', { chon: '.attend-card' })
+      await t.cuonToi('.device-card')
+      await t.chup('hs-13-quy-dinh-thiet-bi', { chon: '.device-card', cao: 2000 })
     }
+  }
+
+  // Công tắc thiết bị bị khoá kèm lý do — em đang bị tạm dừng.
+  if (nen('hs-18')) {
+    await vao(EM.biTamDung)
+    await dongPopup()
+    await t.chay(`window.__nut('Đăng ký giờ tự học')?.click(); return 1`)
+    await doi(1400)
+    // Ngày tự học đầu tiên từ ngày mai (thứ Tư hoặc thứ Sáu), trong thời gian cấm.
+    await t.chay(`const d=document.querySelector('.register-card input[type=date]');
+      const n=new Date(); for(let i=1;i<9;i++){const x=new Date(n.getTime()+i*864e5);
+        if([3,5].includes(x.getDay())){window.__dat(d,[x.getFullYear(),String(x.getMonth()+1).padStart(2,'0'),String(x.getDate()).padStart(2,'0')].join('-'));break}}
+      return !!d`)
+    await doi(1200)
+    await t.chup('hs-18-khoa-thiet-bi', { chon: '.task-block', cao: 1800, khung: [
+      { sel: '.device-locked', n: 1 },
+    ] })
   }
 
   // ---------- Chia sẻ sách ----------

@@ -1134,6 +1134,12 @@ whitelist nên phải revoke tay; kiểm tra thực tế bắt được đúng m
 
 ## 11d. Quên đăng ký tự học — miễn trừ, miễn buổi, kỷ luật
 
+> **ĐANG TẮT từ 10/2026** (xem mục 11f): đăng ký chỉ còn bắt buộc khi dùng thiết bị điện tử.
+> Tắt bằng công tắc toàn trường `app_settings.attendance_discipline_enabled`, **không xoá** gì —
+> số lần quên, sổ lao động, cài đặt từng lớp còn nguyên. Bật lại:
+> `update public.app_settings set value_bool = true where key = 'attendance_discipline_enabled';`
+> là job 0h05, thẻ điểm danh, tab *Chưa đăng ký* / *Kỷ luật* chạy lại đúng như mô tả dưới đây.
+
 [`schema-8-attendance.sql`](supabase/schema-8-attendance.sql) và
 [`schema-9-terms.sql`](supabase/schema-9-terms.sql).
 
@@ -1630,6 +1636,45 @@ View này bỏ qua RLS của bảng gốc (nó chạy dưới quyền chủ sở
 
 Không sửa dữ liệu cũ, chỉ đếm lại. Vì vậy nếu sau này quay về cách đếm theo tiết thì số cũ vẫn
 còn nguyên.
+
+## 11f. Thiết bị điện tử — đăng ký chỉ bắt buộc khi dùng thiết bị (10/2026)
+
+[`schema-16-tbdt.sql`](supabase/schema-16-tbdt.sql) ·
+[`schema-17-vi-pham-tbdt.sql`](supabase/schema-17-vi-pham-tbdt.sql) ·
+[`schema-18-minh-chung-tbdt.sql`](supabase/schema-18-minh-chung-tbdt.sql) ·
+thử bằng vai thật: `node scripts/thu-tbdt.mjs` (50 ca, mỗi ca tự huỷ).
+
+| Luật | Chặn ở đâu |
+|---|---|
+| Không dùng thiết bị → **không bắt buộc** đăng ký. Kỷ luật quên đăng ký **tắt** (mục 11d) | `discipline_on()` gắn vào 5 hàm kỷ luật |
+| Dùng thiết bị → bắt buộc đăng ký trước, chờ duyệt | như cũ |
+| GV giới hạn **số ngày/tuần** và **những thứ** được dùng (mặc định không giới hạn). Đếm theo **ngày**: nhiều nhiệm vụ cùng ngày là một lần; buổi bị từ chối không tính | trigger `trg_z_device_rules` trên `plans` → `device_rule_violation()` |
+| Đang bị tạm dừng → không bật được thiết bị (vẫn đăng ký tự học không thiết bị được) | cùng trigger |
+| Nhiệm vụ có thiết bị **bắt buộc ≥ 1 minh chứng** (ảnh, tệp hoặc liên kết); minh chứng cuối cùng không xoá được | `schema-18`: trigger trên `reflections` và `evidence` |
+
+**Thang xử lý vi phạm** — *không đăng ký mà tự ý dùng* hoặc *dùng sai mục đích*. Mỗi lần **độc
+lập**, không cộng dồn; đếm trong năm học của lớp; lần ghi nhầm thì **huỷ** (không tính, vẫn giữ dòng):
+
+| Lần | Tạm dừng thiết bị | Lao động công ích | |
+|---|---|---|---|
+| 1 | 1 tuần | 5 lượt | |
+| 2 | 2 tuần | 10 lượt | |
+| 3 | 1 tháng | 20 lượt | |
+| 4+ | 1 tháng | 20 lượt | **mời phụ huynh** |
+
+Thang nằm ở **một hàm** `device_penalty()`; giao diện hiển thị bảng `THANG_VI_PHAM` trong
+`src/components/DeviceRules.jsx` — đổi thang thì sửa cả hai (bộ thử bắt lệch phía CSDL).
+
+Ghi vi phạm (`record_device_violation`, chỉ GVCN): tạm dừng từ hôm nay — hoặc **nối đuôi** lần cấm
+đang có —, tự huỷ duyệt các buổi thiết bị trong thời gian đó, gửi thông báo cho em. *Gỡ cấm*
+(`lift_device_ban`) cho dùng lại sớm nhưng lần vi phạm vẫn tính, lượt lao động vẫn nợ. Sổ lao động
+ghi theo từng lần (`set_device_labor_done`), lần 4+ có thư mời phụ huynh soạn sẵn
+(`mark_device_parent_notified` khi đã báo). Trợ giảng không ghi và không đọc được sổ vi phạm (RLS).
+
+**Thứ tự triển khai** — `schema-16`, `schema-17` chạy trước được (không phá giao diện cũ).
+`schema-18` **chỉ chạy sau khi giao diện mới đã lên mạng**: giao diện cũ lưu kết quả *trước* rồi
+mới đính kèm minh chứng, nên luật minh chứng sẽ chặn ngay bước đầu. Giao diện mới đã đảo: đính kèm
+trước, lưu kết quả sau; xoá dòng minh chứng trước, xoá tệp trên kho sau.
 
 ## 12. Quyền dữ liệu
 

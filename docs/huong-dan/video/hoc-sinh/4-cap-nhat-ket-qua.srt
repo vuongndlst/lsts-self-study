@@ -1,47 +1,55 @@
 1
-00:00:00,000 --> 00:00:02,390
+00:00:00,000 --> 00:00:02,391
 Đăng ký mới là một nửa. Nửa còn lại là quay lại ghi em đã làm được tới đâu.
 
 2
-00:00:02,390 --> 00:00:05,694
+00:00:02,391 --> 00:00:05,700
 Đây là phần nhiều bạn bỏ qua, nhưng lại quan trọng nhất.
 
 3
-00:00:05,694 --> 00:00:10,141
+00:00:05,700 --> 00:00:10,123
 Trên thẻ của buổi đã qua có nút này.
 
 4
-00:00:10,141 --> 00:00:12,559
+00:00:10,123 --> 00:00:12,525
 Hệ thống gợi ý sẵn hai câu hỏi ngay trên ô nhập.
 
 5
-00:00:12,559 --> 00:00:14,960
+00:00:12,525 --> 00:00:14,927
 Em cứ trả lời hai câu đó là đủ.
 
 6
-00:00:14,960 --> 00:00:17,363
+00:00:14,927 --> 00:00:17,329
 Viết "xong rồi" là chưa đủ — thầy cô đọc xong vẫn không biết em vướng ở đâu.
 
 7
-00:00:17,363 --> 00:00:19,765
+00:00:17,329 --> 00:00:19,730
 Thanh màu dưới ô nhập cho em biết đã viết đủ ý chưa.
 
 8
-00:00:19,765 --> 00:00:22,178
+00:00:19,730 --> 00:00:22,132
 Khi nào hiện "Đủ ý rồi, cảm ơn em" là được.
 
 9
-00:00:22,178 --> 00:00:24,599
+00:00:22,132 --> 00:00:24,534
 Còn vướng thì bật công tắc Em cần giáo viên hỗ trợ và ghi rõ vướng chỗ nào.
 
 10
-00:00:24,599 --> 00:00:28,016
+00:00:24,534 --> 00:00:27,938
 Buổi đó sẽ hiện trên bảng của thầy cô kèm dấu cần hỗ trợ.
 
 11
-00:00:28,016 --> 00:00:30,423
-Có sản phẩm chụp được thì đính kèm ở cuối, tối đa ba thứ.
+00:00:27,938 --> 00:00:30,341
+Nhiệm vụ này có dùng thiết bị, nên BẮT BUỘC có ít nhất một minh chứng.
 
 12
-00:00:30,423 --> 00:00:33,641
-Không bắt buộc phải có ảnh — ôn bài hay đọc sách thì phần chữ em viết mới là chính.
+00:00:30,341 --> 00:00:32,743
+Ảnh chụp bài làm, tệp PDF, hoặc liên kết tới sản phẩm đều được — tối đa ba thứ.
+
+13
+00:00:32,743 --> 00:00:35,145
+Chưa có minh chứng thì hệ thống chưa cho lưu kết quả.
+
+14
+00:00:35,145 --> 00:00:38,353
+Nhiệm vụ không dùng thiết bị thì minh chứng không bắt buộc — phần chữ em viết mới là chính.

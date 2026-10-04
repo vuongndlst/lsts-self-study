@@ -30,6 +30,10 @@ const than = () => {
     '**Sau buổi học** — ghi lại em làm được tới đâu, chỗ nào còn vướng.',
   ]),
   doan('Việc thứ ba nhiều bạn hay bỏ qua, nhưng lại là việc quan trọng nhất: thầy cô đọc phần em ghi để biết em đang mắc ở đâu mà giúp. Em không ghi thì thầy cô không biết, và hệ thống sẽ tự chấm em **1 sao** sau 5 ngày.'),
+  ...hopVaCach('canThan', [
+    '**Từ tháng 10/2026:** em **chỉ bắt buộc đăng ký khi cần dùng thiết bị điện tử** (máy tính, điện thoại, máy tính bảng). Không dùng thiết bị thì đăng ký là tuỳ em — nhưng vẫn rất nên làm, vì đó là cách em tự lên kế hoạch.',
+    'Không đăng ký mà tự ý dùng thiết bị, hoặc dùng sai mục đích đã đăng ký, là **vi phạm** — xem mục 9.',
+  ]),
 
   // =========================================================================
   tua1('2. Tạo tài khoản lần đầu'),
@@ -69,7 +73,7 @@ const than = () => {
   ...hinh('hs-06-tong-quan', 'Màn hình chính sau khi đăng nhập.'),
   ...chuGiai([
     ['1', '**Đăng ký giờ tự học** — nút to màu xanh đậm, dùng để đăng ký buổi mới.'],
-    ['2', '**Thẻ điểm danh** — học kỳ này em đã quên đăng ký mấy lần, còn mấy lần được miễn trừ.'],
+    ['2', '**Thẻ thiết bị điện tử** — tuần này em đã dùng thiết bị mấy ngày, lớp giới hạn thế nào, và em đã vi phạm lần nào chưa.'],
     ['3', '**Bộ lọc nhanh** — bấm một cái là hiện đúng nhóm nhiệm vụ đó. Ví dụ bấm *Trễ hạn* thì chỉ còn những buổi em chưa cập nhật kết quả.'],
   ]),
   ...hopVaCach('meo',
@@ -78,18 +82,26 @@ const than = () => {
   // =========================================================================
   tua1('5. Đăng ký một buổi tự học'),
   ...hopVaCach('canThan',
-    'Hạn đăng ký là **24:00 của ngày hôm trước**. Đăng ký sau mốc đó, buổi của em bị đánh dấu **Trễ**. Không đăng ký gì cả thì tính là **quên đăng ký** — xem mục 9.'),
+    'Hạn đăng ký là **24:00 của ngày hôm trước**. Đăng ký sau mốc đó, buổi của em bị đánh dấu **Trễ**. Buổi nào **cần dùng thiết bị** thì bắt buộc phải đăng ký trước — xem mục 9.'),
   ...hinhKem('hs-07-dang-ky-buoi', 'Cửa sổ đăng ký một buổi tự học.', [
     buoc(1, 'Bấm **Đăng ký giờ tự học**.'),
     buoc(2, 'Chọn **ngày** và **tiết** tự học.'),
     buoc(3, 'Điền nhiệm vụ: môn, việc cụ thể em sẽ làm, và mục tiêu.'),
-    buoc(4, 'Buổi đó cần máy tính hoặc điện thoại thì bật **Cần dùng thiết bị** và ghi rõ dùng để làm gì — thầy cô sẽ duyệt.'),
+    buoc(4, 'Nhiệm vụ nào cần máy tính hoặc điện thoại thì bật **Dùng thiết bị điện tử** và ghi rõ dùng để làm gì — thầy cô sẽ duyệt.'),
     buoc(5, 'Bấm lưu.'),
   ]),
   ...hopVaCach('luuY', [
     'Một **buổi** có thể chứa **nhiều nhiệm vụ**. Ví dụ tiết 8–9 thứ Sáu em làm Toán 45 phút rồi Tiếng Anh 45 phút — đó là một buổi, hai nhiệm vụ.',
     'Mục tiêu nên **đo được**. "Học bài" thì không biết thế nào là xong. "Làm bài 1–8 trang 24, đúng ít nhất 6 bài" thì cuối buổi em tự biết mình đạt hay chưa.',
   ]),
+  tua2('Khi công tắc thiết bị bị khoá'),
+  ...hinhKem('hs-18-khoa-thiet-bi', 'Công tắc thiết bị bị khoá, kèm lý do.', [
+    doan('Có ba trường hợp em **không bật được** công tắc thiết bị, và hệ thống ghi rõ lý do ngay dưới công tắc ①:'),
+    gach('Em đang bị **tạm dừng dùng thiết bị** vì vi phạm.'),
+    gach('Lớp chỉ cho dùng thiết bị vào **một số thứ** trong tuần, mà ngày em chọn không nằm trong đó.'),
+    gach('Tuần đó em đã dùng **đủ số ngày** lớp cho phép. Nhiều nhiệm vụ dùng thiết bị trong cùng một ngày chỉ tính là một ngày.'),
+    doan('Em vẫn đăng ký nhiệm vụ **không dùng thiết bị** bình thường.'),
+  ], { rong: 300 }),
 
   // =========================================================================
   tua1('6. Xem lại các buổi đã đăng ký'),
@@ -123,11 +135,15 @@ const than = () => {
     ['"em làm xong bài tập"', '"Em làm bài 1–8 trang 24, đúng 7 bài. Bài 7 em nhầm dấu khi rút gọn, đã xem lại và hiểu chỗ sai."'],
     ['"học bài rồi"', '"Em ôn 30 từ Unit 1, tự kiểm tra nhớ được 26. Nhóm từ về nghề nghiệp em còn lẫn."'],
   ], [30, 70]),
-  tua2('Đính kèm sản phẩm (không bắt buộc)'),
-  doan('Nếu buổi đó có thứ chụp được — trang vở em đã làm, bài trình chiếu, đường dẫn tới bài của nhóm — em đính kèm ở phần dưới cùng. Tối đa 3 thứ.'),
-  ...hinh('hs-10-minh-chung', 'Phần đính kèm sản phẩm, nằm cuối cửa sổ cập nhật kết quả.'),
+  tua2('Đính kèm minh chứng'),
+  doan('Nếu buổi đó có thứ chụp được — trang vở em đã làm, bài trình chiếu, đường dẫn tới bài của nhóm — em đính kèm ở phần dưới cùng. Tối đa 3 thứ: ảnh, tệp PDF hoặc liên kết.'),
+  ...hinh('hs-10-minh-chung', 'Phần đính kèm minh chứng của một nhiệm vụ có dùng thiết bị — ghi rõ **bắt buộc ít nhất 1**.'),
+  ...bangVaCach(['Nhiệm vụ', 'Minh chứng'], [
+    ['**Có dùng thiết bị điện tử**', '**Bắt buộc ít nhất một** ảnh, tệp hoặc liên kết. Chưa có thì hệ thống chưa cho lưu kết quả. Minh chứng cuối cùng không xoá được — muốn thay thì thêm cái mới trước rồi mới xoá cái cũ.'],
+    ['Không dùng thiết bị', 'Không bắt buộc. Có những việc không sinh ra sản phẩm nào — ôn bài, đọc sách. Phần chữ em viết mới là chính.'],
+  ], [32, 68]),
   ...hopVaCach('luuY',
-    '**Không bắt buộc phải có ảnh.** Có những việc không sinh ra sản phẩm nào — ôn bài, đọc sách. Phần chữ em viết mới là chính. Đừng chụp đại một trang giấy cho đủ thủ tục.'),
+    'Minh chứng phải là **kết quả thật** của buổi đó: ảnh chụp màn hình bài làm, tệp em đã làm ra, đường dẫn tới sản phẩm. Đừng chụp đại một trang giấy cho đủ thủ tục.'),
 
   // =========================================================================
   tua1('8. Xem thầy cô chấm sao và nhận xét'),
@@ -138,26 +154,32 @@ const than = () => {
   ], { rong: 260 }),
 
   // =========================================================================
-  tua1('9. Quên đăng ký và lao động công ích'),
-  doan('Ngày lớp có tiết tự học mà em **không đăng ký kế hoạch nào**, hệ thống ghi lại là một lần quên. Việc ghi nhận diễn ra lúc **0 giờ 5 phút sáng hôm sau**, nên em đăng ký muộn trong ngày vẫn kịp.'),
-  ...hopVaCach('luuY',
-    'Hai tiết **liền nhau** trong cùng một buổi chỉ tính là **một** lần quên. Ví dụ thứ Sáu tiết 8 và 9 mà em không đăng ký gì, đó là một lần, không phải hai.'),
-  ...hinh('hs-12-the-diem-danh', 'Thẻ điểm danh của một bạn đang phải lao động công ích.'),
+  tua1('9. Thiết bị điện tử và xử lý vi phạm'),
+  doan('Giờ tự học có thể dùng thiết bị điện tử, nhưng phải **đăng ký trước** và được thầy cô **duyệt**, và chỉ dùng **đúng mục đích** đã ghi. Thầy cô có thể giới hạn số ngày được dùng mỗi tuần, hoặc chỉ cho dùng vào một số thứ.'),
+  ...hinh('hs-12-the-thiet-bi', 'Thẻ thiết bị điện tử của một bạn đang bị tạm dừng.'),
   ...chuGiai([
-    ['1', 'Số lần em đã quên đăng ký trong học kỳ này.'],
-    ['2', 'Số lượt lao động công ích: đã làm mấy lượt, còn nợ mấy lượt, hạn hoàn thành khi nào.'],
+    ['1', 'Số lần em đã vi phạm quy định thiết bị trong năm học.'],
+    ['2', 'Tuần này em đã dùng thiết bị mấy ngày — hoặc, nếu đang bị tạm dừng, tạm dừng đến hết ngày nào và vì sao.'],
+    ['3', 'Số lượt lao động công ích em còn nợ.'],
   ]),
-  tua2('Quy định của lớp'),
-  ...bangVaCach(['Số lần quên', 'Hậu quả'], [
-    ['1 – 3 lần', 'Được miễn trừ, không có kỷ luật.'],
-    ['Lần thứ 4', 'Lao động công ích 5 lượt.'],
-    ['Lần thứ 5', 'Lao động công ích 10 lượt.'],
-    ['Từ lần thứ 6', 'Thầy cô trao đổi trực tiếp với phụ huynh.'],
+  tua2('Thế nào là vi phạm'),
+  ...hopVaCach('canThan', [
+    '**Không đăng ký mà tự ý dùng** thiết bị trong giờ tự học.',
+    '**Dùng sai mục đích** — đăng ký để tra cứu tài liệu nhưng lại chơi trò chơi, xem video giải trí, nhắn tin…',
+  ]),
+  tua2('Quy định xử lý'),
+  ...bangVaCach(['Lần vi phạm', 'Hình thức xử lý'], [
+    ['Lần 1', 'Cấm dùng thiết bị **1 tuần** + **5 lượt** lao động công ích.'],
+    ['Lần 2', 'Cấm dùng thiết bị **2 tuần** + **10 lượt** lao động công ích.'],
+    ['Lần 3', 'Cấm dùng thiết bị **1 tháng** + **20 lượt** lao động công ích.'],
+    ['Từ lần 4', '**Mời phụ huynh** lên trao đổi; vẫn cấm 1 tháng + 20 lượt.'],
   ], [26, 74]),
-  doan('Bảng quy định này cũng hiện ngay trong hệ thống, em bấm vào thẻ điểm danh là mở ra.'),
-  ...hinh('hs-13-quy-dinh-ky-luat', 'Bảng quy định mở ra từ thẻ điểm danh. Mức em đang ở được tô đậm.'),
-  ...hopVaCach('meo',
-    'Nếu em thấy có buổi bị ghi nhầm — hôm đó em nghỉ có phép, hoặc cả lớp đi sự kiện — hãy nhắn thầy cô. Thầy cô **miễn buổi** đó được và lần quên sẽ bị xoá khỏi sổ.'),
+  doan('Mỗi lần xử lý **riêng**, không cộng dồn: lần 2 là 10 lượt của riêng lần 2, không phải 5 + 10. Đang bị cấm mà vi phạm tiếp thì lần cấm mới bắt đầu **sau khi** lần cũ hết.'),
+  ...hinh('hs-13-quy-dinh-thiet-bi', 'Bấm vào thẻ thiết bị để mở bảng quy định và từng lần vi phạm của em. Mức em đang ở được tô đậm.'),
+  ...hopVaCach('meo', [
+    'Trong thời gian bị tạm dừng, em **vẫn tự học bình thường** — chỉ không đăng ký dùng thiết bị được. Những buổi thiết bị đã được duyệt rơi vào thời gian đó sẽ tự bị huỷ duyệt và em nhận thông báo.',
+    'Nếu em thấy mình bị ghi nhầm, hãy nhắn thầy cô. Thầy cô **huỷ** lần ghi nhầm đó được — lần đó sẽ không tính nữa.',
+  ]),
 
   // =========================================================================
   tua1('10. Cửa sổ nhắc việc'),
@@ -193,12 +215,14 @@ const than = () => {
   // =========================================================================
   tua1('13. Câu hỏi thường gặp'),
   bang(['Em hỏi', 'Trả lời'], [
-    ['Em quên không đăng ký, giờ đăng ký bù được không?',
-     'Được, và em nên làm ngay. Hệ thống chốt sổ lúc 0 giờ 5 sáng hôm sau, nên đăng ký trong ngày vẫn kịp — chỉ bị đánh dấu **Trễ** thôi, không tính là quên.'],
+    ['Hôm nay em không dùng máy, có phải đăng ký không?',
+     'Không bắt buộc. Em vẫn nên đăng ký để tự lên kế hoạch và ghi lại kết quả, nhưng không đăng ký thì cũng không bị xử lý gì.'],
+    ['Em quên đăng ký mà buổi đó cần dùng máy thì sao?',
+     'Đăng ký ngay trước khi dùng — sau 24:00 hôm trước thì bị đánh dấu **Trễ**, và nếu lớp khoá đăng ký trễ thì không đăng ký được nữa. Khi đó em **không được dùng** thiết bị; dùng là vi phạm.'],
     ['Em đăng ký rồi nhưng hôm đó làm việc khác, ghi sao?',
      'Cứ ghi đúng sự thật vào ô kết quả. Thầy cô cần biết em thực sự làm gì, không phải một bản báo cáo đẹp.'],
-    ['Em nghỉ ốm đúng buổi tự học thì sao?',
-     'Báo thầy cô. Thầy cô bấm **miễn buổi** cho em, buổi đó không tính là quên đăng ký.'],
+    ['Sao công tắc thiết bị của em bị mờ, không bật được?',
+     'Đọc dòng chữ đỏ ngay dưới công tắc: em đang bị tạm dừng, hoặc ngày đó lớp không cho dùng thiết bị, hoặc tuần đó em đã dùng đủ số ngày.'],
     ['Em sửa kết quả đã ghi được không?',
      'Được. Mở lại buổi đó và sửa. Nếu thầy cô đã chấm sao rồi thì bài sẽ được đánh dấu để thầy cô chấm lại.'],
     ['Em thấy nhiệm vụ bị hệ thống tự chấm 1 sao, sao vậy?',
@@ -218,7 +242,7 @@ const MUC_LUC = [
   '6. Xem lại các buổi đã đăng ký',
   '7. Cập nhật kết quả — phần quan trọng nhất',
   '8. Xem thầy cô chấm sao và nhận xét',
-  '9. Quên đăng ký và lao động công ích',
+  '9. Thiết bị điện tử và xử lý vi phạm',
   '10. Cửa sổ nhắc việc',
   '11. Chia sẻ sách',
   '12. Hỏi thầy cô',

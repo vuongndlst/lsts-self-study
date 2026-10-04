@@ -281,7 +281,7 @@ export default function SessionRegister({ onDone, onCancel, onFixReflections }) 
       <div className="reg-tasks">
         <label>Em dự định làm gì?</label>
         <p className="muted-text small">Chỉ đăng ký những nhiệm vụ em thực sự dự định làm trong buổi này.</p>
-        {quota && !deviceLock && <p className="device-quota-line"><Laptop size={13} /> {hanMucText(quota)}
+        {quota && !deviceLock && <p className="device-quota-line"><Laptop size={13} /> {hanMucText(quota, quota.tuan_tu <= todayISO() && todayISO() <= quota.tuan_den)}
           {' '}Nhiều nhiệm vụ dùng thiết bị trong cùng một ngày chỉ tính là một ngày.</p>}
 
         {tasks.map((t, i) => <div key={t.key} className="task-block">

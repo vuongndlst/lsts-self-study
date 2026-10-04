@@ -7,309 +7,337 @@ Hướng dẫn sử dụng cho học sinh.
 Phần 1: Tạo tài khoản và đăng nhập.
 
 3
-00:00:08,200 --> 00:00:11,502
+00:00:08,200 --> 00:00:11,496
 Em chỉ tạo tài khoản một lần duy nhất trong cả năm học.
 
 4
-00:00:11,502 --> 00:00:16,035
+00:00:11,496 --> 00:00:16,010
 Từ trang chủ, bấm Bắt đầu.
 
 5
-00:00:16,035 --> 00:00:20,270
+00:00:16,010 --> 00:00:20,238
 Chưa có tài khoản thì chọn Đăng ký lần đầu.
 
 6
-00:00:20,270 --> 00:00:23,686
+00:00:20,238 --> 00:00:23,643
 Nhập mã số học sinh của em — đúng bảy chữ số, ghi trên thẻ.
 
 7
-00:00:23,686 --> 00:00:26,102
+00:00:23,643 --> 00:00:26,047
 Rồi đặt mật khẩu riêng và gõ lại cho khớp.
 
 8
-00:00:26,102 --> 00:00:28,517
+00:00:26,047 --> 00:00:28,453
 Các quy tắc hiện ngay dưới ô nhập. Đủ điều kiện nào thì điều kiện đó xanh lên.
 
 9
-00:00:28,517 --> 00:00:33,351
+00:00:28,453 --> 00:00:33,266
 Mật khẩu KHÔNG được chứa mã số học sinh của em — đây là lỗi hay gặp nhất.
 
 10
-00:00:33,351 --> 00:00:35,760
+00:00:33,266 --> 00:00:35,669
 Lúc đăng nhập, nhớ chọn đúng thẻ Học sinh.
 
 11
-00:00:35,760 --> 00:00:39,278
+00:00:35,669 --> 00:00:39,177
 Nhập mã số học sinh, không phải email.
 
 12
-00:00:39,278 --> 00:00:44,297
+00:00:39,177 --> 00:00:44,184
 Quên mật khẩu thì bấm đây, hệ thống gửi liên kết về email trường của em.
 
 13
-00:00:44,297 --> 00:00:46,705
+00:00:44,184 --> 00:00:46,586
 Không mở được email trường thì báo thầy cô chủ nhiệm, thầy cô đặt lại giúp em.
 
 14
-00:00:49,400 --> 00:00:52,200
+00:00:49,266 --> 00:00:52,066
 Phần 2: Màn hình chính của em.
 
 15
-00:00:52,200 --> 00:00:55,812
+00:00:52,066 --> 00:00:55,662
 Đăng nhập xong, tất cả những gì em cần đều nằm ở màn hình này.
 
 16
-00:00:55,812 --> 00:00:59,429
+00:00:55,662 --> 00:00:58,065
 Nút xanh đậm này để đăng ký một buổi tự học mới.
 
 17
-00:00:59,429 --> 00:01:01,844
-Thẻ điểm danh cho biết học kỳ này em đã quên đăng ký mấy lần.
+00:00:58,065 --> 00:01:01,672
+Không dùng thiết bị điện tử thì em không bắt buộc đăng ký — nhưng vẫn nên tự lên kế hoạch.
 
 18
-00:01:01,844 --> 00:01:05,464
-Và còn mấy lần được miễn trừ.
+00:01:01,672 --> 00:01:04,075
+Thẻ Thiết bị điện tử cho biết tuần này em đã dùng thiết bị mấy ngày.
 
 19
-00:01:05,464 --> 00:01:07,879
-Dải bộ lọc nhanh: bấm một cái là hiện đúng nhóm nhiệm vụ đó.
+00:01:04,075 --> 00:01:07,679
+Và em đã vi phạm quy định thiết bị lần nào chưa.
 
 20
-00:01:07,879 --> 00:01:10,291
-Mỗi lần vào trang, em nhìn hai con số: Trễ hạn và Cần viết phản hồi.
+00:01:07,679 --> 00:01:10,081
+Dải bộ lọc nhanh: bấm một cái là hiện đúng nhóm nhiệm vụ đó.
 
 21
-00:01:10,291 --> 00:01:12,708
-Hai con số đó bằng không nghĩa là em không nợ việc gì.
+00:01:10,081 --> 00:01:12,490
+Mỗi lần vào trang, em nhìn hai con số: Trễ hạn và Cần viết phản hồi.
 
 22
-00:01:15,400 --> 00:01:18,200
-Phần 3: Đăng ký một buổi tự học.
+00:01:12,490 --> 00:01:14,891
+Hai con số đó bằng không nghĩa là em không nợ việc gì.
 
 23
-00:01:18,200 --> 00:01:20,591
-Hạn đăng ký là 24 giờ của ngày hôm trước.
+00:01:17,599 --> 00:01:20,399
+Phần 3: Đăng ký một buổi tự học.
 
 24
-00:01:20,591 --> 00:01:23,903
-Đăng ký sau mốc đó thì buổi của em bị đánh dấu Trễ.
+00:01:20,399 --> 00:01:22,783
+Cần dùng máy tính hay điện thoại trong giờ tự học thì BẮT BUỘC đăng ký trước.
 
 25
-00:01:23,903 --> 00:01:29,319
-Bấm Đăng ký giờ tự học.
+00:01:22,783 --> 00:01:26,094
+Hạn đăng ký là 24 giờ của ngày hôm trước. Sau mốc đó thì bị đánh dấu Trễ.
 
 26
-00:01:29,319 --> 00:01:31,721
-Chọn ngày trước, rồi phần chọn tiết mới hiện ra.
+00:01:26,094 --> 00:01:31,514
+Bấm Đăng ký giờ tự học.
 
 27
-00:01:31,721 --> 00:01:34,123
-Hệ thống chỉ mở những tiết lớp em thực sự có giờ tự học.
+00:01:31,514 --> 00:01:33,916
+Chọn ngày trước, rồi phần chọn tiết mới hiện ra.
 
 28
-00:01:34,123 --> 00:01:37,656
-Thứ nào lớp không có giờ tự học thì không chọn được — như vậy là đúng.
+00:01:33,916 --> 00:01:36,320
+Hệ thống chỉ mở những tiết lớp em thực sự có giờ tự học.
 
 29
-00:01:37,656 --> 00:01:40,058
-Rồi ghi nhiệm vụ: môn gì, làm việc cụ thể nào, mục tiêu là gì.
+00:01:36,320 --> 00:01:39,829
+Thứ nào lớp không có giờ tự học thì không chọn được — như vậy là đúng.
 
 30
-00:01:40,058 --> 00:01:42,460
-Mục tiêu nên đo được. "Học bài" thì không biết thế nào là xong.
+00:01:39,829 --> 00:01:42,234
+Rồi ghi nhiệm vụ: môn gì, làm việc cụ thể nào, mục tiêu là gì.
 
 31
-00:01:42,460 --> 00:01:44,871
-"Làm bài 1 đến 8 trang 24, đúng ít nhất 6 bài" thì cuối buổi em tự biết mình đạt chưa.
+00:01:42,234 --> 00:01:44,635
+Mục tiêu nên đo được. "Học bài" thì không biết thế nào là xong.
 
 32
-00:01:44,871 --> 00:01:47,275
-Buổi đó cần máy tính hay điện thoại thì bật Cần dùng thiết bị và ghi rõ dùng để làm gì.
+00:01:44,635 --> 00:01:47,942
+"Làm bài 1 đến 8 trang 24, đúng ít nhất 6 bài" thì cuối buổi em tự biết mình đạt chưa.
 
 33
-00:01:49,966 --> 00:01:52,766
-Phần 4: Cập nhật kết quả — phần quan trọng nhất.
+00:01:47,942 --> 00:01:50,348
+Nhiệm vụ cần thiết bị thì bật Dùng thiết bị điện tử và ghi rõ dùng để làm gì.
 
 34
-00:01:52,766 --> 00:01:55,156
-Đăng ký mới là một nửa. Nửa còn lại là quay lại ghi em đã làm được tới đâu.
+00:01:50,348 --> 00:01:52,753
+Dòng chữ phía trên cho biết tuần đó em đã dùng thiết bị mấy ngày.
 
 35
-00:01:55,156 --> 00:01:58,460
-Đây là phần nhiều bạn bỏ qua, nhưng lại quan trọng nhất.
+00:01:52,753 --> 00:01:55,156
+Bị tạm dừng, chọn thứ lớp không cho dùng, hay đã dùng đủ số ngày thì công tắc tự khoá và ghi rõ lý do.
 
 36
-00:01:58,460 --> 00:02:02,907
-Trên thẻ của buổi đã qua có nút này.
+00:01:55,156 --> 00:01:57,558
+Không đăng ký mà tự ý dùng, hoặc dùng sai mục đích, là vi phạm.
 
 37
-00:02:02,907 --> 00:02:05,325
-Hệ thống gợi ý sẵn hai câu hỏi ngay trên ô nhập.
+00:02:00,265 --> 00:02:03,065
+Phần 4: Cập nhật kết quả — phần quan trọng nhất.
 
 38
-00:02:05,325 --> 00:02:07,726
-Em cứ trả lời hai câu đó là đủ.
+00:02:03,065 --> 00:02:05,456
+Đăng ký mới là một nửa. Nửa còn lại là quay lại ghi em đã làm được tới đâu.
 
 39
-00:02:07,726 --> 00:02:10,129
-Viết "xong rồi" là chưa đủ — thầy cô đọc xong vẫn không biết em vướng ở đâu.
+00:02:05,456 --> 00:02:08,765
+Đây là phần nhiều bạn bỏ qua, nhưng lại quan trọng nhất.
 
 40
-00:02:10,129 --> 00:02:12,531
-Thanh màu dưới ô nhập cho em biết đã viết đủ ý chưa.
+00:02:08,765 --> 00:02:13,188
+Trên thẻ của buổi đã qua có nút này.
 
 41
-00:02:12,531 --> 00:02:14,944
-Khi nào hiện "Đủ ý rồi, cảm ơn em" là được.
+00:02:13,188 --> 00:02:15,590
+Hệ thống gợi ý sẵn hai câu hỏi ngay trên ô nhập.
 
 42
-00:02:14,944 --> 00:02:17,365
-Còn vướng thì bật công tắc Em cần giáo viên hỗ trợ và ghi rõ vướng chỗ nào.
+00:02:15,590 --> 00:02:17,992
+Em cứ trả lời hai câu đó là đủ.
 
 43
-00:02:17,365 --> 00:02:20,782
-Buổi đó sẽ hiện trên bảng của thầy cô kèm dấu cần hỗ trợ.
+00:02:17,992 --> 00:02:20,394
+Viết "xong rồi" là chưa đủ — thầy cô đọc xong vẫn không biết em vướng ở đâu.
 
 44
-00:02:20,782 --> 00:02:23,189
-Có sản phẩm chụp được thì đính kèm ở cuối, tối đa ba thứ.
+00:02:20,394 --> 00:02:22,795
+Thanh màu dưới ô nhập cho em biết đã viết đủ ý chưa.
 
 45
-00:02:23,189 --> 00:02:26,407
-Không bắt buộc phải có ảnh — ôn bài hay đọc sách thì phần chữ em viết mới là chính.
+00:02:22,795 --> 00:02:25,197
+Khi nào hiện "Đủ ý rồi, cảm ơn em" là được.
 
 46
-00:02:29,133 --> 00:02:31,933
-Phần 5: Xem thầy cô chấm sao và nhận xét.
+00:02:25,197 --> 00:02:27,599
+Còn vướng thì bật công tắc Em cần giáo viên hỗ trợ và ghi rõ vướng chỗ nào.
 
 47
-00:02:31,933 --> 00:02:35,228
-Thầy cô chấm từ một tới năm sao và viết nhận xét cho từng nhiệm vụ.
+00:02:27,599 --> 00:02:31,003
+Buổi đó sẽ hiện trên bảng của thầy cô kèm dấu cần hỗ trợ.
 
 48
-00:02:35,228 --> 00:02:39,642
-Bấm vào một buổi đã chấm để xem đầy đủ.
+00:02:31,003 --> 00:02:33,406
+Nhiệm vụ này có dùng thiết bị, nên BẮT BUỘC có ít nhất một minh chứng.
 
 49
-00:02:39,642 --> 00:02:42,044
-Cửa sổ hiện số sao, nhận xét của thầy cô, và phần em đã ghi.
+00:02:33,406 --> 00:02:35,808
+Ảnh chụp bài làm, tệp PDF, hoặc liên kết tới sản phẩm đều được — tối đa ba thứ.
 
 50
-00:02:42,044 --> 00:02:44,446
-Bị một hoặc hai sao thì em cần viết một dòng cho biết sẽ điều chỉnh thế nào.
+00:02:35,808 --> 00:02:38,210
+Chưa có minh chứng thì hệ thống chưa cho lưu kết quả.
 
 51
-00:02:44,446 --> 00:02:47,679
-Đây không phải hình phạt — đó là cách để lần sau em làm tốt hơn.
+00:02:38,210 --> 00:02:41,418
+Nhiệm vụ không dùng thiết bị thì minh chứng không bắt buộc — phần chữ em viết mới là chính.
 
 52
-00:02:47,679 --> 00:02:50,087
-Em vẫn sửa lại kết quả đã ghi được. Thầy cô sẽ chấm lại.
+00:02:44,098 --> 00:02:46,898
+Phần 5: Xem thầy cô chấm sao và nhận xét.
 
 53
-00:02:52,766 --> 00:02:56,539
-Phần 6: Quên đăng ký và lao động công ích.
+00:02:46,898 --> 00:02:50,189
+Thầy cô chấm từ một tới năm sao và viết nhận xét cho từng nhiệm vụ.
 
 54
-00:02:56,539 --> 00:02:58,942
-Ngày lớp có tiết tự học mà em không đăng ký gì thì bị ghi một lần quên.
+00:02:50,189 --> 00:02:54,599
+Bấm vào một buổi đã chấm để xem đầy đủ.
 
 55
-00:02:58,942 --> 00:03:01,350
-Hệ thống ghi lúc không giờ năm phút sáng hôm sau, nên đăng ký muộn trong ngày vẫn kịp.
+00:02:54,599 --> 00:02:57,001
+Cửa sổ hiện số sao, nhận xét của thầy cô, và phần em đã ghi.
 
 56
-00:03:01,350 --> 00:03:04,868
-Hai tiết liền nhau trong cùng một buổi chỉ tính MỘT lần quên, không phải hai.
+00:02:57,001 --> 00:02:59,405
+Bị một hoặc hai sao thì em cần viết một dòng cho biết sẽ điều chỉnh thế nào.
 
 57
-00:03:04,868 --> 00:03:09,093
-Bấm vào thẻ điểm danh để xem bảng quy định.
+00:02:59,405 --> 00:03:02,614
+Đây không phải hình phạt — đó là cách để lần sau em làm tốt hơn.
 
 58
-00:03:09,093 --> 00:03:11,500
-Ba lần đầu được miễn trừ. Lần thứ tư là lao động công ích năm lượt.
+00:03:02,614 --> 00:03:05,016
+Em vẫn sửa lại kết quả đã ghi được. Thầy cô sẽ chấm lại.
 
 59
-00:03:11,500 --> 00:03:13,914
-Lần thứ năm là mười lượt. Từ lần thứ sáu thì thầy cô trao đổi với phụ huynh.
+00:03:07,732 --> 00:03:11,521
+Phần 6: Thiết bị điện tử và xử lý vi phạm.
 
 60
-00:03:13,914 --> 00:03:16,322
-Thang này không cộng dồn: lần thứ năm là mười lượt, không phải năm cộng mười.
+00:03:11,521 --> 00:03:13,923
+Dùng thiết bị trong giờ tự học phải đăng ký trước, được duyệt, và dùng đúng mục đích.
 
 61
-00:03:16,322 --> 00:03:18,728
-Nếu có buổi bị ghi nhầm — em nghỉ có phép, hay cả lớp đi sự kiện — hãy nhắn thầy cô.
+00:03:13,923 --> 00:03:16,326
+Không đăng ký mà tự ý dùng, hoặc dùng sai mục đích, là vi phạm.
 
 62
-00:03:18,728 --> 00:03:21,145
-Thầy cô miễn buổi đó được, và lần quên sẽ bị xoá khỏi sổ.
+00:03:16,326 --> 00:03:19,831
+Bạn này đang bị tạm dừng dùng thiết bị — thẻ ghi rõ đến ngày nào và vì sao.
 
 63
-00:03:23,899 --> 00:03:26,699
-Phần 7: Chia sẻ sách.
+00:03:19,831 --> 00:03:24,038
+Bấm vào thẻ để xem bảng quy định.
 
 64
-00:03:26,699 --> 00:03:29,078
-Mỗi bạn có một tuần được phân công chia sẻ về một cuốn sách mình đã đọc.
+00:03:24,038 --> 00:03:26,440
+Lần một: cấm dùng thiết bị một tuần và năm lượt lao động công ích.
 
 65
-00:03:29,078 --> 00:03:33,690
-Trước hạn nộp một tuần, hệ thống sẽ nhắc em mỗi lần vào trang.
+00:03:26,440 --> 00:03:28,842
+Lần hai: cấm hai tuần và mười lượt. Lần ba: cấm một tháng và hai mươi lượt.
 
 66
-00:03:33,690 --> 00:03:38,701
-Trên màn hình chính có thẻ Lượt chia sẻ sách của em.
+00:03:28,842 --> 00:03:31,244
+Từ lần bốn: thầy cô mời phụ huynh lên trao đổi.
 
 67
-00:03:38,701 --> 00:03:41,110
-Bấm vào đó để mở phần nhập.
+00:03:31,244 --> 00:03:33,645
+Mỗi lần xử lý riêng, không cộng dồn: lần hai là mười lượt, không phải năm cộng mười.
 
 68
-00:03:41,110 --> 00:03:44,623
-Điền tên sách, tác giả, rồi tóm tắt ngắn gọn cuốn sách kể về điều gì.
+00:03:33,645 --> 00:03:36,047
+Bị tạm dừng thì em vẫn tự học bình thường, chỉ không đăng ký dùng thiết bị được.
 
 69
-00:03:44,623 --> 00:03:47,034
-Phần quan trọng nhất là Bài học rút ra — và phải là suy nghĩ của chính em.
+00:03:36,047 --> 00:03:38,449
+Thấy mình bị ghi nhầm thì nhắn thầy cô — lần ghi nhầm sẽ được huỷ.
 
 70
-00:03:47,034 --> 00:03:49,445
-Cuối cùng dán liên kết bài trình chiếu, rồi bấm Lưu bài chia sẻ.
+00:03:41,098 --> 00:03:43,898
+Phần 7: Chia sẻ sách.
 
 71
-00:03:49,445 --> 00:03:51,859
-Nhớ bật quyền "ai có liên kết cũng xem được" cho bài trình chiếu.
+00:03:43,898 --> 00:03:46,255
+Mỗi bạn có một tuần được phân công chia sẻ về một cuốn sách mình đã đọc.
 
 72
-00:03:51,859 --> 00:03:56,091
-Để riêng tư thì thầy cô và các bạn bấm vào chỉ thấy báo lỗi.
+00:03:46,255 --> 00:03:50,873
+Trước hạn nộp một tuần, hệ thống sẽ nhắc em mỗi lần vào trang.
 
 73
-00:03:56,091 --> 00:03:58,497
-Bấm Chia sẻ sách trên thanh trên cùng để xem bài của cả lớp, bất cứ lúc nào.
+00:03:50,873 --> 00:03:55,879
+Trên màn hình chính có thẻ Lượt chia sẻ sách của em.
 
 74
-00:04:01,266 --> 00:04:04,066
-Phần 8: Hỏi thầy cô.
+00:03:55,879 --> 00:03:58,281
+Bấm vào đó để mở phần nhập.
 
 75
-00:04:04,066 --> 00:04:07,371
-Có gì chưa rõ, em nhắn thẳng cho giáo viên chủ nhiệm ngay trong hệ thống.
+00:03:58,281 --> 00:04:01,786
+Điền tên sách, tác giả, rồi tóm tắt ngắn gọn cuốn sách kể về điều gì.
 
 76
-00:04:07,371 --> 00:04:11,890
-Bấm Nhắn giáo viên ở góc trên màn hình chính.
+00:04:01,786 --> 00:04:04,188
+Phần quan trọng nhất là Bài học rút ra — và phải là suy nghĩ của chính em.
 
 77
-00:04:11,890 --> 00:04:14,297
-Tin nhắn này chỉ em và giáo viên đọc được.
+00:04:04,188 --> 00:04:06,590
+Cuối cùng dán liên kết bài trình chiếu, rồi bấm Lưu bài chia sẻ.
 
 78
-00:04:14,297 --> 00:04:16,713
-Các bạn khác trong lớp không thấy.
+00:04:06,590 --> 00:04:08,991
+Nhớ bật quyền "ai có liên kết cũng xem được" cho bài trình chiếu.
 
 79
-00:04:16,713 --> 00:04:19,114
+00:04:08,991 --> 00:04:13,202
+Để riêng tư thì thầy cô và các bạn bấm vào chỉ thấy báo lỗi.
+
+80
+00:04:13,202 --> 00:04:15,605
+Bấm Chia sẻ sách trên thanh trên cùng để xem bài của cả lớp, bất cứ lúc nào.
+
+81
+00:04:18,264 --> 00:04:21,064
+Phần 8: Hỏi thầy cô.
+
+82
+00:04:21,064 --> 00:04:24,360
+Có gì chưa rõ, em nhắn thẳng cho giáo viên chủ nhiệm ngay trong hệ thống.
+
+83
+00:04:24,360 --> 00:04:28,867
+Bấm Nhắn giáo viên ở góc trên màn hình chính.
+
+84
+00:04:28,867 --> 00:04:31,269
+Tin nhắn này chỉ em và giáo viên đọc được.
+
+85
+00:04:31,269 --> 00:04:33,671
+Các bạn khác trong lớp không thấy.
+
+86
+00:04:33,671 --> 00:04:36,076
 Nhưng nếu có điều gì em chỉ muốn nói riêng, hãy gặp thầy cô trực tiếp.

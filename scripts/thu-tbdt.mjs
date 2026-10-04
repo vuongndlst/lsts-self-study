@@ -70,7 +70,9 @@ const [L] = await q(`
     (select teacher_id from public.class_teachers where class_id = c.id limit 1) gv,
     (select claimed_user_id from public.students where mshs = '2400001') hs1,
     (select claimed_user_id from public.students where mshs = '2400002') hs2,
-    public.vn_today() hom_nay
+    public.vn_today() hom_nay,
+    -- Lớp mẫu có sẵn vài lần vi phạm (demo-class-data.sql) — đếm trước để so.
+    (select count(*) from public.device_bans) cam_truoc
   from public.classes c where c.name = '8A0'`)
 if (!L?.lop || !L.gv || !L.hs1 || !L.hs2) throw new Error('Không tìm thấy lớp minh hoạ 8A0 đủ dữ liệu.')
 
@@ -334,7 +336,7 @@ const [sau] = await q(`select
   public.discipline_on() cong_tac,
   (select count(*) from pg_trigger where tgname = 'trg_y_device_evidence') trigger_18`)
 console.log('\nSau khi chạy')
-kiem('Không để lại lệnh cấm nào', Number(sau.cam) === 0, `còn ${sau.cam}`)
+kiem('Không để lại lệnh cấm nào', Number(sau.cam) === Number(L.cam_truoc), `trước ${L.cam_truoc}, sau ${sau.cam}`)
 kiem('Cài đặt lớp 8A0 trở về như cũ', sau.gioi_han === null && sau.thu === null, JSON.stringify(sau))
 kiem('Công tắc kỷ luật vẫn TẮT', sau.cong_tac === false)
 kiem('schema-18 chưa bị áp lên CSDL thật', Number(sau.trigger_18) === 0)

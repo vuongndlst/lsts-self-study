@@ -161,21 +161,35 @@ try {
     ] })
   }
 
-  // ======================= Chưa đăng ký · miễn buổi =======================
+  // ======================= Thiết bị điện tử =======================
+  // Từ 10/2026 thẻ "Chưa đăng ký" và "Kỷ luật" ẩn (kỷ luật quên đăng ký tắt);
+  // thẻ "Thiết bị" thay chỗ. Mở một khối thu gọn theo tiêu đề của nó.
+  const moKhoi = (tieuDe) => t.chay(`
+    const h = [...document.querySelectorAll('.collapse-head')]
+      .find(e => e.textContent.includes(${JSON.stringify(tieuDe)}));
+    if (h && h.closest('.collapsible').classList.contains('shut')) h.click(); return !!h`)
+
   if (nen('gv-12')) {
-    await tab('Chưa đăng ký', 'chưa đăng ký')
-    await t.chup('gv-12-chua-dang-ky', { chon: '.card.sched-card', cao: 1500 })
+    await tab('Thiết bị', 'theo tuần')
+    await moKhoi('Thiết bị điện tử theo tuần')
+    await doi(700)
+    if (!await t.chay(`return window.__danhDau('Thiết bị điện tử theo tuần', '.section-block')`)) console.warn('   ! gv-12')
+    await t.chup('gv-12-thiet-bi-tuan', { chon: '#__muc', cao: 1900, khung: [
+      { sel: '#__muc .check-row', n: 1 },
+      { sel: '#__muc .row-late', n: 2 },
+      { sel: '#__muc button', text: 'Ghi vi phạm', n: 3 },
+    ] })
   }
 
   if (nen('gv-13')) {
-    await tab('Chưa đăng ký', 'Miễn buổi')
-    await t.chay(`
-      const h = [...document.querySelectorAll('.collapse-head')]
-        .find(e => e.textContent.includes('Miễn buổi'));
-      if (h && h.closest('.collapsible').classList.contains('shut')) h.click(); return !!h`)
-    await doi(900)
-    await t.cuonToi('.collapsible')
-    await t.chup('gv-13-mien-buoi', { chon: '.card.sched-card.collapsible', cao: 1800 })
+    await tab('Thiết bị', 'Giới hạn dùng thiết bị')
+    await moKhoi('Giới hạn dùng thiết bị')
+    await doi(700)
+    if (!await t.chay(`return window.__danhDau('Giới hạn dùng thiết bị', '.section-block')`)) console.warn('   ! gv-13')
+    await t.chup('gv-13-gioi-han-thiet-bi', { chon: '#__muc', cao: 1500, khung: [
+      { sel: '#__muc select', n: 1 },
+      { sel: '#__muc .weekday-picks', n: 2 },
+    ] })
   }
 
   // ======================= Lịch tự học =======================
@@ -191,65 +205,55 @@ try {
     await t.chup('gv-15-luat-dang-ky', { chon: '.card.sched-card', cao: 1500 })
   }
 
-  // ======================= Kỷ luật =======================
   if (nen('gv-16')) {
-    await tab('Kỷ luật', 'Kỷ luật quên đăng ký')
-    await t.cuonToi('.section-block.collapsible')
-    await t.chup('gv-16-bang-ky-luat', { chon: '.section-block.collapsible', cao: 1900 })
+    await tab('Thiết bị', 'theo tuần')
+    await moKhoi('Thiết bị điện tử theo tuần')
+    await doi(600)
+    // Ghi cho em đang ở lần 2 — hộp xác nhận sẽ báo trước "lần 3: cấm 1 tháng".
+    await t.chay(`
+      const tr = [...document.querySelectorAll('tr')].find(e => e.textContent.includes('Trần Đức Huy'));
+      [...(tr?.querySelectorAll('button') ?? [])].find(b => b.textContent.includes('Ghi vi phạm'))?.click();
+      return !!tr`)
+    await doi(1200)
+    await t.chup('gv-16-ghi-vi-pham', { chon: '.modal', cao: 1800, khung: [
+      { sel: '.modal .quick-views', n: 1 },
+      { sel: '.modal .violation-preview', n: 2 },
+    ] })
+    await dongCuaSo()
   }
 
   if (nen('gv-17')) {
-    await tab('Kỷ luật', 'Lao động công ích')
+    await tab('Thiết bị', 'Sổ vi phạm')
+    await moKhoi('Sổ vi phạm')
+    await doi(800)
+    if (!await t.chay(`return window.__danhDau('Sổ vi phạm & lao động công ích', '.section-block')`)) console.warn('   ! gv-17')
+    // Sổ nằm dưới hai khối dài; để nguyên thì nó rơi ra ngoài khung nhìn và
+    // nửa dưới ảnh ra trắng. Thu gọn hai khối phía trên cho sổ lên đầu trang.
     await t.chay(`
-      const h = [...document.querySelectorAll('.collapse-head')]
-        .find(e => e.textContent.includes('Lao động công ích'));
-      if (h && h.closest('.collapsible').classList.contains('shut')) h.click(); return !!h`)
-    await doi(900)
-    const ok = await t.chay(`
-      const s = [...document.querySelectorAll('.collapsible')]
-        .find(e => e.textContent.includes('Lao động công ích'));
-      if (s) { s.scrollIntoView({ block: 'start' }); window.scrollBy(0, -96) } return !!s`)
-    if (!ok) console.warn('   ! không thấy khối Lao động công ích')
-    await t.chay(`return window.__danhDau('Lao động công ích —')`)
+      for (const ten of ['Giới hạn dùng thiết bị', 'Thiết bị điện tử theo tuần']) {
+        const h = [...document.querySelectorAll('.collapse-head')].find(e => e.textContent.includes(ten));
+        if (h && h.closest('.collapsible').classList.contains('open')) h.click();
+      } return 1`)
     await doi(600)
-    await t.chup('gv-17-lao-dong-cong-ich', { chon: '#__muc', cao: 1700, khung: [
-      { sel: '.luot-o', idx: 0, n: 1 },
-      { sel: 'button', text: 'Soạn thư', n: 2 },
+    await t.chup('gv-17-so-vi-pham', { chon: '#__muc', cao: 2100, doiMs: 2000, khung: [
+      { sel: '#__muc .luot-o', idx: 0, n: 1 },
+      { sel: '#__muc button', text: 'Soạn thư mời', n: 2 },
+      { sel: '#__muc button', text: 'Gỡ cấm', n: 3 },
+      { sel: '#__muc button', text: 'Huỷ (ghi nhầm)', n: 4 },
     ] })
   }
 
   if (nen('gv-18')) {
-    await tab('Kỷ luật', 'Lao động công ích')
-    await t.chay(`
-      const h = [...document.querySelectorAll('.collapse-head')]
-        .find(e => e.textContent.includes('Lao động công ích'));
-      if (h && h.closest('.collapsible').classList.contains('shut')) h.click(); return 1`)
+    await tab('Thiết bị', 'Sổ vi phạm')
+    await moKhoi('Sổ vi phạm')
     await doi(800)
-    await t.chay(`window.__nut('Soạn thư')?.click(); return 1`)
-    await doi(1600)
-    if (nen('gv-18')) {
-      // Phải ghi rõ '.modal ...': trang giáo viên phía sau cửa sổ CŨNG có
-      // .quick-views (thanh "Xem nhanh"), và nó đứng trước trong DOM nên bị
-      // chọn mất — khung vẽ ra ngoài vùng cắt, ảnh mất hẳn ô số 1.
-      await t.chup('gv-18-soan-thu', { chon: '.modal', cao: 2400, khung: [
-        { sel: '.modal .quick-views', n: 1 },
-        { sel: '.modal .detail-box', n: 2 },
-      ] })
-    }
-    // Trước đây có thêm cảnh gv-19 chụp phần cuối cửa sổ. Bỏ đi: màn hình ảo
-    // nay đủ cao nên cả cửa sổ lọt vào một ảnh, hai tấm thành ra giống hệt nhau.
+    await t.chay(`window.__nut('Soạn thư mời')?.click(); return 1`)
+    await doi(1400)
+    await t.chup('gv-18-thu-moi-phu-huynh', { chon: '.modal', cao: 2400, khung: [
+      { sel: '.modal .detail-box', n: 1 },
+      { sel: '.modal button', text: 'Mở Outlook trên web', n: 2 },
+    ] })
     await dongCuaSo()
-  }
-
-  if (nen('gv-20')) {
-    await tab('Kỷ luật', 'Cài đặt kỷ luật')
-    await t.chay(`
-      const h = [...document.querySelectorAll('.collapse-head')]
-        .find(e => e.textContent.includes('Cài đặt kỷ luật'));
-      if (h && h.closest('.collapsible').classList.contains('shut')) h.click(); return 1`)
-    await doi(900)
-    await t.cuonToi('.card.sched-card.collapsible')
-    await t.chup('gv-20-cai-dat-ky-luat', { chon: '.card.sched-card.collapsible', cao: 1900 })
   }
 
   // ======================= Trợ giảng =======================

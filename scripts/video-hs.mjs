@@ -32,7 +32,7 @@ const EM = {
   noPhanTu: '2400006',   // Ngô Bảo Long  — 3 nhiệm vụ quá hạn, sẽ bật popup nhắc
   canHoTro: '2400003',   // Hồ Ngọc Diệp  — có bài bấm "cần hỗ trợ"
   sapChiaSe: '2400004',  // Lê Anh Tuấn   — tới lượt chia sẻ sách, chưa nộp
-  biKyLuat: '2400008',   // Trần Đức Huy  — đang phải lao động công ích
+  biTamDung: '2400008',  // Trần Đức Huy  — vi phạm thiết bị lần 2, đang bị tạm dừng
 }
 
 await dungPhim({
@@ -110,16 +110,17 @@ await dungPhim({
 
     // ===================================================================== 2
     ['2-man-hinh-chinh', 'Màn hình chính của em',
-     'Nút đăng ký · thẻ điểm danh · bộ lọc nhanh · cửa sổ nhắc việc.',
+     'Nút đăng ký · thẻ thiết bị điện tử · bộ lọc nhanh.',
      async () => {
       await veTrangEm(EM.guongMau)
       await may.bat()
       await K.noi('Đăng nhập xong, tất cả những gì em cần đều nằm ở màn hình này.')
       await K.tro('button', 'Đăng ký giờ tự học', 1200)
       await K.noi('Nút xanh đậm này để đăng ký một buổi tự học mới.')
-      await K.tro('.attend-card', null, 1200)
-      await K.noi('Thẻ điểm danh cho biết học kỳ này em đã quên đăng ký mấy lần.')
-      await K.noi('Và còn mấy lần được miễn trừ.')
+      await K.noi('Không dùng thiết bị điện tử thì em không bắt buộc đăng ký — nhưng vẫn nên tự lên kế hoạch.')
+      await K.tro('.device-card', null, 1200)
+      await K.noi('Thẻ Thiết bị điện tử cho biết tuần này em đã dùng thiết bị mấy ngày.')
+      await K.noi('Và em đã vi phạm quy định thiết bị lần nào chưa.')
       await K.tro('.quick-views', null, 1200)
       await K.noi('Dải bộ lọc nhanh: bấm một cái là hiện đúng nhóm nhiệm vụ đó.')
       await K.noi('Mỗi lần vào trang, em nhìn hai con số: Trễ hạn và Cần viết phản hồi.')
@@ -129,16 +130,18 @@ await dungPhim({
 
     // ===================================================================== 3
     ['3-dang-ky-buoi-tu-hoc', 'Đăng ký một buổi tự học',
-     'Hạn 24:00 hôm trước · chọn ngày và tiết · ghi mục tiêu đo được.',
+     'Khi nào bắt buộc đăng ký · chọn ngày và tiết · bật thiết bị · mục tiêu đo được.',
      async () => {
       await veTrangEm(EM.guongMau)
       await may.bat()
-      await K.noi('Hạn đăng ký là 24 giờ của ngày hôm trước.')
-      await K.noi('Đăng ký sau mốc đó thì buổi của em bị đánh dấu Trễ.')
+      await K.noi('Cần dùng máy tính hay điện thoại trong giờ tự học thì BẮT BUỘC đăng ký trước.')
+      await K.noi('Hạn đăng ký là 24 giờ của ngày hôm trước. Sau mốc đó thì bị đánh dấu Trễ.')
       await K.tro('button', 'Đăng ký giờ tự học')
       await K.noi('Bấm Đăng ký giờ tự học.', 1400); await K.bam(2800)
       await t.chay(`const d=document.querySelector('.register-card input[type=date]');
-                    if (d) window.__dat(d, '2026-09-16'); return !!d`)
+                    /* thứ Tư sắp tới — ngày đã qua thì form báo Trễ */ const n=new Date(); let v=''; for(let i=1;i<9;i++){const x=new Date(n.getTime()+i*864e5);
+                      if(x.getDay()===3){v=[x.getFullYear(),String(x.getMonth()+1).padStart(2,'0'),String(x.getDate()).padStart(2,'0')].join('-');break}}
+                    if (d) window.__dat(d, v); return !!d`)
       await doi(1200)
       await K.noi('Chọn ngày trước, rồi phần chọn tiết mới hiện ra.')
       await K.noi('Hệ thống chỉ mở những tiết lớp em thực sự có giờ tự học.')
@@ -147,13 +150,21 @@ await dungPhim({
       await K.noi('Rồi ghi nhiệm vụ: môn gì, làm việc cụ thể nào, mục tiêu là gì.')
       await K.noi('Mục tiêu nên đo được. "Học bài" thì không biết thế nào là xong.')
       await K.noi('"Làm bài 1 đến 8 trang 24, đúng ít nhất 6 bài" thì cuối buổi em tự biết mình đạt chưa.')
-      await K.noi('Buổi đó cần máy tính hay điện thoại thì bật Cần dùng thiết bị và ghi rõ dùng để làm gì.')
+      // Cuộn tới dòng hạn mức (nằm ngay trên khối nhiệm vụ) để cả dòng đó lẫn
+      // công tắc thiết bị cùng lọt khung — lời thoại nhắc tới cả hai.
+      await t.chay(`const e=document.querySelector('.register-card .device-quota-line');
+                    if (e) window.__cuonToiPT(e, 110); return !!e`)
+      await doi(900)
+      await K.noi('Nhiệm vụ cần thiết bị thì bật Dùng thiết bị điện tử và ghi rõ dùng để làm gì.')
+      await K.noi('Dòng chữ phía trên cho biết tuần đó em đã dùng thiết bị mấy ngày.')
+      await K.noi('Bị tạm dừng, chọn thứ lớp không cho dùng, hay đã dùng đủ số ngày thì công tắc tự khoá và ghi rõ lý do.')
+      await K.noi('Không đăng ký mà tự ý dùng, hoặc dùng sai mục đích, là vi phạm.')
       await K.im()
     }],
 
     // ===================================================================== 4
     ['4-cap-nhat-ket-qua', 'Cập nhật kết quả — phần quan trọng nhất',
-     'Viết gì cho đủ ý · bật cần hỗ trợ · đính kèm sản phẩm.',
+     'Viết gì cho đủ ý · bật cần hỗ trợ · minh chứng bắt buộc khi dùng thiết bị.',
      async () => {
       await veTrangEm(EM.guongMau)
       await may.bat()
@@ -171,8 +182,10 @@ await dungPhim({
       await t.chay(`document.querySelector('.modal .evidence-block')
                       ?.scrollIntoView({block:'center',behavior:'smooth'}); return 1`)
       await doi(1000)
-      await K.noi('Có sản phẩm chụp được thì đính kèm ở cuối, tối đa ba thứ.')
-      await K.noi('Không bắt buộc phải có ảnh — ôn bài hay đọc sách thì phần chữ em viết mới là chính.')
+      await K.noi('Nhiệm vụ này có dùng thiết bị, nên BẮT BUỘC có ít nhất một minh chứng.')
+      await K.noi('Ảnh chụp bài làm, tệp PDF, hoặc liên kết tới sản phẩm đều được — tối đa ba thứ.')
+      await K.noi('Chưa có minh chứng thì hệ thống chưa cho lưu kết quả.')
+      await K.noi('Nhiệm vụ không dùng thiết bị thì minh chứng không bắt buộc — phần chữ em viết mới là chính.')
       await dongCuaSo()
       await K.im()
     }],
@@ -205,24 +218,25 @@ await dungPhim({
     }],
 
     // ===================================================================== 6
-    ['6-quen-dang-ky-va-lao-dong', 'Quên đăng ký và lao động công ích',
-     'Hai tiết liền nhau tính một lần · thang kỷ luật · xin miễn buổi.',
+    ['6-thiet-bi-va-vi-pham', 'Thiết bị điện tử và xử lý vi phạm',
+     'Thế nào là vi phạm · thang xử lý lần 1 đến lần 4 · lao động công ích.',
      async () => {
-      await veTrangEm(EM.biKyLuat)
+      await veTrangEm(EM.biTamDung)
       await may.bat()
-      await t.chay(`document.querySelector('.attend-card')
+      await t.chay(`document.querySelector('.device-card')
                       ?.scrollIntoView({block:'center',behavior:'smooth'}); return 1`)
       await doi(1000)
-      await K.noi('Ngày lớp có tiết tự học mà em không đăng ký gì thì bị ghi một lần quên.')
-      await K.noi('Hệ thống ghi lúc không giờ năm phút sáng hôm sau, nên đăng ký muộn trong ngày vẫn kịp.')
-      await K.noi('Hai tiết liền nhau trong cùng một buổi chỉ tính MỘT lần quên, không phải hai.')
-      await K.tro('.attend-summary', null, 1100)
-      await K.noi('Bấm vào thẻ điểm danh để xem bảng quy định.', 1400); await K.bam(2800)
-      await K.noi('Ba lần đầu được miễn trừ. Lần thứ tư là lao động công ích năm lượt.')
-      await K.noi('Lần thứ năm là mười lượt. Từ lần thứ sáu thì thầy cô trao đổi với phụ huynh.')
-      await K.noi('Thang này không cộng dồn: lần thứ năm là mười lượt, không phải năm cộng mười.')
-      await K.noi('Nếu có buổi bị ghi nhầm — em nghỉ có phép, hay cả lớp đi sự kiện — hãy nhắn thầy cô.')
-      await K.noi('Thầy cô miễn buổi đó được, và lần quên sẽ bị xoá khỏi sổ.')
+      await K.noi('Dùng thiết bị trong giờ tự học phải đăng ký trước, được duyệt, và dùng đúng mục đích.')
+      await K.noi('Không đăng ký mà tự ý dùng, hoặc dùng sai mục đích, là vi phạm.')
+      await K.noi('Bạn này đang bị tạm dừng dùng thiết bị — thẻ ghi rõ đến ngày nào và vì sao.')
+      await K.tro('.device-card .attend-summary', null, 1100)
+      await K.noi('Bấm vào thẻ để xem bảng quy định.', 1400); await K.bam(2800)
+      await K.noi('Lần một: cấm dùng thiết bị một tuần và năm lượt lao động công ích.')
+      await K.noi('Lần hai: cấm hai tuần và mười lượt. Lần ba: cấm một tháng và hai mươi lượt.')
+      await K.noi('Từ lần bốn: thầy cô mời phụ huynh lên trao đổi.')
+      await K.noi('Mỗi lần xử lý riêng, không cộng dồn: lần hai là mười lượt, không phải năm cộng mười.')
+      await K.noi('Bị tạm dừng thì em vẫn tự học bình thường, chỉ không đăng ký dùng thiết bị được.')
+      await K.noi('Thấy mình bị ghi nhầm thì nhắn thầy cô — lần ghi nhầm sẽ được huỷ.')
       await K.im()
     }],
 

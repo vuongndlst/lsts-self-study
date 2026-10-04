@@ -3,6 +3,7 @@ import { AlertTriangle, CalendarCheck2, CheckCircle2, ClipboardList, Clock, File
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import HuongDanTaiLieu from '../components/HuongDanTaiLieu'
+import { DeviceRuleTable } from '../components/DeviceRules'
 
 // Một trang cho cả hai bộ hướng dẫn.
 //
@@ -59,12 +60,44 @@ function PhanHocSinh({ moiGiaoVien }) {
       <span>Thầy cô <Link to="/login">đăng nhập</Link> để xem phần hướng dẫn dành cho giáo viên.</span>
     </p>}
 
+    {/* Luật từ 10/2026 — đặt lên đầu vì nó đổi hẳn câu hỏi "có phải đăng ký
+        không". Bảng thang xử lý là đúng bảng em thấy trên trang của mình. */}
+    <section className="card deadline-card">
+      <div className="deadline-head"><Laptop size={22}/><div>
+        <span className="eyebrow">THIẾT BỊ ĐIỆN TỬ</span>
+        <h2>Chỉ bắt buộc đăng ký khi em cần dùng thiết bị</h2>
+      </div></div>
+      <div className="timeline-rule">
+        <div><span className="step-dot ok">1</span><div>
+          <strong>Không dùng thiết bị → không bắt buộc đăng ký</strong>
+          <small>Em vẫn đăng ký được nếu muốn tự lên kế hoạch và nhìn lại kết quả — rất nên làm, nhưng không ai bắt.</small>
+        </div></div>
+        <div><span className="step-dot warn">2</span><div>
+          <strong>Cần dùng thiết bị → bắt buộc đăng ký trước</strong>
+          <small>Bật <em>Dùng thiết bị điện tử</em>, ghi rõ mục đích và chờ thầy cô duyệt. Không đăng ký mà tự ý dùng, hoặc dùng sai mục đích đã đăng ký, là <strong>vi phạm</strong>.</small>
+        </div></div>
+        <div><span className="step-dot warn">3</span><div>
+          <strong>Mỗi tuần có giới hạn</strong>
+          <small>Thầy cô có thể giới hạn số ngày được dùng thiết bị mỗi tuần, hoặc chỉ cho dùng vào một số thứ. Thẻ <em>Thiết bị điện tử · tuần này</em> trên trang của em cho biết em đã dùng mấy ngày; hết lượt thì công tắc tự khoá và ghi rõ lý do.</small>
+        </div></div>
+        <div><span className="step-dot danger">4</span><div>
+          <strong>Dùng thiết bị thì phải có minh chứng kết quả</strong>
+          <small>Khi cập nhật kết quả, nhiệm vụ có thiết bị cần <strong>ít nhất một</strong> ảnh, tệp PDF hoặc liên kết sản phẩm. Chưa có thì hệ thống chưa cho lưu.</small>
+        </div></div>
+      </div>
+      <DeviceRuleTable />
+      <div className="guide-tip"><AlertTriangle size={16}/><span>
+        Trong thời gian bị tạm dừng, em <strong>vẫn tự học bình thường</strong> — chỉ không đăng ký dùng thiết bị được.
+        Những buổi thiết bị đã được duyệt rơi vào thời gian đó sẽ tự bị huỷ duyệt. Thấy bị ghi nhầm thì nhắn thầy cô.
+      </span></div>
+    </section>
+
     <section className="card deadline-card">
       <div className="deadline-head"><Lock size={22}/><div>
         <span className="eyebrow">HẠN ĐĂNG KÝ</span>
         <h2>Đăng ký trước khi hết ngày hôm trước</h2>
       </div></div>
-      <p>Muốn tự học ngày mai, em đăng ký <strong>chậm nhất trong tối nay</strong>. Mốc chốt là
+      <p>Muốn tự học ngày mai — nhất là khi cần thiết bị — em đăng ký <strong>chậm nhất trong tối nay</strong>. Mốc chốt là
          <strong> 24:00 của ngày hôm trước</strong> (0:00 của ngày tự học). Đăng ký sau đó sẽ được tính là <em>Trễ</em>.</p>
       <div className="guide-tip"><AlertTriangle size={16}/><span>
         Giáo viên có thể <strong>khóa đăng ký trễ</strong>. Khi đó, sau 24:00 em không thể đăng ký
@@ -140,7 +173,10 @@ function PhanHocSinh({ moiGiaoVien }) {
         <p>Nhiệm vụ <strong>có dùng thiết bị</strong> thì ở trạng thái <strong>Chờ duyệt</strong> cho tới khi thầy cô xem. Khi thầy cô
            duyệt thiết bị thì nhiệm vụ cũng chuyển sang <strong>Đã duyệt</strong> ngay trong cùng một lần — em không phải chờ hai lượt.</p>
         <div className="guide-tip"><Laptop size={16}/> Nhớ ghi <strong>rõ mục đích</strong> dùng thiết bị. “Tra tài liệu” chung chung
-          thường bị trả về; “Mở đề bài tập Toán trên Canvas” thì được duyệt nhanh.</div>
+          thường bị trả về; “Mở đề bài tập Toán trên Canvas” thì được duyệt nhanh. Dùng đúng mục đích đã ghi —
+          làm việc khác trên máy là vi phạm.</div>
+        <div className="guide-tip">Công tắc thiết bị <strong>bị khoá kèm lý do</strong> khi em đang bị tạm dừng, chọn thứ lớp không cho dùng,
+          hoặc đã dùng đủ số ngày của tuần. Nhiều nhiệm vụ dùng thiết bị trong cùng một ngày chỉ tính là một ngày.</div>
         <div className="guide-tip">Nếu bị <strong>Cần điều chỉnh</strong>, em sửa lại ngay trong thẻ kế hoạch — nó tự quay về hàng chờ duyệt,
           không cần đăng ký lại từ đầu.</div>
       </div></article>
@@ -152,7 +188,7 @@ function PhanHocSinh({ moiGiaoVien }) {
            em không thể bỏ sót. Mỗi nhiệm vụ như vậy có một nút lớn
            <strong> “Cập nhật kết quả”</strong> ngay bên dưới. Bấm vào đó, chọn Hoàn thành / Một phần / Chưa hoàn thành,
 	           ghi vài dòng em đã làm được gì, và bật <em>“Em cần giáo viên hỗ trợ”</em> nếu còn vướng.
-	           Minh chứng được khuyến khích nhưng không bắt buộc.</p>
+	           Nhiệm vụ <strong>có dùng thiết bị</strong> bắt buộc kèm ít nhất một minh chứng; các nhiệm vụ khác thì minh chứng được khuyến khích nhưng không bắt buộc.</p>
         <div className="guide-tip"><ListPlus size={16}/><span>
           Ở mục <strong>“Nhiệm vụ của em”</strong> bên dưới, em lọc nhanh bằng các nút
           <em> Tất cả · Sắp tới · Chưa có kết quả · Đã xong · Cần viết phản hồi</em>, tìm theo môn hoặc nội dung,
@@ -162,10 +198,11 @@ function PhanHocSinh({ moiGiaoVien }) {
           <strong>Minh chứng nộp kiểu nào cũng được</strong> (tối đa 3 mục mỗi nhiệm vụ):
           <ul className="tip-list">
             <li><strong>Mô tả bằng chữ</strong> — làm bài trong vở thì chỉ cần tả lại em đã làm gì.</li>
-            <li><strong>Ảnh hoặc file</strong> — JPG, PNG, PDF, tối đa 5 MB.</li>
+            <li><strong>Ảnh hoặc file</strong> — JPG, PNG, WebP (tối đa 12 MB, tự thu nhỏ) hoặc PDF (tối đa 5 MB).</li>
             <li><strong>Liên kết</strong> — Canva, Google Docs, Padlet…</li>
           </ul>
-          Không có sản phẩm số cũng không sao — phần mô tả bằng chữ là đủ.
+          Không dùng thiết bị mà không có sản phẩm số cũng không sao — phần mô tả bằng chữ là đủ. Có dùng thiết bị thì
+          phải có ảnh, tệp hoặc liên kết; minh chứng cuối cùng của nhiệm vụ đó không xoá được (thêm cái mới trước rồi mới xoá cái cũ).
         </span></div>
       </div></article>
 
@@ -185,9 +222,9 @@ function PhanHocSinh({ moiGiaoVien }) {
     <section className="guide-rules card">
       <h2>Trước · Trong · Sau giờ tự học</h2>
       <div className="three-rule-grid">
-        <div><span>TRƯỚC</span><strong>Lên kế hoạch</strong><p>Chọn ngày và tiết, ghi một hoặc nhiều nhiệm vụ, đăng ký thiết bị nếu cần và gửi sớm để được duyệt.</p></div>
+        <div><span>TRƯỚC</span><strong>Lên kế hoạch</strong><p>Chọn ngày và tiết, ghi một hoặc nhiều nhiệm vụ. Cần thiết bị thì <strong>bắt buộc</strong> đăng ký và gửi sớm để được duyệt.</p></div>
         <div><span>TRONG</span><strong>Học theo kế hoạch</strong><p>Ổn định đúng giờ và tập trung vào mục tiêu đã đặt.</p></div>
-        <div><span>SAU</span><strong>Nhìn lại</strong><p>Bấm <em>Cập nhật kết quả</em>, ghi ngắn gọn em đã làm được gì và điều còn vướng. Nếu có sản phẩm, em thêm chữ, ảnh, file hoặc link làm minh chứng.</p></div>
+        <div><span>SAU</span><strong>Nhìn lại</strong><p>Bấm <em>Cập nhật kết quả</em>, ghi ngắn gọn em đã làm được gì và điều còn vướng. Có dùng thiết bị thì kèm ảnh, file hoặc link làm minh chứng.</p></div>
       </div>
     </section>
 
@@ -229,15 +266,15 @@ function PhanGiaoVien() {
         </div></div>
         <div><span className="step-dot ok">2</span><div>
           <strong>Khai lịch tự học cố định</strong>
-          <small>Việc quan trọng nhất. Chưa khai lịch thì hệ thống không biết ngày nào là ngày tự học, nên không tính được ai quên đăng ký và toàn bộ phần kỷ luật không chạy.</small>
+          <small>Việc quan trọng nhất. Chưa khai lịch thì học sinh không chọn được tiết, và giới hạn thiết bị theo thứ cũng dựa vào lịch này.</small>
         </div></div>
         <div><span className="step-dot warn">3</span><div>
           <strong>Hai công tắc luật đăng ký</strong>
           <small><em>Cho phép đăng ký trễ</em> và <em>Bắt buộc cập nhật kết quả</em>. Công tắc thứ hai mạnh nhất, nhưng nên bật sau vài tuần khi các em đã quen nếp.</small>
         </div></div>
         <div><span className="step-dot ok">4</span><div>
-          <strong>Mốc học kỳ và quyền miễn trừ</strong>
-          <small>Ngày bắt đầu tính thường là ngày lớp vào nếp tự học, không phải ngày khai giảng. Mỗi lớp đặt mốc riêng.</small>
+          <strong>Giới hạn thiết bị (tuỳ chọn)</strong>
+          <small>Thẻ <em>Thiết bị</em>: số ngày tối đa mỗi tuần và những thứ được dùng. Mặc định <strong>không giới hạn</strong> — chỉ đặt khi lớp cần thêm những giờ học không dùng máy.</small>
         </div></div>
       </div>
     </section>
@@ -253,9 +290,12 @@ function PhanGiaoVien() {
       </div></article>
 
       <article className="guide-step"><span className="step-number">2</span><div>
-        <h3><CalendarCheck2 size={20} /> Miễn buổi tự học</h3>
-        <p>Buổi đã miễn thì <strong>không ai bị tính là quên đăng ký</strong>. Dùng khi cả lớp đi hội trại, hoặc khi một em nghỉ có phép.</p>
-        <div className="guide-tip">Miễn <strong>sau khi hết ngày cũng được</strong> — hệ thống gỡ luôn những lần quên đã trót ghi cho buổi đó, nên em xin phép muộn vẫn không bị oan.</div>
+        <h3><Laptop size={20} /> Đăng ký chỉ còn bắt buộc khi dùng thiết bị</h3>
+        <p>Từ 10/2026, học sinh <strong>không dùng thiết bị thì không bắt buộc đăng ký</strong>. Kỷ luật “quên đăng ký” đã được
+           <strong> tắt</strong> trên toàn trường — không xoá: số liệu cũ, cài đặt từng lớp vẫn còn nguyên, người quản trị bật lại là chạy như trước.
+           Vì vậy thẻ <em>Chưa đăng ký</em>, <em>Kỷ luật</em> và ô <em>Chưa có kế hoạch ngày mai</em> tạm ẩn.</p>
+        <div className="guide-tip"><Laptop size={16} /> Thẻ <strong>Thiết bị</strong> thay chỗ thẻ <em>Chưa đăng ký</em>: bảng tuần cho biết
+          mỗi em đã đăng ký dùng thiết bị mấy ngày, ai đang bị tạm dừng, đã vi phạm mấy lần, còn nợ bao nhiêu lượt lao động.</div>
       </div></article>
 
       <article className="guide-step"><span className="step-number">3</span><div>
@@ -265,25 +305,34 @@ function PhanGiaoVien() {
       </div></article>
 
       <article className="guide-step"><span className="step-number">4</span><div>
-        <h3><Mail size={20} /> Thư báo phụ huynh</h3>
+        <h3><Mail size={20} /> Thư mời phụ huynh</h3>
         <p>Hệ thống <strong>không tự gửi thư</strong>. Nó soạn sẵn nội dung rồi mở Outlook — thầy cô đọc lại, sửa nếu cần, và tự bấm Gửi bên đó. Thư đi từ hộp thư của chính thầy cô nên phụ huynh trả lời là về đúng người.</p>
         <div className="guide-tip"><Mail size={16} /><span>
           Dùng nút <strong>Mở Outlook trên web</strong>. Nút <em>trên máy</em> đi qua liên kết thư mặc định
           của máy, nên máy nào đặt Gmail làm mặc định thì sẽ ra Gmail — đúng thứ không muốn.
         </span></div>
+        <div className="guide-tip">Từ <strong>lần vi phạm thứ 4</strong>, sổ vi phạm hiện nút <em>Soạn thư mời</em>. Gửi xong (hoặc đã gọi điện) thì bấm
+          <em> Đã báo phụ huynh — ghi vào sổ</em>; chưa ghi thì hộp việc cần xử lý còn nhắc.</div>
         <div className="guide-tip">Địa chỉ phụ huynh <strong>suy ra từ MSHS</strong> theo quy tắc của trường: không phải nhập tay, và không lưu ở đâu cả.</div>
       </div></article>
 
       <article className="guide-step"><span className="step-number">5</span><div>
-        <h3><Layers size={20} /> Hai tiết liền nhau chỉ tính một lần quên</h3>
-        <p>Thứ Sáu tiết 8 và 9 mà em không đăng ký gì là <strong>một</strong> lần quên, không phải hai. Thang kỷ luật <strong>không cộng dồn</strong>: quên lần thứ năm là 10 lượt, không phải 5 + 10.</p>
-        <div className="guide-tip">Số lượt <strong>phải làm</strong> không lưu cố định — nó tính lại từ số lần quên hiện tại. Miễn buổi cho em sau đó thì định mức tự giảm theo. Chỉ <strong>lượt đã làm</strong> là con số thầy cô ghi.</div>
+        <h3><Layers size={20} /> Ghi vi phạm thiết bị</h3>
+        <p>Ở thẻ <strong>Thiết bị</strong>, bấm <em>Ghi vi phạm</em> trên dòng của em, chọn loại — <em>không đăng ký mà tự ý dùng</em>
+           hoặc <em>dùng sai mục đích</em>. Hộp xác nhận nói trước đây là lần thứ mấy và em sẽ bị xử lý thế nào.</p>
+        <DeviceRuleTable />
+        <div className="guide-tip">Ghi xong là: em bị tạm dừng dùng thiết bị, các buổi thiết bị đã duyệt trong thời gian đó tự bị huỷ duyệt,
+          em nhận thông báo. Đang bị cấm mà vi phạm tiếp thì lần cấm mới <strong>nối tiếp</strong> sau lần cũ.</div>
+        <div className="guide-tip"><AlertTriangle size={16} /><span>
+          <strong>Gỡ cấm</strong> (cho dùng lại sớm) thì lần vi phạm vẫn tính và lượt lao động vẫn nợ. Chỉ <strong>Huỷ (ghi nhầm)</strong> mới làm lần đó
+          không tính. Lượt lao động đã làm ghi ở <em>Sổ vi phạm &amp; lao động công ích</em>, mỗi lần một dòng riêng.
+        </span></div>
       </div></article>
 
       <article className="guide-step"><span className="step-number">6</span><div>
         <h3><UserPlus size={20} /> Giao việc cho cán sự</h3>
         <p>Mỗi quyền cấp riêng, không phải gói chung: xem kế hoạch, xem yêu cầu hỗ trợ, nhắn tin, theo dõi đăng ký, chấm sao, theo dõi chia sẻ sách.</p>
-        <div className="guide-tip"><LockKeyhole size={16} /> Bạn được giao việc nhắc <strong>không thấy mức kỷ luật</strong> của các bạn khác — chỉ thấy số lần quên và số lần miễn trừ còn lại.</div>
+        <div className="guide-tip"><LockKeyhole size={16} /> Trợ giảng <strong>không ghi được vi phạm</strong> và không xem được sổ vi phạm thiết bị của các bạn khác — đó là việc giữa thầy cô, học sinh và gia đình.</div>
       </div></article>
     </div>
 

@@ -378,7 +378,10 @@ export default function TeacherPage(){
             active={filters.recheck==='co'}/>
       {discOn&&<Stat label="Chưa có kế hoạch ngày mai" value={noPlanTomorrow.length} alert={noPlanTomorrow.length>0}
             onClick={()=>setView('missing')} active={view==='missing'}/>}
-      {devTodo>0&&<Stat label={devParent>0?'Vi phạm thiết bị: cần báo phụ huynh':'Vi phạm thiết bị: còn nợ lao động'}
+      {/* Một ô cho mọi em còn việc dở do vi phạm thiết bị. Nhãn chỉ THÊM ý
+          "có em cần mời PH" chứ không đổi nghĩa con số — đổi nhãn mà giữ số
+          đếm cả em chỉ còn nợ lao động thì đọc ra "3 em cần báo PH", sai. */}
+      {devTodo>0&&<Stat label={devParent>0?`Vi phạm thiết bị chưa xong · ${devParent} em cần mời PH`:'Vi phạm thiết bị chưa xong'}
             value={devTodo} alert onClick={()=>setView('device')} active={view==='device'}/>}
       {discOn&&disc.length>0&&<Stat label={discParent>0?'Có em cần trao đổi với phụ huynh':'Đang áp dụng kỷ luật'}
             value={discCount} alert={discCount>0}

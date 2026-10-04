@@ -25,11 +25,14 @@ export const TEN_THU = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6
 export const dmy = (iso) => (iso ? String(iso).slice(0, 10).split('-').reverse().join('/') : '—')
 
 // Một dòng tóm tắt hạn mức tuần, dùng chung cho thẻ trang chủ và form đăng ký.
-export function hanMucText(q) {
+// Form đăng ký hỏi theo NGÀY ĐANG CHỌN, có thể là tuần sau — khi đó ghi rõ
+// tuần nào, đừng nói "tuần này" rồi đưa con số của tuần khác.
+export function hanMucText(q, tuanNay = true) {
   if (!q) return ''
+  const tuan = tuanNay ? 'Tuần này' : `Tuần ${dmy(q.tuan_tu).slice(0, 5)}–${dmy(q.tuan_den).slice(0, 5)}`
   const ngay = q.gioi_han != null
-    ? `Tuần này em đã dùng ${q.da_dung}/${q.gioi_han} ngày`
-    : `Tuần này em đã dùng ${q.da_dung} ngày (lớp không giới hạn số ngày)`
+    ? `${tuan} em đã dùng ${q.da_dung}/${q.gioi_han} ngày`
+    : `${tuan} em đã dùng ${q.da_dung} ngày (lớp không giới hạn số ngày)`
   const thu = q.thu_duoc_dung?.length
     ? ` · chỉ được dùng ${q.thu_duoc_dung.map((d) => TEN_THU[d]).join(', ')}`
     : ''
