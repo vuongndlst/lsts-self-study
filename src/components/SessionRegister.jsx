@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { isLateRegistration, todayISO } from '../utils/date'
 import { periodTimeLabel } from '../utils/schoolSchedule'
 import { isoWeekday } from './ClassSchedule'
+import { hanMucText } from './DeviceRules'
 
 const SUBJECTS = ['Toán', 'Ngữ văn', 'Tiếng Anh', 'Khoa học tự nhiên', 'Lịch sử & Địa lý',
   'GDCD', 'Tin học', 'Công nghệ', 'Nghệ thuật', 'Giáo dục thể chất', 'Khác']
@@ -46,6 +47,9 @@ export default function SessionRegister({ onDone, onCancel, onFixReflections }) 
   const [confirming, setConfirming] = useState(false)
   const [allowLate, setAllowLate] = useState(true)
   const [debt, setDebt] = useState(null)
+  // Luật thiết bị cho NGÀY đang chọn: đang bị cấm, sai thứ, hết lượt tuần.
+  // Cùng một hàm với trigger chặn ở CSDL, nên giao diện nói "được" thì lưu được.
+  const [quota, setQuota] = useState(null)
 
   useEffect(() => {
     if (!context.classId) return
@@ -83,6 +87,20 @@ export default function SessionRegister({ onDone, onCancel, onFixReflections }) 
   }, [date, period, profile?.id])
 
   useEffect(() => { if (period && !allowedPeriods.includes(period)) setPeriod(null) }, [allowedPeriods])
+
+  useEffect(() => {
+    setQuota(null)
+    if (!date) return
+    let alive = true
+    supabase.rpc('my_device_quota', { p_date: date }).then(({ data }) => { if (alive) setQuota(data ?? null) })
+    return () => { alive = false }
+  }, [date])
+  const deviceLock = quota?.loi || ''
+  // Ngày này không được dùng thiết bị thì tắt hết công tắc đã bật — để nguyên
+  // thì em bấm Đăng ký mới bị chặn, mất công gõ lại.
+  useEffect(() => {
+    if (deviceLock) setTasks((prev) => prev.map((t) => (t.use_device ? { ...t, use_device: false } : t)))
+  }, [deviceLock])
 
   // Tiết liền sau cũng là giờ tự học → mới cho phép một nhiệm vụ kéo dài 2 tiết.
   const canSpan = period != null && period < 9 && allowedPeriods.includes(period + 1)
@@ -154,7 +172,8 @@ export default function SessionRegister({ onDone, onCancel, onFixReflections }) 
     }))
     const { error: e2 } = await supabase.from('plans').insert(rows)
     setBusy(false); setConfirming(false)
-    if (e2) return setError('Không lưu được nhiệm vụ. ' + (e2.message || ''))
+    // Lỗi do luật thiết bị (P0001) đã viết sẵn cho em đọc — đưa nguyên văn.
+    if (e2) return setError(e2.code === 'P0001' ? e2.message : 'Không lưu được nhiệm vụ. ' + (e2.message || ''))
     onDone()
   }
 
@@ -196,6 +215,14 @@ export default function SessionRegister({ onDone, onCancel, onFixReflections }) 
       <h2><CalendarDays size={20} /> Đăng ký buổi tự học</h2>
       <p>Chọn ngày và tiết, rồi ghi những nhiệm vụ em dự định làm trong buổi đó.</p>
     </div></div>
+
+    {/* Luật mới từ 10/2026: đăng ký chỉ còn bắt buộc khi dùng thiết bị. Nói
+        ngay đầu form, để em không nghĩ buổi nào cũng phải khai. */}
+    <div className="notice compact"><Laptop size={16} /><span>
+      <strong>Không dùng thiết bị điện tử thì em không bắt buộc đăng ký</strong> — đăng ký để tự lên kế hoạch
+      vẫn được. Cần dùng thiết bị thì <strong>bắt buộc đăng ký trước</strong> và chờ thầy cô duyệt; không đăng ký mà
+      tự ý dùng, hoặc dùng sai mục đích, là vi phạm.
+    </span></div>
 
     {/* Bước 1 — ngày */}
     <div className="reg-step">
@@ -254,6 +281,8 @@ export default function SessionRegister({ onDone, onCancel, onFixReflections }) 
       <div className="reg-tasks">
         <label>Em dự định làm gì?</label>
         <p className="muted-text small">Chỉ đăng ký những nhiệm vụ em thực sự dự định làm trong buổi này.</p>
+        {quota && !deviceLock && <p className="device-quota-line"><Laptop size={13} /> {hanMucText(quota)}
+          {' '}Nhiều nhiệm vụ dùng thiết bị trong cùng một ngày chỉ tính là một ngày.</p>}
 
         {tasks.map((t, i) => <div key={t.key} className="task-block">
           <div className="task-block-head">
@@ -302,10 +331,11 @@ export default function SessionRegister({ onDone, onCancel, onFixReflections }) 
               </select>
             </div>
             <div className="toggle-row compact">
-              <label className="switch"><input type="checkbox" checked={t.use_device}
+              <label className="switch"><input type="checkbox" checked={t.use_device} disabled={Boolean(deviceLock)}
                 onChange={(e) => setTask(t.key, { use_device: e.target.checked })} /><span /></label>
               <div><strong><Laptop size={15} /> Dùng thiết bị điện tử</strong>
-                <small>Phải chờ giáo viên duyệt.</small></div>
+                <small>Phải chờ giáo viên duyệt. Khi cập nhật kết quả phải kèm minh chứng.</small>
+                {deviceLock && <span className="device-locked"><AlertTriangle size={14} />{deviceLock}</span>}</div>
             </div>
           </div>
           {t.use_device && <input maxLength={500} value={t.device_purpose} placeholder="Mục đích sử dụng thiết bị *"
@@ -352,7 +382,8 @@ export default function SessionRegister({ onDone, onCancel, onFixReflections }) 
         </div>
 
         {tasks.some((t) => t.use_device) && <div className="notice compact"><Laptop size={16} /><span>
-          Nhiệm vụ có dùng thiết bị sẽ ở trạng thái <strong>chờ giáo viên duyệt</strong>.
+          Nhiệm vụ có dùng thiết bị sẽ ở trạng thái <strong>chờ giáo viên duyệt</strong>. Khi cập nhật
+          kết quả, em phải kèm <strong>ít nhất một minh chứng</strong> (ảnh, tệp hoặc liên kết).
         </span></div>}
 
         <div className="form-actions">

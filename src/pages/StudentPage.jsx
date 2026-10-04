@@ -19,6 +19,7 @@ import Avatar, { AvatarUploader } from '../components/Avatar'
 import { StudentAnalytics } from '../components/Analytics'
 import { MyBookShare } from '../components/BookShare'
 import StudentAlerts, { MyAttendance } from '../components/StudentAlerts'
+import { MyDevice } from '../components/DeviceRules'
 
 const activityOptions=['Bài tập cá nhân','Ôn tập','Công việc nhóm','Đọc sách','Chuẩn bị nội dung chia sẻ','Khác']
 const subjectOptions=['Toán','Ngữ văn','Tiếng Anh','Khoa học tự nhiên','Lịch sử & Địa lý','GDCD','Tin học','Công nghệ','Nghệ thuật','Khác']
@@ -218,6 +219,7 @@ export default function StudentPage(){
         hạn chót riêng, không được để lẫn vào danh sách tiết tự học. */}
     <MyBookShare openSignal={openBook} onSaved={()=>setAlertKey(k=>k+1)}/>
 
+    <MyDevice reloadKey={alertKey}/>
     <MyAttendance reloadKey={alertKey}/>
 
     {message&&<div className="notice"><ShieldCheck size={18}/><span>{message}</span></div>}
@@ -270,8 +272,8 @@ export default function StudentPage(){
     {plans.length>0&&<StudentAnalytics studentId={profile.id}/>}
 
     {openPlan&&(openPlan.study_date>todayISO()
-      ?<EditPlanModal plan={openPlan} onClose={()=>setOpenPlan(null)} onSaved={()=>{setOpenPlan(null);load()}}/>
-      :<ReflectionModal plan={openPlan} progress={status[openPlan.id]?.progress} availableAt={status[openPlan.id]?.available_at} existing={reflections[openPlan.id]} evidence={evidence[openPlan.id]||[]} onClose={()=>setOpenPlan(null)} onSaved={()=>{setOpenPlan(null);load()}}/>)}
+      ?<EditPlanModal plan={openPlan} onClose={()=>setOpenPlan(null)} onSaved={()=>{setOpenPlan(null);load();setAlertKey(k=>k+1)}}/>
+      :<ReflectionModal plan={openPlan} progress={status[openPlan.id]?.progress} availableAt={status[openPlan.id]?.available_at} existing={reflections[openPlan.id]} evidence={evidence[openPlan.id]||[]} onClose={()=>{setOpenPlan(null);load()}} onSaved={()=>{setOpenPlan(null);load()}}/>)}
     {showPassword&&<ChangePasswordModal mshs={profile?.mshs} onClose={()=>setShowPassword(false)}/>}
     {showAvatar&&<AvatarUploader onClose={()=>setShowAvatar(false)}/>}
     {showChat&&<div className="modal-backdrop" onMouseDown={()=>setShowChat(false)}>
@@ -379,6 +381,15 @@ function SessionCard({session,reflections,evidence,status,onOpen,onChanged}){
 function EditPlanModal({plan,onClose,onSaved}){
   const [form,setForm]=useState({activity_type:plan.activity_type,subject:plan.subject,task:plan.task,priority:plan.priority,goal:plan.goal,span:plan.span??1,use_device:plan.use_device,device_purpose:plan.device_purpose||'',fallback_activity:plan.fallback_activity||'Làm nhiệm vụ tiếp theo'})
   const [busy,setBusy]=useState(false);const [msg,setMsg]=useState('')
+  // Bật thiết bị cho nhiệm vụ vốn không dùng thì phải qua luật của lớp (đang bị
+  // cấm, sai thứ, hết lượt tuần). Hỏi trước để khoá công tắc kèm lý do, thay vì
+  // để em bấm Lưu rồi mới bị CSDL chặn.
+  const [quota,setQuota]=useState(null)
+  useEffect(()=>{
+    if(plan.use_device)return
+    supabase.rpc('my_device_quota',{p_date:plan.study_date}).then(({data})=>setQuota(data??null))
+  },[plan.id])
+  const deviceLocked=!plan.use_device&&quota?.loi
   const update=(k,v)=>setForm({...form,[k]:v})
   const save=async()=>{
     setMsg('')
@@ -387,7 +398,7 @@ function EditPlanModal({plan,onClose,onSaved}){
     const payload={...form,device_purpose:form.use_device?form.device_purpose.trim():null}
     const {error}=await supabase.from('plans').update(payload).eq('id',plan.id)
     setBusy(false)
-    if(error)return setMsg('Không thể lưu điều chỉnh. '+(error.message||''))
+    if(error)return setMsg(error.code==='P0001'?error.message:'Không thể lưu điều chỉnh. '+(error.message||''))
     onSaved()
   }
   const remove=async()=>{
@@ -414,7 +425,8 @@ function EditPlanModal({plan,onClose,onSaved}){
     <label>Nhiệm vụ cụ thể</label><textarea rows="3" maxLength={1000} value={form.task} onChange={e=>update('task',e.target.value)}/>
     <label>Mục tiêu cuối tiết</label><textarea rows="2" maxLength={1000} value={form.goal} onChange={e=>update('goal',e.target.value)}/>
     <label>Mức ưu tiên</label><select value={form.priority} onChange={e=>update('priority',e.target.value)}>{priorityOptions.map(x=><option key={x}>{x}</option>)}</select>
-    <div className="toggle-row"><label className="switch"><input type="checkbox" checked={form.use_device} onChange={e=>update('use_device',e.target.checked)}/><span/></label><div><strong>Sử dụng thiết bị điện tử</strong><small>Bật/tắt sẽ đưa đăng ký về trạng thái chờ giáo viên duyệt lại.</small></div></div>
+    <div className="toggle-row"><label className="switch"><input type="checkbox" checked={form.use_device} disabled={deviceLocked&&!form.use_device} onChange={e=>update('use_device',e.target.checked)}/><span/></label><div><strong>Sử dụng thiết bị điện tử</strong><small>Bật/tắt sẽ đưa đăng ký về trạng thái chờ giáo viên duyệt lại. Có dùng thì khi cập nhật kết quả phải kèm minh chứng.</small>
+      {deviceLocked&&<span className="device-locked"><AlertTriangle size={14}/>{quota.loi}</span>}</div></div>
     {form.use_device&&<input maxLength={500} value={form.device_purpose} onChange={e=>update('device_purpose',e.target.value)} placeholder="Mục đích sử dụng"/>}
     <label>Nếu hoàn thành sớm</label><select value={form.fallback_activity} onChange={e=>update('fallback_activity',e.target.value)}>{fallbackOptions.map(x=><option key={x}>{x}</option>)}</select>
     {msg&&<div className="form-error">{msg}</div>}
@@ -434,6 +446,10 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
   const [ackMsg,setAckMsg]=useState('')
   const [link,setLink]=useState('');const [file,setFile]=useState(null)
   const [busy,setBusy]=useState(false);const [msg,setMsg]=useState('')
+  // Minh chứng vừa thêm / vừa xoá trong lúc hộp đang mở — vẫn phải đếm đúng.
+  const [daThem,setDaThem]=useState([])
+  const [daXoa,setDaXoa]=useState([])
+  const allEvidence=[...evidence,...daThem].filter(x=>x&&!daXoa.includes(x.id))
   const lowRating=existing?.rating!=null&&existing.rating<=2
   const canReflect=Boolean(existing)||canUpdateReflection(availableAt)||isReflectionDue(progress)||progress==='Hệ thống tự đánh giá'
 
@@ -453,7 +469,7 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
     if(!canReflect){setBusy(false);return setMsg('Em có thể cập nhật kết quả từ khi tiết tự học bắt đầu.')}
     if(form.note.trim().length<10){setBusy(false);return setMsg('Phần "Em đã làm được gì?" cần ít nhất 10 ký tự.')}
     const additions=(link.trim()?1:0)+(file?1:0)
-    if(evidence.length+additions>3){setBusy(false);return setMsg('Tối đa 3 minh chứng cho mỗi tiết.')}
+    if(allEvidence.length+additions>3){setBusy(false);return setMsg('Tối đa 3 minh chứng cho mỗi tiết.')}
     if(form.need_help&&!form.help_note.trim()){setBusy(false);return setMsg('Hãy ghi ngắn gọn điều em cần hỗ trợ.')}
     if(link.trim()){try{new URL(link.trim())}catch{setBusy(false);return setMsg('Liên kết minh chứng chưa hợp lệ.')}}
     if(file){
@@ -463,13 +479,17 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
       if(file.size>limit){setBusy(false);return setMsg(file.type.startsWith('image/')?'Ảnh vượt quá 12 MB.':'File PDF vượt quá 5 MB.')}
       if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(file.type)){setBusy(false);return setMsg('Chỉ nhận JPG, PNG, WebP hoặc PDF.')}
     }
-    // Không gửi các cột của giáo viên; trigger phía CSDL cũng chặn sẵn.
-    const payload={plan_id:plan.id,student_id:plan.student_id,...form,note:form.note.trim(),help_note:form.need_help?form.help_note.trim():null,completed_at:new Date().toISOString()}
-    const {error}=await supabase.from('reflections').upsert(payload,{onConflict:'plan_id'})
-    if(error){setBusy(false);return setMsg('Không thể lưu kết quả.')}
+    // Nhiệm vụ có thiết bị bắt buộc có minh chứng (CSDL cũng chặn — schema-18).
+    // Kiểm ở đây trước để em biết ngay, không phải chờ lỗi từ máy chủ.
+    if(plan.use_device&&allEvidence.length+additions===0){setBusy(false);return setMsg('Nhiệm vụ này có dùng thiết bị điện tử nên cần ít nhất một minh chứng — ảnh, tệp PDF hoặc liên kết sản phẩm.')}
+    // THỨ TỰ: đính kèm minh chứng TRƯỚC, lưu kết quả SAU. Ngược lại thì luật
+    // "nhiệm vụ có thiết bị phải có minh chứng" chặn ngay ở bước lưu kết quả.
+    // Mỗi minh chứng thêm được thì ghi nhớ ngay (daThem), để lỡ bước sau hỏng
+    // mà em bấm Lưu lại thì không bị thêm trùng.
     if(link.trim()){
-      const {error:e}=await supabase.from('evidence').insert({plan_id:plan.id,student_id:plan.student_id,kind:'link',external_url:link.trim(),display_name:'Liên kết sản phẩm'})
-      if(e){setBusy(false);return setMsg('Đã lưu kết quả nhưng chưa thêm được liên kết.')}
+      const {data:ev,error:e}=await supabase.from('evidence').insert({plan_id:plan.id,student_id:plan.student_id,kind:'link',external_url:link.trim(),display_name:'Liên kết sản phẩm'}).select().maybeSingle()
+      if(e){setBusy(false);return setMsg('Chưa thêm được liên kết, nên kết quả chưa được lưu. Em thử lại nhé.')}
+      setDaThem(x=>[...x,ev]);setLink('')
     }
     if(file){
       // Ảnh được thu nhỏ ngay trên máy em trước khi tải lên — nhẹ hơn khoảng 6 lần
@@ -481,9 +501,15 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
       const path=`${plan.student_id}/${plan.id}/${uuid}.${safeExt}`
       const {error:upErr}=await supabase.storage.from('evidence').upload(path,shrunk.blob,{upsert:false,contentType:shrunk.type})
       if(upErr){console.error('Evidence upload failed',upErr);setBusy(false);return setMsg(evidenceUploadError(upErr))}
-      const {error:e}=await supabase.from('evidence').insert({plan_id:plan.id,student_id:plan.student_id,kind:file.type.startsWith('image/')?'image':'file',storage_path:path,display_name:shrunk.name})
-      if(e){await supabase.storage.from('evidence').remove([path]);setBusy(false);return setMsg('Không thể ghi nhận file minh chứng.')}
+      const {data:ev,error:e}=await supabase.from('evidence').insert({plan_id:plan.id,student_id:plan.student_id,kind:file.type.startsWith('image/')?'image':'file',storage_path:path,display_name:shrunk.name}).select().maybeSingle()
+      if(e){await supabase.storage.from('evidence').remove([path]);setBusy(false);return setMsg('Không thể ghi nhận file minh chứng, nên kết quả chưa được lưu.')}
+      setDaThem(x=>[...x,ev]);setFile(null)
     }
+    // Không gửi các cột của giáo viên; trigger phía CSDL cũng chặn sẵn.
+    const payload={plan_id:plan.id,student_id:plan.student_id,...form,note:form.note.trim(),help_note:form.need_help?form.help_note.trim():null,completed_at:new Date().toISOString()}
+    const {error}=await supabase.from('reflections').upsert(payload,{onConflict:'plan_id'})
+    // Lỗi do luật (P0001) thì lời báo viết sẵn cho em đọc — đưa nguyên văn.
+    if(error){setBusy(false);return setMsg(error.code==='P0001'?error.message:'Không thể lưu kết quả.')}
     setBusy(false);onSaved()
   }
   const openEvidence=async(item)=>{
@@ -492,11 +518,16 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
     const {data}=await supabase.storage.from('evidence').createSignedUrl(item.storage_path,120)
     if(data?.signedUrl)window.open(data.signedUrl,'_blank','noopener,noreferrer')
   }
+  // Xoá DÒNG trước, tệp trên kho sau. Ngược lại thì khi CSDL không cho xoá
+  // (minh chứng cuối cùng của nhiệm vụ có thiết bị), tệp đã mất mà dòng vẫn
+  // còn — trỏ vào khoảng không.
   const removeEvidence=async(item)=>{
     if(!window.confirm('Xóa minh chứng này?'))return
+    setMsg('')
+    const {error}=await supabase.from('evidence').delete().eq('id',item.id)
+    if(error)return setMsg(error.code==='P0001'?error.message:'Không xóa được minh chứng này.')
     if(item.storage_path)await supabase.storage.from('evidence').remove([item.storage_path])
-    await supabase.from('evidence').delete().eq('id',item.id)
-    onSaved()
+    setDaXoa(x=>[...x,item.id])
   }
 	  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" role="dialog" aria-modal="true" aria-labelledby="reflection-title" onMouseDown={e=>e.stopPropagation()}>
 	    <div className="modal-head"><div><span className="eyebrow">{formatDate(plan.study_date)} · TIẾT {plan.period}</span><h2 id="reflection-title">{plan.subject}</h2></div><button className="icon-button" onClick={onClose} aria-label="Đóng">✕</button></div>
@@ -544,18 +575,22 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
     {/* Minh chứng nói theo LOẠI HOẠT ĐỘNG. Ôn tập hay đọc sách thì vốn không có
         gì để chụp — đòi minh chứng ở đó chỉ khiến em chụp đại một trang giấy cho
         đủ thủ tục. Nói thẳng "không cần" ở những loại đó thì trung thực hơn. */}
-    <div className="evidence-block"><h3>Sản phẩm kèm theo <span className="muted-text">(không bắt buộc · tối đa 3)</span></h3>
-      <p className="muted-text small">{prompt.sanPham
+    <div className="evidence-block"><h3>Sản phẩm kèm theo {plan.use_device
+        ? <span className="evidence-required">(bắt buộc ít nhất 1 · tối đa 3)</span>
+        : <span className="muted-text">(không bắt buộc · tối đa 3)</span>}</h3>
+      <p className="muted-text small">{plan.use_device
+        ? <>Nhiệm vụ này <strong>có dùng thiết bị điện tử</strong>, nên em phải kèm ít nhất một minh chứng kết quả: ảnh chụp màn hình/bài làm, tệp PDF, hoặc liên kết tới sản phẩm.</>
+        : prompt.sanPham
         ? <>Việc này thường có sản phẩm. {prompt.goiYSanPham} Không có cũng không sao — phần chữ ở trên mới là chính.</>
         : <>Việc này thường <strong>không có sản phẩm để nộp</strong>, nên em không cần đính kèm gì. Có thì thêm cũng tốt.</>}</p>
-      {evidence.length>0&&<div className="evidence-list">{evidence.map(x=><span key={x.id} className="evidence-row">
+      {allEvidence.length>0&&<div className="evidence-list">{allEvidence.map(x=><span key={x.id} className="evidence-row">
         <button type="button" className="evidence-item" onClick={()=>openEvidence(x)}>
           {x.kind==='link'?'🔗':x.kind==='text'?'📝':'📎'} {x.kind==='text'?(x.body_text||'').slice(0,60)+((x.body_text||'').length>60?'…':''):(x.display_name||'Minh chứng')}
           {x.kind!=='text'&&<ExternalLink size={14}/>}
         </button>
         <button type="button" className="evidence-item" title="Xóa minh chứng" onClick={()=>removeEvidence(x)}>✕</button>
       </span>)}</div>}
-      {evidence.length<3&&<>
+      {allEvidence.length<3&&<>
         <label>Upload ảnh/PDF (ảnh ≤ 12 MB · PDF ≤ 5 MB)</label>
         <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={e=>setFile(e.target.files?.[0]||null)}/>
         {file?.type?.startsWith('image/')&&<small className="muted-text">Ảnh sẽ được tự động thu nhỏ trước khi gửi để tiết kiệm dung lượng — chất lượng vẫn đủ rõ để thầy cô xem.</small>}

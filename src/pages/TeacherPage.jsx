@@ -16,6 +16,7 @@ import TeacherOnboarding from '../components/TeacherOnboarding'
 import { ClassAnalytics, StudentAnalytics } from '../components/Analytics'
 import { DisciplineBoard, AttendancePolicyPanel } from '../components/Attendance'
 import LaborBoard from '../components/LaborBoard'
+import DeviceBoard from '../components/DeviceBoard'
 
 const PAGE_SIZE = 25
 
@@ -113,6 +114,22 @@ export default function TeacherPage(){
   },[context.classId,view])
   const discCount=disc.filter(r=>r.bac>=1).length
   const discParent=disc.filter(r=>r.bac===3).length
+
+  // Kỷ luật "quên đăng ký" TẮT từ 10/2026 (công tắc toàn trường, schema-16):
+  // đăng ký chỉ còn bắt buộc khi dùng thiết bị. Tắt thì ẩn hẳn thẻ "Chưa đăng
+  // ký", "Kỷ luật" và ô "Chưa có kế hoạch ngày mai" — để đó mà số nào cũng là
+  // việc không còn phải làm thì chỉ gây nhiễu. Bật lại là hiện lại.
+  const [discOn,setDiscOn]=useState(false)
+  useEffect(()=>{supabase.rpc('discipline_on').then(({data})=>setDiscOn(Boolean(data)))},[])
+  // Vi phạm thiết bị còn việc phải làm: còn nợ lao động, hoặc chưa báo phụ huynh.
+  const [dev,setDev]=useState([])
+  useEffect(()=>{
+    if(!context.classId)return setDev([])
+    supabase.rpc('class_device_week',{p_class:context.classId})
+      .then(({data})=>setDev(data??[]))
+  },[context.classId,view])
+  const devTodo=dev.filter(r=>r.lao_dong_con_no>0||r.chua_bao_ph).length
+  const devParent=dev.filter(r=>r.chua_bao_ph).length
 
 
   const studentMap=useMemo(()=>Object.fromEntries(students.map(s=>[s.id,s])),[students])
@@ -359,9 +376,11 @@ export default function TeacherPage(){
       <Stat label="Bổ sung muộn" value={inbox.recheck} alert={inbox.recheck>0}
             onClick={()=>{setView('plans');setFilters({...CLEAR,recheck:'co'})}}
             active={filters.recheck==='co'}/>
-      <Stat label="Chưa có kế hoạch ngày mai" value={noPlanTomorrow.length} alert={noPlanTomorrow.length>0}
-            onClick={()=>setView('missing')} active={view==='missing'}/>
-      {disc.length>0&&<Stat label={discParent>0?'Có em cần trao đổi với phụ huynh':'Đang áp dụng kỷ luật'}
+      {discOn&&<Stat label="Chưa có kế hoạch ngày mai" value={noPlanTomorrow.length} alert={noPlanTomorrow.length>0}
+            onClick={()=>setView('missing')} active={view==='missing'}/>}
+      {devTodo>0&&<Stat label={devParent>0?'Vi phạm thiết bị: cần báo phụ huynh':'Vi phạm thiết bị: còn nợ lao động'}
+            value={devTodo} alert onClick={()=>setView('device')} active={view==='device'}/>}
+      {discOn&&disc.length>0&&<Stat label={discParent>0?'Có em cần trao đổi với phụ huynh':'Đang áp dụng kỷ luật'}
             value={discCount} alert={discCount>0}
             onClick={()=>setView('discipline')} active={view==='discipline'}/>}
     </section>
@@ -371,15 +390,17 @@ export default function TeacherPage(){
       <button type="button" className={view==='students'?'active':''} onClick={()=>setView('students')}>Theo học sinh</button>
       <button type="button" className={view==='analytics'?'active':''} onClick={()=>setView('analytics')}>Phân tích</button>
       <button type="button" className={view==='roster'?'active':''} onClick={()=>setView('roster')}>Học sinh</button>
-      <button type="button" className={view==='missing'?'active':''} onClick={()=>setView('missing')}>Chưa đăng ký</button>
+      <button type="button" className={view==='device'?'active':''} onClick={()=>setView('device')}>Thiết bị</button>
+      {discOn&&<button type="button" className={view==='missing'?'active':''} onClick={()=>setView('missing')}>Chưa đăng ký</button>}
       <button type="button" className={view==='schedule'?'active':''} onClick={()=>setView('schedule')}>Lịch tự học</button>
-      <button type="button" className={view==='discipline'?'active':''} onClick={()=>setView('discipline')}>Kỷ luật</button>
+      {discOn&&<button type="button" className={view==='discipline'?'active':''} onClick={()=>setView('discipline')}>Kỷ luật</button>}
       <button type="button" className={view==='assistants'?'active':''} onClick={()=>setView('assistants')}>Trợ giảng</button>
     </div>
 
     {view==='schedule'&&<ClassScheduleSettings classId={context.classId} className={context.className}/>}
-    {view==='missing'&&<MissingRegistrations classId={context.classId} roster={roster}/>}
-    {view==='discipline'&&<>
+    {view==='device'&&<DeviceBoard classId={context.classId} className={context.className}/>}
+    {discOn&&view==='missing'&&<MissingRegistrations classId={context.classId} roster={roster}/>}
+    {discOn&&view==='discipline'&&<>
       <DisciplineBoard classId={context.classId} className={context.className}/>
       <LaborBoard classId={context.classId} className={context.className}/>
       <AttendancePolicyPanel classId={context.classId} className={context.className}/>

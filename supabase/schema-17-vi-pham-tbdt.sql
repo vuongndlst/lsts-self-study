@@ -81,7 +81,7 @@ $$;
 create or replace function public.device_kind_label(p_kind text)
 returns text language sql immutable as $$
   select case p_kind
-    when 'khong_dang_ky' then 'Dùng thiết bị khi chưa đăng ký'
+    when 'khong_dang_ky' then 'Không đăng ký mà tự ý dùng thiết bị'
     when 'sai_muc_dich'  then 'Dùng thiết bị sai mục đích'
     else p_kind end;
 $$;

@@ -40,6 +40,8 @@ export default function TaPage() {
   const [help, setHelp] = useState([])
   const [reflections, setReflections] = useState({})
   const [missing, setMissing] = useState([])
+  const [discOn, setDiscOn] = useState(false)
+  useEffect(() => { supabase.rpc('discipline_on').then(({ data }) => setDiscOn(Boolean(data))) }, [])
   const [missingDate, setMissingDate] = useState(shiftISO(1))
   const [range, setRange] = useState('tomorrow')
   const [search, setSearch] = useState('')
@@ -202,7 +204,9 @@ export default function TaPage() {
           </article>)}</div>}
     </section>}
 
-    {(assistant.can_view_plans || assistant.can_track_attendance) && <section className="section-block">
+    {/* Đăng ký chỉ còn bắt buộc khi dùng thiết bị (10/2026): kỷ luật quên đăng
+        ký tắt thì danh sách "bạn chưa đăng ký" không còn là việc phải nhắc. */}
+    {discOn && (assistant.can_view_plans || assistant.can_track_attendance) && <section className="section-block">
       <div className="section-title"><div>
         <h2><UserX size={19} /> Bạn chưa đăng ký</h2>
         <p>Chọn ngày để nhắc những bạn chưa có kế hoạch tự học.</p>
@@ -224,7 +228,7 @@ export default function TaPage() {
       </div>
     </section>}
 
-    {assistant.can_track_attendance && <AttendanceTracker classId={context.classId} />}
+    {discOn && assistant.can_track_attendance && <AttendanceTracker classId={context.classId} />}
 
     {assistant.can_view_plans ? <section className="section-block">
       <div className="section-title">

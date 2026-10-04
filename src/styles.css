@@ -931,3 +931,20 @@ th,td{padding:11px 12px}
   border:1px solid var(--line);color:var(--muted);font-size:12.5px;line-height:1.5}
 .quay{animation:tl-quay 1s linear infinite}
 @keyframes tl-quay{to{transform:rotate(360deg)}}
+
+/* ---- Thiết bị điện tử: thẻ học sinh, sổ vi phạm ---- */
+.rule-row.muted-row{background:#fafbfb}
+.rule-row.muted-row>strong{font-weight:500;color:var(--muted)}
+.device-history{list-style:none;margin:12px 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.device-history li{font-size:13px;line-height:1.5;padding:9px 12px;border:1px solid var(--line);border-radius:11px;background:#fff}
+.device-history small{display:block;color:var(--muted);font-size:12px}
+.device-locked{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:#9b3333;margin-top:4px}
+.device-quota-line{font-size:12.5px;color:var(--muted);margin:2px 0 8px}
+.evidence-required{color:#9b3333;font-weight:700}
+.device-settings{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
+.device-settings .weekday-picks{display:flex;flex-wrap:wrap;gap:6px}
+.violation-form{display:grid;gap:10px}
+.violation-preview{padding:10px 12px;border-radius:11px;background:#fff7f5;border:1px solid #f3d3cc;font-size:13px;line-height:1.5}
+.violation-preview.moi-ph{background:#fdecea;border-color:#e9a59b}
+.row-cancelled td{opacity:.55;text-decoration:line-through}
+.row-cancelled td:last-child{text-decoration:none}

@@ -19,6 +19,7 @@ export default function StudentAlerts({ onRegister, onOpenBook, onOpenReflection
   const { profile, context } = useAuth()
   const [book, setBook] = useState(null)
   const [att, setAtt] = useState(null)
+  const [tb, setTb] = useState(null)
   const [closed, setClosed] = useState(false)
 
   useEffect(() => { setClosed(dismissedThisSession(profile?.id)) }, [profile?.id])
@@ -29,10 +30,12 @@ export default function StudentAlerts({ onRegister, onOpenBook, onOpenReflection
     Promise.all([
       context.bookShare ? supabase.rpc('my_book_share') : Promise.resolve({ data: [] }),
       supabase.rpc('my_attendance_status'),
-    ]).then(([b, a]) => {
+      supabase.rpc('my_device_quota'),
+    ]).then(([b, a, d]) => {
       if (!alive) return
       setBook((b.data ?? [])[0] ?? null)
       setAtt(a.data ?? null)
+      setTb(d.data ?? null)
     })
     return () => { alive = false }
   }, [profile?.id, context.bookShare, context.classId, reloadKey])
@@ -53,6 +56,20 @@ export default function StudentAlerts({ onRegister, onOpenBook, onOpenReflection
         ? `Lớp có ${att.so_tiet_hom_nay} tiết tự học hôm nay và em còn thiếu ${att.con_thieu_hom_nay} tiết.`
         : 'Lớp có tiết tự học hôm nay mà em chưa đăng ký kế hoạch.',
       action: { label: 'Đăng ký ngay', onClick: onRegister },
+    })
+  }
+
+  // 1b) Đang bị tạm dừng dùng thiết bị. Nói ngay khi vào trang, không để em
+  // đăng ký xong mới thấy công tắc thiết bị bị khoá.
+  if (tb?.cam_den) {
+    items.push({
+      key: 'cam-thiet-bi',
+      tone: 'danger',
+      icon: ShieldAlert,
+      title: `Em đang bị tạm dừng dùng thiết bị đến hết ${dmy(tb.cam_den)}`,
+      body: `Vi phạm lần ${tb.so_lan_vi_pham}: ${tb.ly_do_cam}.`
+            + (tb.lao_dong_con_no > 0 ? ` Em còn ${tb.lao_dong_con_no} lượt lao động công ích.` : '')
+            + ' Em vẫn tự học bình thường, chỉ không đăng ký dùng thiết bị được.',
     })
   }
 
