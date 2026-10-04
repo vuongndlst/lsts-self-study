@@ -1671,8 +1671,9 @@ Ghi vi phạm (`record_device_violation`, chỉ GVCN): tạm dừng từ hôm na
 ghi theo từng lần (`set_device_labor_done`), lần 4+ có thư mời phụ huynh soạn sẵn
 (`mark_device_parent_notified` khi đã báo). Trợ giảng không ghi và không đọc được sổ vi phạm (RLS).
 
-**Thứ tự triển khai** — `schema-16`, `schema-17` chạy trước được (không phá giao diện cũ).
-`schema-18` **chỉ chạy sau khi giao diện mới đã lên mạng**: giao diện cũ lưu kết quả *trước* rồi
+**Thứ tự triển khai** — cả ba đã áp lên CSDL thật (`schema-18` ngày 05/10/2026, sau khi PR #2
+lên mạng). Ghi lại để lần sau dựng CSDL mới khỏi vấp: `schema-16`, `schema-17` chạy trước được
+(không phá giao diện cũ); `schema-18` **chỉ chạy sau khi giao diện mới đã lên mạng**: giao diện cũ lưu kết quả *trước* rồi
 mới đính kèm minh chứng, nên luật minh chứng sẽ chặn ngay bước đầu. Giao diện mới đã đảo: đính kèm
 trước, lưu kết quả sau; xoá dòng minh chứng trước, xoá tệp trên kho sau.
 

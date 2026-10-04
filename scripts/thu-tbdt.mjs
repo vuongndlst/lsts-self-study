@@ -298,7 +298,7 @@ console.log('\nThang xử lý: lần 1/2/3 độc lập, lần 4 mời phụ huy
 }
 
 // ===========================================================================
-console.log('\nMinh chứng bắt buộc (schema-18, chạy thử rồi huỷ — chưa áp lên CSDL thật)')
+console.log('\nMinh chứng bắt buộc (schema-18 — đã áp từ 05/10/2026; chạy lại trong giao dịch, vô hại)')
 {
   const s17 = fs.readFileSync('supabase/schema-18-minh-chung-tbdt.sql', 'utf8')
   // Nhiệm vụ đã qua (hôm qua về trước) để được phép ghi kết quả và minh chứng.
@@ -334,12 +334,13 @@ const [sau] = await q(`select
   (select device_days_per_week from public.classes where id = '${L.lop}') gioi_han,
   (select device_weekdays from public.classes where id = '${L.lop}') thu,
   public.discipline_on() cong_tac,
-  (select count(*) from pg_trigger where tgname = 'trg_y_device_evidence') trigger_18`)
+  (select count(*) from pg_trigger where tgname in ('trg_y_device_evidence', 'trg_keep_last_device_evidence')
+     and not tgisinternal) trigger_18`)
 console.log('\nSau khi chạy')
 kiem('Không để lại lệnh cấm nào', Number(sau.cam) === Number(L.cam_truoc), `trước ${L.cam_truoc}, sau ${sau.cam}`)
 kiem('Cài đặt lớp 8A0 trở về như cũ', sau.gioi_han === null && sau.thu === null, JSON.stringify(sau))
 kiem('Công tắc kỷ luật vẫn TẮT', sau.cong_tac === false)
-kiem('schema-18 chưa bị áp lên CSDL thật', Number(sau.trigger_18) === 0)
+kiem('schema-18 đang bật trên CSDL thật (2 trigger minh chứng)', Number(sau.trigger_18) === 2, `có ${sau.trigger_18}`)
 
 console.log(`\n${truot ? '✗' : '✓'} ${dat} đạt · ${truot} trượt`)
 process.exit(truot ? 1 : 0)
