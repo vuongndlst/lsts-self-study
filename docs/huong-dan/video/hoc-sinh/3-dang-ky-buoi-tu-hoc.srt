@@ -1,39 +1,51 @@
 1
-00:00:00,000 --> 00:00:02,391
-Hạn đăng ký là 24 giờ của ngày hôm trước.
+00:00:00,000 --> 00:00:02,384
+Cần dùng máy tính hay điện thoại trong giờ tự học thì BẮT BUỘC đăng ký trước.
 
 2
-00:00:02,391 --> 00:00:05,703
-Đăng ký sau mốc đó thì buổi của em bị đánh dấu Trễ.
+00:00:02,384 --> 00:00:05,695
+Hạn đăng ký là 24 giờ của ngày hôm trước. Sau mốc đó thì bị đánh dấu Trễ.
 
 3
-00:00:05,703 --> 00:00:11,119
+00:00:05,695 --> 00:00:11,115
 Bấm Đăng ký giờ tự học.
 
 4
-00:00:11,119 --> 00:00:13,521
+00:00:11,115 --> 00:00:13,517
 Chọn ngày trước, rồi phần chọn tiết mới hiện ra.
 
 5
-00:00:13,521 --> 00:00:15,923
+00:00:13,517 --> 00:00:15,921
 Hệ thống chỉ mở những tiết lớp em thực sự có giờ tự học.
 
 6
-00:00:15,923 --> 00:00:19,456
+00:00:15,921 --> 00:00:19,430
 Thứ nào lớp không có giờ tự học thì không chọn được — như vậy là đúng.
 
 7
-00:00:19,456 --> 00:00:21,858
+00:00:19,430 --> 00:00:21,835
 Rồi ghi nhiệm vụ: môn gì, làm việc cụ thể nào, mục tiêu là gì.
 
 8
-00:00:21,858 --> 00:00:24,260
+00:00:21,835 --> 00:00:24,236
 Mục tiêu nên đo được. "Học bài" thì không biết thế nào là xong.
 
 9
-00:00:24,260 --> 00:00:26,671
+00:00:24,236 --> 00:00:27,543
 "Làm bài 1 đến 8 trang 24, đúng ít nhất 6 bài" thì cuối buổi em tự biết mình đạt chưa.
 
 10
-00:00:26,671 --> 00:00:29,075
-Buổi đó cần máy tính hay điện thoại thì bật Cần dùng thiết bị và ghi rõ dùng để làm gì.
+00:00:27,543 --> 00:00:29,949
+Nhiệm vụ cần thiết bị thì bật Dùng thiết bị điện tử và ghi rõ dùng để làm gì.
+
+11
+00:00:29,949 --> 00:00:32,354
+Dòng chữ phía trên cho biết tuần đó em đã dùng thiết bị mấy ngày.
+
+12
+00:00:32,354 --> 00:00:34,757
+Bị tạm dừng, chọn thứ lớp không cho dùng, hay đã dùng đủ số ngày thì công tắc tự khoá và ghi rõ lý do.
+
+13
+00:00:34,757 --> 00:00:37,159
+Không đăng ký mà tự ý dùng, hoặc dùng sai mục đích, là vi phạm.

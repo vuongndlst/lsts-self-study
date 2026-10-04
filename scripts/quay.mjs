@@ -141,6 +141,16 @@ window.__phuDe = (t) => {
 
 // Đưa con trỏ tới giữa một phần tử. Trả về false nếu không tìm thấy, để kịch bản
 // biết mà báo lỗi thay vì quay ra một video bấm vào khoảng không.
+// Cuộn để phần tử nằm ngay dưới thanh điều hướng, bằng MỘT lần cuộn. Trang đặt
+// html{scroll-behavior:smooth}, nên "scrollIntoView rồi scrollBy" thành hai lần
+// cuộn mượt — lần sau cắt ngang lần trước và trang đứng yên chỗ cũ.
+window.__cuonToiPT = (el, du = 96) => {
+  if (!el) return false;
+  const y = el.getBoundingClientRect().top + window.scrollY - du;
+  window.scrollTo({ top: Math.max(y, 0), behavior: 'smooth' });
+  return true;
+};
+
 window.__troToi = (sel, text) => {
   const el = text
     ? [...document.querySelectorAll(sel || 'button,a')].find(e => e.textContent.trim().includes(text))

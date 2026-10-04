@@ -4,8 +4,8 @@ Hai bộ, mỗi bộ một thư mục:
 
 | Thư mục | Cho ai | Dài | Số phần | Trong git |
 |---|---|---|---|---|
-| [`hoc-sinh/`](hoc-sinh) | Học sinh, xưng "em" | 4:22 | 8 | có |
-| `giao-vien/` | Giáo viên chủ nhiệm | 4:36 | 7 | **không** |
+| [`hoc-sinh/`](hoc-sinh) | Học sinh, xưng "em" | 4:39 | 8 | có |
+| `giao-vien/` | Giáo viên chủ nhiệm | 4:50 | 7 | **không** |
 
 Video bản giáo viên **không nằm trong kho mã nguồn** — kho này công khai, mà
 phần giáo viên thì chỉ giáo viên đăng nhập mới được xem. Nó nằm trong bucket

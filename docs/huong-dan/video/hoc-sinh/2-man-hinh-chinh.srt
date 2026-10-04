@@ -1,27 +1,31 @@
 1
-00:00:00,000 --> 00:00:03,612
+00:00:00,000 --> 00:00:03,596
 Đăng nhập xong, tất cả những gì em cần đều nằm ở màn hình này.
 
 2
-00:00:03,612 --> 00:00:07,229
+00:00:03,596 --> 00:00:05,999
 Nút xanh đậm này để đăng ký một buổi tự học mới.
 
 3
-00:00:07,229 --> 00:00:09,644
-Thẻ điểm danh cho biết học kỳ này em đã quên đăng ký mấy lần.
+00:00:05,999 --> 00:00:09,606
+Không dùng thiết bị điện tử thì em không bắt buộc đăng ký — nhưng vẫn nên tự lên kế hoạch.
 
 4
-00:00:09,644 --> 00:00:13,264
-Và còn mấy lần được miễn trừ.
+00:00:09,606 --> 00:00:12,009
+Thẻ Thiết bị điện tử cho biết tuần này em đã dùng thiết bị mấy ngày.
 
 5
-00:00:13,264 --> 00:00:15,679
-Dải bộ lọc nhanh: bấm một cái là hiện đúng nhóm nhiệm vụ đó.
+00:00:12,009 --> 00:00:15,613
+Và em đã vi phạm quy định thiết bị lần nào chưa.
 
 6
-00:00:15,679 --> 00:00:18,091
-Mỗi lần vào trang, em nhìn hai con số: Trễ hạn và Cần viết phản hồi.
+00:00:15,613 --> 00:00:18,015
+Dải bộ lọc nhanh: bấm một cái là hiện đúng nhóm nhiệm vụ đó.
 
 7
-00:00:18,091 --> 00:00:20,508
+00:00:18,015 --> 00:00:20,424
+Mỗi lần vào trang, em nhìn hai con số: Trễ hạn và Cần viết phản hồi.
+
+8
+00:00:20,424 --> 00:00:22,825
 Hai con số đó bằng không nghĩa là em không nợ việc gì.

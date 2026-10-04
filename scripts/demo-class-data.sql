@@ -13,9 +13,13 @@
 --    2400005 Mai Thuỳ Linh  — bị trả về "cần điều chỉnh", có bài bị chấm thấp
 --    2400006 Ngô Bảo Long   — nợ phản tư, ba nhiệm vụ quá hạn
 --    2400007 Phạm Khánh Vy  — bị hệ thống tự chấm 1 sao
---    2400008 Trần Đức Huy   — quên đăng ký 4 buổi  → lao động công ích 5 lượt
---    2400009 Vũ Hải Yến     — quên 5 buổi          → 10 lượt
---    2400010 Đỗ Nhật Minh   — quên 6 buổi          → mời phụ huynh
+--    2400008 Trần Đức Huy   — vi phạm thiết bị lần 2, ĐANG bị tạm dừng 2 tuần
+--    2400009 Vũ Hải Yến     — vi phạm thiết bị lần 1, đã hết hạn, còn nợ lao động
+--    2400010 Đỗ Nhật Minh   — vi phạm thiết bị lần 4 → mời phụ huynh (chưa báo)
+--
+--  (Ba em cuối trước đây minh hoạ kỷ luật "quên đăng ký". Kỷ luật đó đã TẮT từ
+--   10/2026 — xem schema-16 — nhưng số lần quên vẫn dựng ở dưới, để bật lại
+--   công tắc là có ngay dữ liệu mà xem.)
 --
 --  MỌI CÁI TÊN Ở ĐÂY LÀ NGƯỜI BỊA.
 --
@@ -42,6 +46,9 @@ begin
   delete from public.discipline_cases     where class_id = v_lop;
   delete from public.class_assistants     where class_id = v_lop;
   delete from public.book_share_weeks     where class_id = v_lop;  -- book_shares cascade
+  delete from public.device_bans          where class_id = v_lop;
+  -- Mặc định không giới hạn thiết bị — đúng như lớp thật lúc mới bật luật.
+  update public.classes set device_days_per_week = null, device_weekdays = null where id = v_lop;
 
   -- ---------- Lịch tự học: thứ Tư tiết 5, thứ Sáu tiết 8–9 ----------
   delete from public.class_schedule where class_id = v_lop;
@@ -92,6 +99,10 @@ begin
     true,'Hoàn thành','Nhóm em xong 8/12 slide. Em phụ trách phần mở đầu, đã viết xong và tập nói một lượt.',false,null,null,null,false),
   ('2400001','2026-09-16',5,1,'Toán','Làm đề ôn số 2','Xong trước giờ về','Cao',false,'Không cần duyệt','Không dùng',null,
     false,null,null,false,null,null,null,false),
+  -- Nhiệm vụ CÓ thiết bị, đã nộp kèm minh chứng (liên kết, thêm ở dưới) — để
+  -- ảnh cửa sổ cập nhật kết quả cho thấy minh chứng bắt buộc trông thế nào.
+  ('2400001','2026-09-18',8,2,'Tin học','Lập trình Scratch "Mèo đuổi chuột"','Mèo đi theo chuột và tính điểm','Cao',true,'Đã duyệt','Đã duyệt',null,
+    true,'Hoàn thành','Em làm xong phần mèo đi theo con trỏ và đếm điểm. Phần âm thanh khi bắt được chuột em chưa làm kịp.',false,null,5,'Sản phẩm chạy tốt, minh chứng rõ ràng.',false),
 
   -- === 2400002 Đặng Minh Quân — nhiều bài chờ chấm sao ===
   ('2400002','2026-09-02',5,1,'Tin học','Luyện gõ mười ngón và làm bài Scratch','Gõ được 25 từ/phút','Trung bình',false,'Không cần duyệt','Không dùng',null,
@@ -248,6 +259,42 @@ begin
     (v_lop, '2400010', date '2026-08-24', 4, date '2026-09-30',
        timestamptz '2026-09-12 09:15+07', timestamptz '2026-09-12 09:15+07', v_gv, v_gv);
 
+  -- ---------- Minh chứng cho nhiệm vụ có thiết bị ----------
+  insert into public.evidence (plan_id, student_id, kind, external_url, display_name)
+  select p.id, p.student_id, 'link', 'https://scratch.mit.edu/projects/vi-du-minh-hoa', 'Dự án Scratch của em'
+  from public.plans p join public.students s on s.claimed_user_id = p.student_id
+  where s.mshs = '2400001' and p.class_id = v_lop and p.use_device;
+
+  -- ---------- Vi phạm thiết bị điện tử (schema-17) ----------
+  -- Ghi thẳng vào bảng thay vì gọi record_device_violation(): hàm đó lấy mốc
+  -- "hôm nay", không dựng được lịch sử nhiều tuần. Lần đang có hiệu lực thì
+  -- tính theo vn_today() để lúc nào chạy lại cũng còn người đang bị tạm dừng.
+  insert into public.device_bans (class_id, student_id, starts_on, ends_on, reason, created_by,
+    created_at, kind, lan, labor_required, labor_done, parent_invite, parent_notified_at)
+  select v_lop, s.claimed_user_id, x.tu, x.den,
+         public.device_kind_label(x.kind) || coalesce(': ' || x.ghi_chu, ''),
+         v_gv, (x.tu::text || ' 10:00+07')::timestamptz,
+         x.kind, x.lan, x.ld, x.da_lam, x.lan >= 4, null
+  from (values
+    ('2400008', 1, 'khong_dang_ky', 'dùng điện thoại trong tiết 5',
+       date '2026-09-16', date '2026-09-22', 5, 5),
+    ('2400008', 2, 'sai_muc_dich', 'xem video giải trí thay vì tra cứu tài liệu',
+       public.vn_today() - 2, public.vn_today() + 11, 10, 2),
+    ('2400009', 1, 'khong_dang_ky', null,
+       date '2026-09-23', date '2026-09-29', 5, 3),
+    ('2400010', 1, 'khong_dang_ky', null,          date '2026-08-26', date '2026-09-01', 5, 5),
+    ('2400010', 2, 'sai_muc_dich',  'chơi trò chơi', date '2026-09-02', date '2026-09-15', 10, 10),
+    ('2400010', 3, 'khong_dang_ky', null,
+       public.vn_today() - 20, public.vn_today() + 9, 20, 6),
+    ('2400010', 4, 'sai_muc_dich',  'nhắn tin trong giờ tự học',
+       public.vn_today() + 10, public.vn_today() + 39, 20, 0)
+  ) as x(mshs, lan, kind, ghi_chu, tu, den, ld, da_lam)
+  join public.students s on s.mshs = x.mshs;
+  -- Lần 4 của 2400010 nối đuôi lần 3 nên bắt đầu trong tương lai — nhưng được
+  -- GHI hôm qua, không phải ngày bắt đầu cấm.
+  update public.device_bans b set created_at = (public.vn_today() - 1)::text::date + time '10:00'
+   where b.class_id = v_lop and b.lan = 4;
+
   -- ---------- Cán sự được giao việc nhắc ----------
   insert into public.class_assistants (class_id, student_id, can_view_plans, can_view_help,
     can_chat, can_track_attendance, can_review_books, granted_by)
@@ -315,4 +362,6 @@ union all select 'luot quen (tiet)', count(*)::text from public.attendance_misse
 union all select 'buoi quen', count(*)::text from public.attendance_miss_sessions ms
   join public.classes c on c.id = ms.class_id where c.name='8A0'
 union all select 'bai chia se sach', count(*)::text from public.book_shares bs
-  join public.classes c on c.id = bs.class_id where c.name='8A0';
+  join public.classes c on c.id = bs.class_id where c.name='8A0'
+union all select 'vi pham thiet bi', count(*)::text from public.device_bans db
+  join public.classes c on c.id = db.class_id where c.name='8A0';
