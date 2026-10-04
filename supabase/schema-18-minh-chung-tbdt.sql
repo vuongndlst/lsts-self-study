@@ -2,7 +2,7 @@
 --  18. MINH CHỨNG BẮT BUỘC CHO NHIỆM VỤ CÓ THIẾT BỊ
 -- ===========================================================================
 --
--- CHỈ CHẠY SAU KHI GIAO DIỆN MỚI ĐÃ LÊN MẠNG.
+-- CHỈ CHẠY SAU KHI GIAO DIỆN MỚI ĐÃ LÊN MẠNG. (Đã áp lên CSDL thật 05/10/2026.)
 --
 -- Giao diện cũ lưu kết quả TRƯỚC rồi mới đính kèm minh chứng, và xoá tệp trên
 -- kho TRƯỚC rồi mới xoá dòng minh chứng. Với hai luật dưới đây:
