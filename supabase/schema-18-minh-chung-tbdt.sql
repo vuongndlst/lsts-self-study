@@ -1,5 +1,5 @@
 -- ===========================================================================
---  17. MINH CHỨNG BẮT BUỘC CHO NHIỆM VỤ CÓ THIẾT BỊ
+--  18. MINH CHỨNG BẮT BUỘC CHO NHIỆM VỤ CÓ THIẾT BỊ
 -- ===========================================================================
 --
 -- CHỈ CHẠY SAU KHI GIAO DIỆN MỚI ĐÃ LÊN MẠNG.
@@ -12,7 +12,7 @@
 -- Giao diện mới đảo cả hai thứ tự. Chạy file này trước khi nó lên mạng là em
 -- nào đang cập nhật kết quả nhiệm vụ có thiết bị cũng bị chặn.
 --
--- Chạy:  node scripts/db.mjs . supabase/schema-17-minh-chung-tbdt.sql
+-- Chạy:  node scripts/db.mjs . supabase/schema-18-minh-chung-tbdt.sql
 
 -- Ảnh, tệp hoặc liên kết đều được (GVCN chọn), chỉ cần có ít nhất một.
 --

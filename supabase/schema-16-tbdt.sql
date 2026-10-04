@@ -20,7 +20,7 @@
 -- luật được viết lại nhưng thân hàm giữ nguyên từng chữ, chỉ thêm điều kiện
 -- công tắc vào đúng chỗ đọc `pol.enabled`.
 --
--- Luật 3 (minh chứng) nằm ở schema-17-minh-chung-tbdt.sql, chạy SAU khi giao
+-- Luật 3 (minh chứng) nằm ở schema-18-minh-chung-tbdt.sql, chạy SAU khi giao
 -- diện mới lên mạng — xem mục F bên dưới. File này thì chạy trước được: nó
 -- không làm gì phá giao diện cũ (mặc định không giới hạn, chưa ai bị cấm).
 --
@@ -416,7 +416,7 @@ revoke all on function public.enforce_device_rules() from public, anon, authenti
 
 
 -- ===========================================================================
---  F. MINH CHỨNG BẮT BUỘC — tách sang schema-17-minh-chung-tbdt.sql
+--  F. MINH CHỨNG BẮT BUỘC — tách sang schema-18-minh-chung-tbdt.sql
 -- ===========================================================================
 -- Phần này PHÁ giao diện cũ: giao diện cũ lưu kết quả trước rồi mới đính kèm
 -- minh chứng, nên luật "phải có minh chứng" chặn ngay bước đầu. Chạy nó trước

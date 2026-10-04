@@ -1,4 +1,4 @@
-// Thử các luật TBĐT (schema-16 + schema-17) bằng VAI THẬT.
+// Thử các luật TBĐT (schema-16, 17, 18) bằng VAI THẬT.
 //
 //   node scripts/thu-tbdt.mjs
 //
@@ -12,7 +12,7 @@
 //   4. `raise exception` ở cuối → cả giao dịch HUỶ. Không một dòng nào ở lại.
 //
 // Đã kiểm: Management API chạy cả chuỗi lệnh như MỘT giao dịch, nên raise ở
-// cuối huỷ được cả lệnh tạo bảng. Nhờ vậy ca minh chứng chạy được schema-17
+// cuối huỷ được cả lệnh tạo bảng. Nhờ vậy ca minh chứng chạy được schema-18
 // ngay bên trong rồi tự huỷ — thử trước khi nó được áp lên CSDL thật.
 //
 // Chỉ dùng lớp minh hoạ 8A0: mười học sinh bịa, không đụng học sinh thật.
@@ -31,7 +31,7 @@ async function ca(than, truocDo = '') {
   try {
     await q(`${truocDo}
 do $ca$
-declare kq jsonb := '{}'::jsonb; v_n int; v_s text; v_j json; v_id uuid;
+declare kq jsonb := '{}'::jsonb; v_n int; v_s text; v_j json; v_id uuid; kq_tmp_no int; kq_tmp_bao boolean;
 begin
 ${than}
   raise exception 'KQ:%', kq::text;
@@ -170,7 +170,7 @@ console.log('\nGiới hạn số ngày mỗi tuần — đếm theo NGÀY')
 }
 
 // ===========================================================================
-console.log('\nGhi vi phạm → tạm dừng 7 ngày')
+console.log('\nGhi vi phạm lần 1 → tạm dừng 7 ngày')
 {
   const r = await ca(`
     ${donTuan(L.hs1)}
@@ -182,11 +182,11 @@ console.log('\nGhi vi phạm → tạm dừng 7 ngày')
     returning id into v_id;
 
     ${vai(L.hs1)}
-    ${thu('hs_tu_ghi_vi_pham', `perform public.record_device_violation('${L.hs1}', 'thử')`)}
+    ${thu('hs_tu_ghi_vi_pham', `perform public.record_device_violation('${L.hs1}', 'sai_muc_dich', 'thử')`)}
     ${thu('hs_goi_ham_luat', `perform public.device_rule_violation('${L.hs1}', '${L.lop}', ${T4}, null)`)}
 
     ${vai(L.gv)}
-    select public.record_device_violation('${L.hs1}', 'Dùng điện thoại khi chưa đăng ký') into v_j;
+    select public.record_device_violation('${L.hs1}', 'khong_dang_ky', 'Dùng điện thoại giờ tự học') into v_j;
     ${ghi('ket_qua_ghi', 'v_j')}
     select device_status into v_s from public.plans where id = v_id;
     ${ghi('buoi_da_duyet_gio_la', 'v_s')}
@@ -196,7 +196,7 @@ console.log('\nGhi vi phạm → tạm dừng 7 ngày')
     ${thu('dang_ky_khong_tb_trong_cam', keHoach(L.hs1, TRONG_CAM, TIET_CUA(TRONG_CAM), false))}
     select public.my_device_quota() into v_j;
     ${ghi('hs_thay_cam_den', "v_j->>'cam_den'")}
-    select count(*) into v_n from public.notifications where user_id = '${L.hs1}' and title like 'Tạm dừng%';
+    select count(*) into v_n from public.notifications where user_id = '${L.hs1}' and title like 'Vi phạm thiết bị lần 1%';
     ${ghi('hs_nhan_thong_bao', 'v_n')}
 
     ${vai(L.hs2)}
@@ -224,9 +224,81 @@ console.log('\nGhi vi phạm → tạm dừng 7 ngày')
 }
 
 // ===========================================================================
-console.log('\nMinh chứng bắt buộc (schema-17, chạy thử rồi huỷ — chưa áp lên CSDL thật)')
+console.log('\nThang xử lý: lần 1/2/3 độc lập, lần 4 mời phụ huynh')
 {
-  const s17 = fs.readFileSync('supabase/schema-17-minh-chung-tbdt.sql', 'utf8')
+  const r = await ca(`
+    ${vai(L.gv)}
+    select public.record_device_violation('${L.hs1}', 'khong_dang_ky', null) into v_j;
+    ${ghi('lan1', 'v_j')}
+    select public.record_device_violation('${L.hs1}', 'sai_muc_dich', 'Chơi game') into v_j;
+    ${ghi('lan2', 'v_j')}
+    -- Ghi nhầm một lần rồi huỷ: lần sau vẫn phải là lần 3.
+    select public.record_device_violation('${L.hs1}', 'sai_muc_dich', 'ghi nhầm') into v_j;
+    perform public.cancel_device_violation((v_j->>'id')::uuid);
+    select public.record_device_violation('${L.hs1}', 'sai_muc_dich', null) into v_j;
+    ${ghi('lan3', 'v_j')}
+    select public.record_device_violation('${L.hs1}', 'khong_dang_ky', null) into v_j;
+    ${ghi('lan4', 'v_j')}
+    ${thu('loai_sai', `perform public.record_device_violation('${L.hs1}', 'linh_tinh', null)`)}
+
+    -- Sổ lao động: mỗi lần riêng.
+    select id into v_id from public.device_bans where student_id = '${L.hs1}' and lan = 1 and cancelled_at is null;
+    ${thu('ghi_luot_qua_muc', `perform public.set_device_labor_done(v_id, 6)`)}
+    perform public.set_device_labor_done(v_id, 5);
+    select id into v_id from public.device_bans where student_id = '${L.hs1}' and lan = 4;
+    perform public.mark_device_parent_notified(v_id);
+    select w.so_lan_vi_pham, w.lao_dong_con_no, w.chua_bao_ph, w.cam_den::text into v_n, kq_tmp_no, kq_tmp_bao, v_s
+      from public.class_device_week('${L.lop}') w where w.student_id = '${L.hs1}';
+    ${ghi('bang_so_lan', 'v_n')}
+    ${ghi('bang_con_no', 'kq_tmp_no')}
+    ${ghi('bang_chua_bao', 'kq_tmp_bao')}
+    ${ghi('bang_cam_den', 'v_s')}
+    select count(*) into v_n from public.class_device_violations('${L.lop}') x where x.student_id = '${L.hs1}';
+    ${ghi('so_dong', 'v_n')}
+
+    ${vai(L.hs1)}
+    select public.my_device_quota() into v_j;
+    ${ghi('hs', 'v_j')}
+    ${thu('hs_tu_ghi_luot', `perform public.set_device_labor_done(v_id, 0)`)}
+    ${thu('hs_tu_huy', `perform public.cancel_device_violation(v_id)`)}
+
+    ${vai(L.gv)}
+    perform public.lift_device_ban((select id from public.device_bans where student_id = '${L.hs1}'
+                                     and lifted_at is null order by starts_on limit 1));
+    ${vai(L.hs1)}
+    select public.my_device_quota() into v_j;
+    ${ghi('sau_go', 'v_j')}`)
+  const ngay = (j) => (new Date(j.den) - new Date(j.tu)) / 864e5 + 1
+  kiem('Lần 1: cấm 7 ngày + 5 lượt', r.lan1?.lan === 1 && ngay(r.lan1) === 7 && r.lan1.lao_dong === 5 && !r.lan1.moi_ph,
+       JSON.stringify(r.lan1))
+  kiem('Lần 2: cấm 14 ngày + 10 lượt, nối đuôi lần 1',
+       r.lan2?.lan === 2 && ngay(r.lan2) === 14 && r.lan2.lao_dong === 10
+       && (new Date(r.lan2.tu) - new Date(r.lan1.den)) / 864e5 === 1, JSON.stringify(r.lan2))
+  kiem('Lần ghi nhầm đã huỷ không tính → lần kế là lần 3: cấm 1 tháng + 20 lượt',
+       r.lan3?.lan === 3 && ngay(r.lan3) >= 28 && ngay(r.lan3) <= 31 && r.lan3.lao_dong === 20,
+       JSON.stringify(r.lan3))
+  kiem('Lần 4: mời phụ huynh (vẫn cấm 1 tháng + 20 lượt)', r.lan4?.lan === 4 && r.lan4.moi_ph === true && r.lan4.lao_dong === 20,
+       JSON.stringify(r.lan4))
+  kiem('Loại vi phạm lạ → chặn', r.loai_sai?.startsWith('chan'), r.loai_sai)
+  kiem('Không ghi được số lượt lao động vượt mức của lần đó', r.ghi_luot_qua_muc?.includes('0 đến 5'), r.ghi_luot_qua_muc)
+  kiem('Bảng tuần: 4 lần, nợ 10+20+20 = 50 lượt, đã báo PH', r.bang_so_lan === 4 && r.bang_con_no === 50 && r.bang_chua_bao === false,
+       `${r.bang_so_lan} lần, nợ ${r.bang_con_no}, chưa báo ${r.bang_chua_bao}`)
+  kiem('Bảng tuần: hạn cấm là cuối chuỗi (lần 4)', r.bang_cam_den === r.lan4?.den, `${r.bang_cam_den} vs ${r.lan4?.den}`)
+  kiem('Sổ vi phạm giữ cả lần đã huỷ (5 dòng)', r.so_dong === 5, `${r.so_dong}`)
+  kiem('Học sinh thấy 4 lần, nợ 50 lượt, lần tới mời PH',
+       r.hs?.so_lan_vi_pham === 4 && r.hs?.lao_dong_con_no === 50 && r.hs?.lan_toi?.moi_ph === true,
+       JSON.stringify(r.hs))
+  kiem('Học sinh không tự sửa sổ lao động được', r.hs_tu_ghi_luot?.includes('chủ nhiệm'), r.hs_tu_ghi_luot)
+  kiem('Học sinh không tự huỷ vi phạm được', r.hs_tu_huy?.includes('chủ nhiệm'), r.hs_tu_huy)
+  kiem('Gỡ cấm thì gỡ cả chuỗi nối đuôi, nhưng vẫn còn 4 lần và nợ 50 lượt',
+       r.sau_go?.cam_den === null && r.sau_go?.so_lan_vi_pham === 4 && r.sau_go?.lao_dong_con_no === 50,
+       JSON.stringify(r.sau_go))
+}
+
+// ===========================================================================
+console.log('\nMinh chứng bắt buộc (schema-18, chạy thử rồi huỷ — chưa áp lên CSDL thật)')
+{
+  const s17 = fs.readFileSync('supabase/schema-18-minh-chung-tbdt.sql', 'utf8')
   // Nhiệm vụ đã qua (hôm qua về trước) để được phép ghi kết quả và minh chứng.
   const r = await ca(`
     insert into public.plans (student_id, study_date, period, activity_type, subject, task, priority, goal,
@@ -260,12 +332,12 @@ const [sau] = await q(`select
   (select device_days_per_week from public.classes where id = '${L.lop}') gioi_han,
   (select device_weekdays from public.classes where id = '${L.lop}') thu,
   public.discipline_on() cong_tac,
-  (select count(*) from pg_trigger where tgname = 'trg_y_device_evidence') trigger_17`)
+  (select count(*) from pg_trigger where tgname = 'trg_y_device_evidence') trigger_18`)
 console.log('\nSau khi chạy')
 kiem('Không để lại lệnh cấm nào', Number(sau.cam) === 0, `còn ${sau.cam}`)
 kiem('Cài đặt lớp 8A0 trở về như cũ', sau.gioi_han === null && sau.thu === null, JSON.stringify(sau))
 kiem('Công tắc kỷ luật vẫn TẮT', sau.cong_tac === false)
-kiem('schema-17 chưa bị áp lên CSDL thật', Number(sau.trigger_17) === 0)
+kiem('schema-18 chưa bị áp lên CSDL thật', Number(sau.trigger_18) === 0)
 
 console.log(`\n${truot ? '✗' : '✓'} ${dat} đạt · ${truot} trượt`)
 process.exit(truot ? 1 : 0)
