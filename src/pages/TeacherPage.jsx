@@ -1127,6 +1127,13 @@ function AssistantsPanel({classId,perStudent,assistants,onChanged}){
   }
   const togglePerm=async(studentId,key,value)=>{
     setBusy(studentId);setMsg('')
+    // Tắt "xem" khi vẫn đang giao duyệt/chấm/nhận xét thì CSDL bật lại ngay
+    // (schema-19): không thấy bài thì không chấm được. Nói trước, kẻo thầy cô
+    // bỏ tick xong thấy nó tự tick lại mà không hiểu vì sao.
+    const a=byId[studentId]||{}
+    const canXem=(a.can_approve_plan||a.can_review_device||a.can_rate||a.can_comment)
+    if(!value&&key==='can_view_plans'&&canXem){setBusy('');return setMsg('Em này đang được giao duyệt / chấm / nhận xét nên phải xem được kế hoạch. Bỏ các quyền đó trước rồi mới tắt được ô này.')}
+    if(!value&&key==='can_view_reflections'&&(a.can_rate||a.can_comment)){setBusy('');return setMsg('Em này đang được giao chấm sao / nhận xét nên phải đọc được phần bạn tự ghi. Bỏ các quyền đó trước rồi mới tắt được ô này.')}
     const {error}=await supabase.from('class_assistants').update({[key]:value})
       .eq('class_id',classId).eq('student_id',studentId)
     setBusy('')
@@ -1184,6 +1191,10 @@ function AssistantsPanel({classId,perStudent,assistants,onChanged}){
         </table></div>}
 
     <p className="muted-text small">
+      Giao <strong>Duyệt</strong>, <strong>Chấm sao</strong> hay <strong>Nhận xét</strong> thì hệ thống tự bật
+      <em> Xem kế hoạch lớp</em> (và <em>Xem phản tư</em> với chấm sao / nhận xét) — không thấy bài thì không chấm được.
+      Kế hoạch có dùng thiết bị phải có thêm quyền <strong>Duyệt đăng ký thiết bị</strong> mới duyệt được.
+      Trợ giảng làm việc ở trang <strong>Trợ giảng</strong>, nút <em>Xử lý</em> trên từng dòng, và không tự duyệt / chấm cho chính mình.<br/>
       Trợ giảng không bao giờ đặt lại được mật khẩu, không sửa/xóa kế hoạch của bạn, không cử trợ giảng khác,
       và không xem được quyền của trợ giảng khác. Mọi lượt chấm sao hay nhận xét đều ghi rõ người thực hiện.
     </p>
