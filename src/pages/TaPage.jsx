@@ -10,6 +10,7 @@ import RatingStars from '../components/RatingStars'
 import StatusBadge from '../components/StatusBadge'
 import Avatar from '../components/Avatar'
 import { AttendanceTracker } from '../components/Attendance'
+import TaPlanModal from '../components/TaPlanModal'
 
 const PAGE_SIZE = 25
 
@@ -43,7 +44,13 @@ export default function TaPage() {
   const [discOn, setDiscOn] = useState(false)
   useEffect(() => { supabase.rpc('discipline_on').then(({ data }) => setDiscOn(Boolean(data))) }, [])
   const [missingDate, setMissingDate] = useState(shiftISO(1))
-  const [range, setRange] = useState('tomorrow')
+  // Trợ giảng được giao duyệt / chấm thì mở trang là thấy ngay việc của mình,
+  // không phải tự đi lọc.
+  const [range, setRange] = useState(() =>
+    assistant?.can_approve_plan || assistant?.can_review_device ? 'cho_duyet'
+      : assistant?.can_rate || assistant?.can_comment ? 'cho_cham' : 'tomorrow')
+  const [moPlan, setMoPlan] = useState(null)
+  const [thongBao, setThongBao] = useState('')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [chatWith, setChatWith] = useState(null)
@@ -71,7 +78,15 @@ export default function TaPage() {
     setPlans(p ?? [])
     setHelp(h ?? [])
 
-    const uids = (enr ?? []).map((e) => e.students?.claimed_user_id).filter(Boolean)
+    // Lấy mã các bạn từ CHÍNH dữ liệu vừa nạp. Không dựa vào bảng students:
+    // trợ giảng không đọc được bảng đó (chỉ giáo viên đọc), nên trước đây cột
+    // tên trên trang trợ giảng toàn hiện "—". Bảng profiles thì trợ giảng được
+    // đọc tên bạn cùng lớp (staff_sees_student_name).
+    const uids = [...new Set([
+      ...(enr ?? []).map((e) => e.students?.claimed_user_id),
+      ...(p ?? []).map((x) => x.student_id),
+      ...(h ?? []).map((x) => x.student_id),
+    ].filter(Boolean))]
     const [pr, r] = await Promise.all([
       selectIn('profiles', 'id,full_name,mshs,avatar_path', 'id', uids),
       assistant?.can_view_reflections && (p ?? []).length
@@ -91,10 +106,18 @@ export default function TaPage() {
 
   useEffect(() => { if (assistant) { load(); checkMissing(missingDate) } }, [assistant?.class_id])
   useEffect(() => { setPage(1) }, [range, search])
+  // assistant nạp sau lần vẽ đầu, nên đặt lại bộ lọc mặc định một lần khi có.
+  useEffect(() => {
+    if (!assistant) return
+    if (assistant.can_approve_plan || assistant.can_review_device) setRange('cho_duyet')
+    else if (assistant.can_rate || assistant.can_comment) setRange('cho_cham')
+  }, [assistant?.class_id])
 
   const rows = useMemo(() => {
     const today = todayISO(); const tmr = shiftISO(1)
     return plans.filter((p) => {
+      if (range === 'cho_duyet' && !(p.student_id !== profile?.id && choDuyet(p))) return false
+      if (range === 'cho_cham' && !(p.student_id !== profile?.id && choCham(p))) return false
       if (range === 'today' && p.study_date !== today) return false
       if (range === 'tomorrow' && p.study_date !== tmr) return false
       if (range === 'past' && p.study_date >= today) return false
@@ -103,7 +126,12 @@ export default function TaPage() {
       if (q && !`${s?.full_name ?? ''} ${s?.mshs ?? ''} ${p.subject} ${p.task}`.toLowerCase().includes(q)) return false
       return true
     })
-  }, [plans, range, search, people])
+  }, [plans, range, search, people, reflections])
+
+  // Việc của trợ giảng, đếm trên toàn bộ 60 ngày đã nạp — không theo bộ lọc,
+  // để lọc xong con số không tụt về 0 làm em tưởng hết việc.
+  const viecDuyet = useMemo(() => plans.filter((p) => p.student_id !== profile?.id && choDuyet(p)).length, [plans, profile?.id])
+  const viecCham = useMemo(() => plans.filter((p) => p.student_id !== profile?.id && choCham(p)).length, [plans, reflections, profile?.id])
 
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
   const pageRows = useMemo(() => rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [rows, page])
@@ -123,6 +151,16 @@ export default function TaPage() {
     }
   }, [rows, reflections])
 
+  function choDuyet(p) {
+    // Thiết bị chờ duyệt: chỉ là việc của em nếu em được duyệt thiết bị.
+    if (p.use_device && p.device_status === 'Chờ duyệt') return Boolean(assistant?.can_review_device)
+    return assistant?.can_approve_plan && p.review_status === 'Chờ duyệt'
+  }
+  function choCham(p) {
+    const r = reflections[p.id]
+    return (assistant?.can_rate || assistant?.can_comment) && r && (r.rating == null || r.auto_evaluated)
+  }
+
   const missingList = useMemo(() => {
     const by = missing.reduce((acc, r) => {
       (acc[r.student_id] ||= { name: r.full_name, mshs: r.mshs, periods: [] })
@@ -141,8 +179,13 @@ export default function TaPage() {
     return <div className="page"><div className="card empty-state">Em chưa được cử làm trợ giảng.</div></div>
   }
 
+  // Có bất kỳ quyền xử lý nào thì mỗi dòng có nút "Xử lý".
+  const coXuLy = ['can_approve_plan', 'can_review_device', 'can_rate', 'can_comment', 'can_view_evidence', 'can_view_reflections']
+    .some((k) => assistant[k])
+
   const granted = Object.keys(PERM_LABEL).filter((k) => assistant[k])
-  const rangeLabel = { today: 'hôm nay', tomorrow: 'ngày mai', past: 'các ngày đã qua', all: 'tất cả các ngày' }[range]
+  const rangeLabel = { today: 'hôm nay', tomorrow: 'ngày mai', past: 'các ngày đã qua', all: 'tất cả các ngày',
+    cho_duyet: 'đang chờ em duyệt', cho_cham: 'đang chờ em chấm' }[range]
 
   return <div className="page">
     <section className="dashboard-heading">
@@ -166,6 +209,25 @@ export default function TaPage() {
         nằm ở trang <Link to="/books"><strong>Chia sẻ sách</strong></Link>.
       </span></div>}
 
+    {thongBao && <div className="notice"><ShieldCheck size={17} /><span>{thongBao}</span></div>}
+
+    {/* Việc giáo viên giao cho em — bấm là lọc bảng bên dưới. */}
+    {(assistant.can_approve_plan || assistant.can_review_device || assistant.can_rate || assistant.can_comment) &&
+      <section className="todo-bar">
+        {(assistant.can_approve_plan || assistant.can_review_device) &&
+          <button type="button" className={`todo-card ${viecDuyet ? 'warn' : ''} ${range === 'cho_duyet' ? 'active' : ''}`}
+            onClick={() => setRange('cho_duyet')}>
+            <strong>{viecDuyet}</strong><span>kế hoạch chờ em duyệt</span>
+            <small>Bấm để lọc, rồi bấm “Xử lý” trên từng dòng.</small>
+          </button>}
+        {(assistant.can_rate || assistant.can_comment) &&
+          <button type="button" className={`todo-card ${viecCham ? 'warn' : ''} ${range === 'cho_cham' ? 'active' : ''}`}
+            onClick={() => setRange('cho_cham')}>
+            <strong>{viecCham}</strong><span>bài chờ em {assistant.can_rate ? 'chấm sao' : 'nhận xét'}</span>
+            <small>Bạn đã cập nhật kết quả, chưa được chấm.</small>
+          </button>}
+      </section>}
+
     {assistant.can_view_plans && <section className="stats-grid">
       <Stat label={`Nhiệm vụ ${rangeLabel}`} value={stats.tasks} />
       <Stat label="Số bạn có kế hoạch" value={stats.students} />
@@ -178,7 +240,8 @@ export default function TaPage() {
     <section className="card perm-card">
       <span className="eyebrow"><ShieldCheck size={13} /> QUYỀN GIÁO VIÊN ĐÃ CẤP CHO EM</span>
       <div className="perm-chips">
-        {granted.map((k) => <span key={k} className="chip on">{PERM_LABEL[k]}</span>)}
+        {granted.map((k) => <span key={k} className="chip on">{PERM_LABEL[k]}
+          {k === 'can_track_attendance' && !discOn && ' (đang tạm tắt)'}</span>)}
         {Object.keys(PERM_LABEL).filter((k) => !assistant[k]).map((k) => <span key={k} className="chip off">{PERM_LABEL[k]}</span>)}
       </div>
       <p className="muted-text small">Phần mờ là quyền chưa được bật. Nếu em cần thêm, hãy trao đổi với giáo viên.</p>
@@ -237,6 +300,8 @@ export default function TaPage() {
       <div className="card filters">
         <div className="search-box"><Search size={17} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Tìm tên, MSHS, môn…" /></div>
         <select value={range} onChange={(e) => setRange(e.target.value)}>
+          {(assistant.can_approve_plan || assistant.can_review_device) && <option value="cho_duyet">Chờ em duyệt</option>}
+          {(assistant.can_rate || assistant.can_comment) && <option value="cho_cham">Chờ em chấm</option>}
           <option value="tomorrow">Ngày mai</option>
           <option value="today">Hôm nay</option>
           <option value="past">Đã qua</option>
@@ -247,7 +312,8 @@ export default function TaPage() {
         {loading ? <div className="empty-state">Đang tải…</div> : <><div className="table-wrap"><table>
           <thead><tr><th>Bạn</th><th>Ngày / Tiết</th><th>Nội dung</th><th>Đăng ký</th><th>Thiết bị</th>
             {assistant.can_view_reflections && <th>Kết quả</th>}
-            {assistant.can_chat && <th>Nhắn tin</th>}</tr></thead>
+            {assistant.can_chat && <th>Nhắn tin</th>}
+            {coXuLy && <th></th>}</tr></thead>
           <tbody>{pageRows.map((p) => {
             const s = people[p.student_id] ?? {}
             const r = reflections[p.id]
@@ -264,6 +330,9 @@ export default function TaPage() {
                   ? <span className="help-flag">Chưa cập nhật</span>
                   : <span className="muted-text">Chưa tới buổi</span>}</td>}
               {assistant.can_chat && <td><button className="icon-button" title="Nhắn tin" onClick={() => openChat(p.student_id)}><MessageSquare size={16} /></button></td>}
+              {coXuLy && <td>{p.student_id === profile?.id
+                ? <small className="muted-text">của em</small>
+                : <button className={`button ${choDuyet(p) || choCham(p) ? 'primary' : 'ghost'}`} onClick={() => setMoPlan(p)}>Xử lý</button>}</td>}
             </tr>
           })}</tbody>
         </table>{rows.length === 0 && <div className="empty-state">Không có kế hoạch nào trong khoảng này.</div>}</div>
@@ -277,6 +346,10 @@ export default function TaPage() {
     : <section className="card empty-state">
         <p>Giáo viên chưa bật quyền <strong>Xem kế hoạch lớp</strong> cho em, nên phần này đang trống.</p>
       </section>}
+
+    {moPlan && <TaPlanModal plan={moPlan} student={people[moPlan.student_id]} reflection={reflections[moPlan.id]}
+      quyen={assistant} onClose={() => setMoPlan(null)}
+      onSaved={(m) => { setMoPlan(null); setThongBao('✓ ' + m); load() }} />}
 
     {chatWith && <div className="modal-backdrop" onMouseDown={() => setChatWith(null)}>
       <div className="modal" onMouseDown={(e) => e.stopPropagation()}>

@@ -1134,7 +1134,7 @@ whitelist nên phải revoke tay; kiểm tra thực tế bắt được đúng m
 
 ## 11d. Quên đăng ký tự học — miễn trừ, miễn buổi, kỷ luật
 
-> **ĐANG TẮT từ 10/2026** (xem mục 11f): đăng ký chỉ còn bắt buộc khi dùng thiết bị điện tử.
+> **ĐANG TẮT từ 10/2026** (xem mục 11m): đăng ký chỉ còn bắt buộc khi dùng thiết bị điện tử.
 > Tắt bằng công tắc toàn trường `app_settings.attendance_discipline_enabled`, **không xoá** gì —
 > số lần quên, sổ lao động, cài đặt từng lớp còn nguyên. Bật lại:
 > `update public.app_settings set value_bool = true where key = 'attendance_discipline_enabled';`
@@ -1350,6 +1350,8 @@ lặng. Hàm này mở cho cả quyền *theo dõi & nhắc đăng ký*, nên b�
 được đúng nhóm này.
 
 ## 11g. Vì sao KHÔNG ép học sinh nộp minh chứng
+
+> **Ngoại lệ từ 10/2026:** nhiệm vụ **có dùng thiết bị điện tử** thì bắt buộc ít nhất một minh chứng (xem mục 11m). Phần dưới vẫn đúng cho mọi nhiệm vụ không dùng thiết bị.
 
 Câu hỏi ban đầu: *"đa phần không upload minh chứng mà chỉ có nhận xét"*. Đo trên **406 phản tư**
 thật của 8A7 thì tiền đề đó không đứng vững.
@@ -1637,7 +1639,27 @@ View này bỏ qua RLS của bảng gốc (nó chạy dưới quyền chủ sở
 Không sửa dữ liệu cũ, chỉ đếm lại. Vì vậy nếu sau này quay về cách đếm theo tiết thì số cũ vẫn
 còn nguyên.
 
-## 11f. Thiết bị điện tử — đăng ký chỉ bắt buộc khi dùng thiết bị (10/2026)
+## 11l. Trợ giảng xử lý việc được giao (10/2026)
+
+[`schema-19-tro-giang.sql`](supabase/schema-19-tro-giang.sql) · thử bằng vai thật:
+`node scripts/thu-tro-giang.mjs` (28 ca; `THU_19=1` để chạy kèm schema-19 trong giao dịch rồi huỷ).
+
+Lỗi GVCN báo: *"trợ giảng được phân công duyệt kế hoạch nhưng không duyệt được"*. Soát toàn bộ
+quyền trợ giảng ra bốn chỗ hỏng:
+
+| Hỏng | Sửa |
+|---|---|
+| Trang **Trợ giảng** chỉ *liệt kê* quyền, không có nút duyệt / chấm / nhận xét / xem minh chứng nào | Nút **Xử lý** trên từng dòng (`TaPlanModal.jsx`), hai ô việc *chờ em duyệt* / *chờ em chấm* bấm là lọc |
+| Giao "Chấm sao" mà không giao "Xem phản tư" → không đọc được bài nên **không chấm được** (Postgres áp luật đọc cho cả UPDATE có WHERE). 7A2 đang đúng tình trạng này | Quyền **kéo theo** tự bật ngay trong bảng: duyệt/chấm/nhận xét ⇒ xem kế hoạch; chấm/nhận xét ⇒ xem phản tư |
+| Làm sai quyền thì trigger **hoàn ngược âm thầm** — màn hình báo xong, tải lại vẫn như cũ | Báo lỗi rõ (P0001), giao diện đưa nguyên văn |
+| Tên các bạn trên trang trợ giảng toàn hiện "—" (trợ giảng không đọc được bảng `students`) | Lấy mã bạn từ chính kế hoạch / yêu cầu hỗ trợ đã nạp; tên đọc từ `profiles` như trước |
+
+Thêm một luật: **kế hoạch có dùng thiết bị** thì phải có quyền *Duyệt thiết bị* mới duyệt được —
+không thì kế hoạch "Đã duyệt" mà thiết bị vẫn "Chờ duyệt". Trợ giảng không tự duyệt / chấm cho
+chính mình (nhánh học sinh của trigger giữ nguyên giá trị). Không ghi được vi phạm thiết bị,
+không đọc được sổ vi phạm.
+
+## 11m. Thiết bị điện tử — đăng ký chỉ bắt buộc khi dùng thiết bị (10/2026)
 
 [`schema-16-tbdt.sql`](supabase/schema-16-tbdt.sql) ·
 [`schema-17-vi-pham-tbdt.sql`](supabase/schema-17-vi-pham-tbdt.sql) ·
