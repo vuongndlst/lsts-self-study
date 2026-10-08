@@ -129,7 +129,7 @@ const than = () => {
   doan('Không dùng thiết bị thì em **không bắt buộc** đăng ký, nên không còn danh sách "chưa đăng ký" để đi nhắc. Các em vẫn đăng ký được để tự lên kế hoạch, và thầy cô vẫn chấm sao, nhận xét như cũ cho mọi nhiệm vụ đã đăng ký.'),
 
   tua2('5.3 Duyệt kế hoạch dùng thiết bị'),
-  doan('Em nào cần dùng máy tính hoặc điện thoại trong giờ tự học thì phải xin trước. Bấm ô **Chờ duyệt** ở hộp việc cần xử lý để lọc ra đúng nhóm này. Khi các em cập nhật kết quả, nhiệm vụ có thiết bị **bắt buộc** kèm ít nhất một minh chứng (ảnh, tệp hoặc liên kết) — thầy cô xem minh chứng ngay trong cửa sổ chi tiết.'),
+  doan('Em nào cần dùng máy tính hoặc điện thoại trong giờ tự học thì phải xin trước. Bấm ô **Chờ duyệt** ở hộp việc cần xử lý để lọc ra đúng nhóm này. Khi các em cập nhật kết quả, nhiệm vụ **được duyệt** thiết bị **bắt buộc** kèm ít nhất một minh chứng (ảnh, tệp hoặc liên kết) — thầy cô xem minh chứng ngay trong cửa sổ chi tiết.'),
   ...hinh('gv-04-bang-ke-hoach', 'Bảng kế hoạch — nơi duyệt, chấm sao và xem chi tiết.'),
 
   // =========================================================================

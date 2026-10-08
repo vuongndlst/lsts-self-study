@@ -1655,8 +1655,9 @@ quyền trợ giảng ra bốn chỗ hỏng:
 | Tên các bạn trên trang trợ giảng toàn hiện "—" (trợ giảng không đọc được bảng `students`) | Lấy mã bạn từ chính kế hoạch / yêu cầu hỗ trợ đã nạp; tên đọc từ `profiles` như trước |
 
 Thêm một luật: **kế hoạch có dùng thiết bị** thì phải có quyền *Duyệt thiết bị* mới duyệt được —
-không thì kế hoạch "Đã duyệt" mà thiết bị vẫn "Chờ duyệt". Trợ giảng không tự duyệt / chấm cho
-chính mình (nhánh học sinh của trigger giữ nguyên giá trị). Không ghi được vi phạm thiết bị,
+không thì kế hoạch "Đã duyệt" mà thiết bị vẫn "Chờ duyệt". Trợ giảng **được** tự duyệt / tự chấm
+kế hoạch của chính mình khi có đúng quyền đó (schema-20, theo GVCN); học sinh thường thì không.
+Không ghi được vi phạm thiết bị,
 không đọc được sổ vi phạm.
 
 ## 11m. Thiết bị điện tử — đăng ký chỉ bắt buộc khi dùng thiết bị (10/2026)
@@ -1698,6 +1699,16 @@ lên mạng). Ghi lại để lần sau dựng CSDL mới khỏi vấp: `schema-
 (không phá giao diện cũ); `schema-18` **chỉ chạy sau khi giao diện mới đã lên mạng**: giao diện cũ lưu kết quả *trước* rồi
 mới đính kèm minh chứng, nên luật minh chứng sẽ chặn ngay bước đầu. Giao diện mới đã đảo: đính kèm
 trước, lưu kết quả sau; xoá dòng minh chứng trước, xoá tệp trên kho sau.
+
+## 11n. Kế hoạch bị từ chối không cần kết quả (10/2026)
+
+[`schema-20-ba-loi-nho.sql`](supabase/schema-20-ba-loi-nho.sql). Ba chỗ GVCN báo:
+
+| Lỗi | Sửa |
+|---|---|
+| Kế hoạch bị từ chối vẫn bị bắt nộp kết quả, bị nhắc trễ hạn, bị tự chấm 1 sao | "Bị từ chối" = thiết bị *Từ chối* hoặc kế hoạch *Cần điều chỉnh* (`plan_rejected()`). Tới giờ học mà vẫn vậy thì tiến độ là **Không cần kết quả**: không nhắc, không tự chấm, không tính nợ. Em vẫn tự nguyện nộp được. 3 lần đã lỡ tự chấm được gỡ, sao lưu ở `auto_eval_go_bo` |
+| Không dùng thiết bị (thiết bị bị từ chối) vẫn bị bắt minh chứng | Minh chứng chỉ bắt buộc khi thiết bị **Đã duyệt** |
+| Trợ giảng không tự duyệt / tự chấm được kế hoạch của mình | Có đúng quyền thì được. Kèm theo: chặn lỗ hổng trợ giảng có quyền duyệt sửa được *nội dung* kế hoạch đã qua của chính mình |
 
 ## 12. Quyền dữ liệu
 

@@ -81,8 +81,8 @@ function PhanHocSinh({ moiGiaoVien }) {
           <small>Thầy cô có thể giới hạn số ngày được dùng thiết bị mỗi tuần, hoặc chỉ cho dùng vào một số thứ. Thẻ <em>Thiết bị điện tử · tuần này</em> trên trang của em cho biết em đã dùng mấy ngày; hết lượt thì công tắc tự khoá và ghi rõ lý do.</small>
         </div></div>
         <div><span className="step-dot danger">4</span><div>
-          <strong>Dùng thiết bị thì phải có minh chứng kết quả</strong>
-          <small>Khi cập nhật kết quả, nhiệm vụ có thiết bị cần <strong>ít nhất một</strong> ảnh, tệp PDF hoặc liên kết sản phẩm. Chưa có thì hệ thống chưa cho lưu.</small>
+          <strong>Được duyệt dùng thiết bị thì phải có minh chứng kết quả</strong>
+          <small>Khi cập nhật kết quả, nhiệm vụ được duyệt thiết bị cần <strong>ít nhất một</strong> ảnh, tệp PDF hoặc liên kết sản phẩm. Không dùng thiết bị thì chỉ cần ghi kết quả. Kế hoạch <strong>bị từ chối</strong> thì không cần nộp kết quả.</small>
         </div></div>
       </div>
       <DeviceRuleTable />
@@ -188,7 +188,7 @@ function PhanHocSinh({ moiGiaoVien }) {
            em không thể bỏ sót. Mỗi nhiệm vụ như vậy có một nút lớn
            <strong> “Cập nhật kết quả”</strong> ngay bên dưới. Bấm vào đó, chọn Hoàn thành / Một phần / Chưa hoàn thành,
 	           ghi vài dòng em đã làm được gì, và bật <em>“Em cần giáo viên hỗ trợ”</em> nếu còn vướng.
-	           Nhiệm vụ <strong>có dùng thiết bị</strong> bắt buộc kèm ít nhất một minh chứng; các nhiệm vụ khác thì minh chứng được khuyến khích nhưng không bắt buộc.</p>
+	           Nhiệm vụ <strong>được duyệt dùng thiết bị</strong> bắt buộc kèm ít nhất một minh chứng; kế hoạch bị từ chối thì không cần nộp kết quả; các nhiệm vụ khác thì minh chứng được khuyến khích nhưng không bắt buộc.</p>
         <div className="guide-tip"><ListPlus size={16}/><span>
           Ở mục <strong>“Nhiệm vụ của em”</strong> bên dưới, em lọc nhanh bằng các nút
           <em> Tất cả · Sắp tới · Chưa có kết quả · Đã xong · Cần viết phản hồi</em>, tìm theo môn hoặc nội dung,

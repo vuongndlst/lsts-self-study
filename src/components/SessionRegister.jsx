@@ -334,7 +334,7 @@ export default function SessionRegister({ onDone, onCancel, onFixReflections }) 
               <label className="switch"><input type="checkbox" checked={t.use_device} disabled={Boolean(deviceLock)}
                 onChange={(e) => setTask(t.key, { use_device: e.target.checked })} /><span /></label>
               <div><strong><Laptop size={15} /> Dùng thiết bị điện tử</strong>
-                <small>Phải chờ giáo viên duyệt. Khi cập nhật kết quả phải kèm minh chứng.</small>
+                <small>Phải chờ giáo viên duyệt. Được duyệt thì khi cập nhật kết quả phải kèm minh chứng.</small>
                 {deviceLock && <span className="device-locked"><AlertTriangle size={14} />{deviceLock}</span>}</div>
             </div>
           </div>
@@ -383,7 +383,8 @@ export default function SessionRegister({ onDone, onCancel, onFixReflections }) 
 
         {tasks.some((t) => t.use_device) && <div className="notice compact"><Laptop size={16} /><span>
           Nhiệm vụ có dùng thiết bị sẽ ở trạng thái <strong>chờ giáo viên duyệt</strong>. Khi cập nhật
-          kết quả, em phải kèm <strong>ít nhất một minh chứng</strong> (ảnh, tệp hoặc liên kết).
+          kết quả, nhiệm vụ được duyệt thiết bị phải kèm <strong>ít nhất một minh chứng</strong> (ảnh, tệp hoặc liên kết).
+          Bị từ chối thì em không dùng máy và không cần nộp kết quả.
         </span></div>}
 
         <div className="form-actions">
