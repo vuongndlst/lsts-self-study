@@ -117,7 +117,7 @@ export function MyDevice({ reloadKey }) {
         </li>)}
       </ul>}
       <p className="muted-text small">
-        Nhiệm vụ có dùng thiết bị phải kèm <strong>ít nhất một minh chứng</strong> (ảnh, tệp hoặc
+        Nhiệm vụ <strong>được duyệt</strong> dùng thiết bị phải kèm <strong>ít nhất một minh chứng</strong> (ảnh, tệp hoặc
         liên kết) khi cập nhật kết quả. Thấy bị ghi nhầm thì nhắn thầy cô để kiểm tra lại.
       </p>
     </div>}

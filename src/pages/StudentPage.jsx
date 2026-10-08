@@ -299,6 +299,7 @@ function SessionCard({session,reflections,evidence,status,onOpen,onChanged}){
   const editable=study_date>todayISO()
   const regStatus=registrationStatus(study_date,tasks[0]?.created_at)
   // Trạng thái buổi suy ra từ các nhiệm vụ — giống hệt cách CSDL tính.
+  const canNop=tasks.filter(t=>reflections[t.id]||status[t.id]?.progress!=='Không cần kết quả')
   const done=tasks.filter(t=>reflections[t.id]).length
   const due=tasks.filter(t=>!reflections[t.id]&&isReflectionDue(status[t.id]?.progress)).length
   const late=tasks.filter(t=>['Trễ hạn cập nhật','Hệ thống tự đánh giá'].includes(status[t.id]?.progress)).length
@@ -331,7 +332,10 @@ function SessionCard({session,reflections,evidence,status,onOpen,onChanged}){
 
     <div className="session-meta">
       <strong>{tasks.length} nhiệm vụ</strong>
-      <span className={needsResult?'help-flag':'muted-text'}>· đã cập nhật {done}/{tasks.length}</span>
+      {/* Nhiệm vụ bị từ chối không cần kết quả — không tính vào mẫu số. */}
+      {canNop.length>0
+        ?<span className={needsResult?'help-flag':'muted-text'}>· đã cập nhật {done}/{canNop.length}</span>
+        :<span className="muted-text">· không cần nộp kết quả</span>}
       {late>0&&<span className="help-flag">· {late} trễ hạn</span>}
     </div>
     {needsAck&&<div className="ack-warning"><AlertTriangle size={14}/><span>Có nhiệm vụ em cần viết phản hồi</span></div>}
@@ -339,7 +343,8 @@ function SessionCard({session,reflections,evidence,status,onOpen,onChanged}){
     <ul className="session-tasks">{tasks.map(t=>{
       const r=reflections[t.id];const st=status[t.id];const ev=evidence[t.id]||[]
 	      const taskTodo=!r&&isReflectionDue(st?.progress)
-        const canUpdate=!r&&canUpdateReflection(st?.available_at)
+        // Bị từ chối thì không cần nộp kết quả — không thúc bằng nút xanh to.
+        const canUpdate=!r&&canUpdateReflection(st?.available_at)&&st?.progress!=='Không cần kết quả'
       return <li key={t.id} className={taskTodo?'task-todo':''}>
         <button type="button" className={`task-row ${ratingTone(r?.rating)} ${taskTodo?'todo':''}`} onClick={()=>onOpen(t)}>
           <span className="task-row-main">
@@ -451,6 +456,10 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
   const [daXoa,setDaXoa]=useState([])
   const allEvidence=[...evidence,...daThem].filter(x=>x&&!daXoa.includes(x.id))
   const lowRating=existing?.rating!=null&&existing.rating<=2
+  // Minh chứng chỉ bắt buộc khi thiết bị ĐÃ ĐƯỢC DUYỆT (schema-20). Bị từ chối
+  // hay chưa duyệt thì em không được dùng máy, không có gì để chụp.
+  const canMinhChung=plan.use_device&&plan.device_status==='Đã duyệt'
+  const khongCanKetQua=progress==='Không cần kết quả'
   const canReflect=Boolean(existing)||canUpdateReflection(availableAt)||isReflectionDue(progress)||progress==='Hệ thống tự đánh giá'
 
   const saveAck=async()=>{
@@ -481,7 +490,7 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
     }
     // Nhiệm vụ có thiết bị bắt buộc có minh chứng (CSDL cũng chặn — schema-18).
     // Kiểm ở đây trước để em biết ngay, không phải chờ lỗi từ máy chủ.
-    if(plan.use_device&&allEvidence.length+additions===0){setBusy(false);return setMsg('Nhiệm vụ này có dùng thiết bị điện tử nên cần ít nhất một minh chứng — ảnh, tệp PDF hoặc liên kết sản phẩm.')}
+    if(canMinhChung&&allEvidence.length+additions===0){setBusy(false);return setMsg('Nhiệm vụ này có dùng thiết bị điện tử nên cần ít nhất một minh chứng — ảnh, tệp PDF hoặc liên kết sản phẩm.')}
     // THỨ TỰ: đính kèm minh chứng TRƯỚC, lưu kết quả SAU. Ngược lại thì luật
     // "nhiệm vụ có thiết bị phải có minh chứng" chặn ngay ở bước lưu kết quả.
     // Mỗi minh chứng thêm được thì ghi nhớ ngay (daThem), để lỡ bước sau hỏng
@@ -532,6 +541,10 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
 	  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" role="dialog" aria-modal="true" aria-labelledby="reflection-title" onMouseDown={e=>e.stopPropagation()}>
 	    <div className="modal-head"><div><span className="eyebrow">{formatDate(plan.study_date)} · TIẾT {plan.period}</span><h2 id="reflection-title">{plan.subject}</h2></div><button className="icon-button" onClick={onClose} aria-label="Đóng">✕</button></div>
     <div className="detail-box"><strong>Nhiệm vụ</strong><p>{plan.task}</p><strong>Mục tiêu</strong><p>{plan.goal}</p></div>
+    {khongCanKetQua&&!existing&&<div className="detail-box">
+      <strong>Kế hoạch này bị từ chối — em không cần nộp kết quả</strong>
+      <p className="muted-text small">Không ai nhắc trễ hạn, hệ thống cũng không tự chấm. Nếu em vẫn làm và muốn ghi lại thì cứ cập nhật bên dưới.</p>
+    </div>}
     {plan.use_device&&<div className="detail-box"><strong>Đăng ký thiết bị điện tử</strong><p><StatusBadge value={plan.device_status}/> {plan.device_review_note?`— ${plan.device_review_note}`:''}</p></div>}
 
     {existing?.auto_evaluated&&<div className="detail-box alarm-amber">
@@ -575,10 +588,10 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
     {/* Minh chứng nói theo LOẠI HOẠT ĐỘNG. Ôn tập hay đọc sách thì vốn không có
         gì để chụp — đòi minh chứng ở đó chỉ khiến em chụp đại một trang giấy cho
         đủ thủ tục. Nói thẳng "không cần" ở những loại đó thì trung thực hơn. */}
-    <div className="evidence-block"><h3>Sản phẩm kèm theo {plan.use_device
+    <div className="evidence-block"><h3>Sản phẩm kèm theo {canMinhChung
         ? <span className="evidence-required">(bắt buộc ít nhất 1 · tối đa 3)</span>
         : <span className="muted-text">(không bắt buộc · tối đa 3)</span>}</h3>
-      <p className="muted-text small">{plan.use_device
+      <p className="muted-text small">{canMinhChung
         ? <>Nhiệm vụ này <strong>có dùng thiết bị điện tử</strong>, nên em phải kèm ít nhất một minh chứng kết quả: ảnh chụp màn hình/bài làm, tệp PDF, hoặc liên kết tới sản phẩm.</>
         : prompt.sanPham
         ? <>Việc này thường có sản phẩm. {prompt.goiYSanPham} Không có cũng không sao — phần chữ ở trên mới là chính.</>

@@ -116,8 +116,8 @@ export default function TaPage() {
   const rows = useMemo(() => {
     const today = todayISO(); const tmr = shiftISO(1)
     return plans.filter((p) => {
-      if (range === 'cho_duyet' && !(p.student_id !== profile?.id && choDuyet(p))) return false
-      if (range === 'cho_cham' && !(p.student_id !== profile?.id && choCham(p))) return false
+      if (range === 'cho_duyet' && !choDuyet(p)) return false
+      if (range === 'cho_cham' && !choCham(p)) return false
       if (range === 'today' && p.study_date !== today) return false
       if (range === 'tomorrow' && p.study_date !== tmr) return false
       if (range === 'past' && p.study_date >= today) return false
@@ -130,8 +130,9 @@ export default function TaPage() {
 
   // Việc của trợ giảng, đếm trên toàn bộ 60 ngày đã nạp — không theo bộ lọc,
   // để lọc xong con số không tụt về 0 làm em tưởng hết việc.
-  const viecDuyet = useMemo(() => plans.filter((p) => p.student_id !== profile?.id && choDuyet(p)).length, [plans, profile?.id])
-  const viecCham = useMemo(() => plans.filter((p) => p.student_id !== profile?.id && choCham(p)).length, [plans, reflections, profile?.id])
+  // Kể cả kế hoạch của chính em: GVCN cho trợ giảng tự duyệt / tự chấm (schema-20).
+  const viecDuyet = useMemo(() => plans.filter(choDuyet).length, [plans])
+  const viecCham = useMemo(() => plans.filter(choCham).length, [plans, reflections])
 
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
   const pageRows = useMemo(() => rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [rows, page])
@@ -146,10 +147,14 @@ export default function TaPage() {
       device: rows.filter((p) => p.use_device).length,
       devicePending: rows.filter((p) => p.use_device && p.device_status === 'Chờ duyệt').length,
       late: rows.filter((p) => registrationStatus(p.study_date, p.created_at) !== 'Đúng hạn').length,
-      noResult: past.filter((p) => !reflections[p.id]).length,
+      noResult: past.filter((p) => !reflections[p.id] && !biTuChoi(p)).length,
       pastCount: past.length,
     }
   }, [rows, reflections])
+
+  // Bị từ chối thì không cần nộp kết quả (schema-20) — cùng định nghĩa với
+  // plan_rejected() ở CSDL.
+  function biTuChoi(p) { return p.device_status === 'Từ chối' || p.review_status === 'Cần điều chỉnh' }
 
   function choDuyet(p) {
     // Thiết bị chờ duyệt: chỉ là việc của em nếu em được duyệt thiết bị.
@@ -327,12 +332,12 @@ export default function TaPage() {
               {assistant.can_view_reflections && <td>{r
                 ? <>{<StatusBadge value={r.completion_status} />}{r.rating != null && <RatingStars value={r.rating} readOnly size={14} />}</>
                 : p.study_date < todayISO()
-                  ? <span className="help-flag">Chưa cập nhật</span>
+                  ? (biTuChoi(p) ? <span className="muted-text">Không cần kết quả</span> : <span className="help-flag">Chưa cập nhật</span>)
                   : <span className="muted-text">Chưa tới buổi</span>}</td>}
               {assistant.can_chat && <td><button className="icon-button" title="Nhắn tin" onClick={() => openChat(p.student_id)}><MessageSquare size={16} /></button></td>}
-              {coXuLy && <td>{p.student_id === profile?.id
-                ? <small className="muted-text">của em</small>
-                : <button className={`button ${choDuyet(p) || choCham(p) ? 'primary' : 'ghost'}`} onClick={() => setMoPlan(p)}>Xử lý</button>}</td>}
+              {coXuLy && <td>
+                <button className={`button ${choDuyet(p) || choCham(p) ? 'primary' : 'ghost'}`} onClick={() => setMoPlan(p)}>Xử lý</button>
+                {p.student_id === profile?.id && <small className="muted-text"> của em</small>}</td>}
             </tr>
           })}</tbody>
         </table>{rows.length === 0 && <div className="empty-state">Không có kế hoạch nào trong khoảng này.</div>}</div>

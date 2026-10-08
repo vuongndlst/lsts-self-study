@@ -246,7 +246,7 @@ export default function TeacherPage(){
       row.total++
       if(registrationStatus(p.study_date,p.created_at)==='Đúng hạn')row.ontime++
       if(r?.completion_status==='Hoàn thành')row.done++
-      if(!r&&p.study_date<todayISO())row.pending++
+      if(!r&&p.study_date<todayISO()&&status[p.id]?.progress!=='Không cần kết quả')row.pending++
       if(r?.need_help&&!r?.help_resolved)row.help++
       if(p.study_date===tmr)row.plannedTomorrow=true
       if(r?.rating!=null){row.ratingSum+=r.rating;row.ratingCount++;if(r.rating<=2)row.low++}
@@ -460,7 +460,7 @@ export default function TeacherPage(){
       <select value={filters.review} onChange={e=>setFilters({...filters,review:e.target.value})} title="Trạng thái duyệt">
         <option value="">Duyệt: tất cả</option><option>Chờ duyệt</option><option>Đã duyệt</option><option>Cần điều chỉnh</option></select>
       <select value={filters.progress} onChange={e=>setFilters({...filters,progress:e.target.value})} title="Tiến độ cập nhật">
-        <option value="">Tiến độ: tất cả</option><option>Chưa tới buổi</option><option>Đang chờ cập nhật</option><option>Trễ hạn cập nhật</option><option>Đã hoàn thành</option><option>Hệ thống tự đánh giá</option></select>
+        <option value="">Tiến độ: tất cả</option><option>Chưa tới buổi</option><option>Đang chờ cập nhật</option><option>Không cần kết quả</option><option>Trễ hạn cập nhật</option><option>Đã hoàn thành</option><option>Hệ thống tự đánh giá</option></select>
       <input type="date" value={filters.from} onChange={e=>setFilters({...filters,from:e.target.value})} title="Từ ngày"/>
       <input type="date" value={filters.to} onChange={e=>setFilters({...filters,to:e.target.value})} title="Đến ngày"/>
       <select value={filters.student} onChange={e=>setFilters({...filters,student:e.target.value})}><option value="">Tất cả học sinh</option>{students.map(s=><option key={s.id} value={s.id}>{s.full_name}</option>)}</select>
@@ -1194,7 +1194,8 @@ function AssistantsPanel({classId,perStudent,assistants,onChanged}){
       Giao <strong>Duyệt</strong>, <strong>Chấm sao</strong> hay <strong>Nhận xét</strong> thì hệ thống tự bật
       <em> Xem kế hoạch lớp</em> (và <em>Xem phản tư</em> với chấm sao / nhận xét) — không thấy bài thì không chấm được.
       Kế hoạch có dùng thiết bị phải có thêm quyền <strong>Duyệt đăng ký thiết bị</strong> mới duyệt được.
-      Trợ giảng làm việc ở trang <strong>Trợ giảng</strong>, nút <em>Xử lý</em> trên từng dòng, và không tự duyệt / chấm cho chính mình.<br/>
+      Trợ giảng làm việc ở trang <strong>Trợ giảng</strong>, nút <em>Xử lý</em> trên từng dòng — được giao quyền nào thì làm được
+      quyền đó trên cả kế hoạch của chính mình (kế hoạch đã qua thì vẫn không sửa được nội dung).<br/>
       Trợ giảng không bao giờ đặt lại được mật khẩu, không sửa/xóa kế hoạch của bạn, không cử trợ giảng khác,
       và không xem được quyền của trợ giảng khác. Mọi lượt chấm sao hay nhận xét đều ghi rõ người thực hiện.
     </p>

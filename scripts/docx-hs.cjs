@@ -116,7 +116,7 @@ const than = () => {
     ['Trễ', 'Em đăng ký sau hạn. Buổi vẫn được ghi nhận, nhưng thầy cô thấy là em đăng ký muộn.'],
     ['Chưa có kết quả', 'Buổi đã qua mà em chưa ghi mình làm được gì.'],
     ['Chờ duyệt', 'Em xin dùng thiết bị, thầy cô chưa duyệt.'],
-    ['Cần điều chỉnh', 'Thầy cô trả về, kèm lý do. Em sửa rồi gửi lại.'],
+    ['Cần điều chỉnh', 'Thầy cô trả về, kèm lý do. Em sửa rồi gửi lại. Tới giờ học mà chưa sửa thì coi như bị từ chối — không cần nộp kết quả.'],
   ], [26, 74]),
 
   // =========================================================================
@@ -139,8 +139,9 @@ const than = () => {
   doan('Nếu buổi đó có thứ chụp được — trang vở em đã làm, bài trình chiếu, đường dẫn tới bài của nhóm — em đính kèm ở phần dưới cùng. Tối đa 3 thứ: ảnh, tệp PDF hoặc liên kết.'),
   ...hinh('hs-10-minh-chung', 'Phần đính kèm minh chứng của một nhiệm vụ có dùng thiết bị — ghi rõ **bắt buộc ít nhất 1**.'),
   ...bangVaCach(['Nhiệm vụ', 'Minh chứng'], [
-    ['**Có dùng thiết bị điện tử**', '**Bắt buộc ít nhất một** ảnh, tệp hoặc liên kết. Chưa có thì hệ thống chưa cho lưu kết quả. Minh chứng cuối cùng không xoá được — muốn thay thì thêm cái mới trước rồi mới xoá cái cũ.'],
-    ['Không dùng thiết bị', 'Không bắt buộc. Có những việc không sinh ra sản phẩm nào — ôn bài, đọc sách. Phần chữ em viết mới là chính.'],
+    ['**Được duyệt dùng thiết bị**', '**Bắt buộc ít nhất một** ảnh, tệp hoặc liên kết. Chưa có thì hệ thống chưa cho lưu kết quả. Minh chứng cuối cùng không xoá được — muốn thay thì thêm cái mới trước rồi mới xoá cái cũ.'],
+    ['Không dùng thiết bị', 'Không bắt buộc — chỉ cần ghi kết quả. Có những việc không sinh ra sản phẩm nào — ôn bài, đọc sách. Phần chữ em viết mới là chính.'],
+    ['Bị từ chối', 'Kế hoạch bị trả về hoặc thiết bị bị từ chối: **không cần nộp kết quả**, không bị nhắc trễ hạn, không bị tự chấm 1 sao.'],
   ], [32, 68]),
   ...hopVaCach('luuY',
     'Minh chứng phải là **kết quả thật** của buổi đó: ảnh chụp màn hình bài làm, tệp em đã làm ra, đường dẫn tới sản phẩm. Đừng chụp đại một trang giấy cho đủ thủ tục.'),

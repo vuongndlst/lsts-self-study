@@ -1,7 +1,8 @@
 // Thử TOÀN BỘ quyền trợ giảng bằng VAI THẬT.
 //
 //   node scripts/thu-tro-giang.mjs            thử trên CSDL đang chạy
-//   THU_19=1 node scripts/thu-tro-giang.mjs   chạy schema-19 trong từng ca rồi huỷ
+//   THU_SQL=supabase/schema-20-ba-loi-nho.sql node scripts/thu-tro-giang.mjs
+//                                             chạy một migration trong từng ca rồi huỷ
 //                                             (thử bản sửa trước khi áp lên thật)
 //
 // Cùng cách với scripts/thu-tbdt.mjs: mỗi ca đổi sang vai `authenticated` với
@@ -15,7 +16,7 @@ import { q } from './db.mjs'
 
 // Dùng biến môi trường chứ không dùng cờ dòng lệnh: db.mjs đọc tham số đầu
 // tiên làm thư mục gốc của dự án.
-const S19 = process.env.THU_19 ? fs.readFileSync('supabase/schema-19-tro-giang.sql', 'utf8') : ''
+const S19 = process.env.THU_SQL ? fs.readFileSync(process.env.THU_SQL, 'utf8') : ''
 
 let dat = 0, truot = 0
 const kiem = (ten, dung, chiTiet = '') => {
@@ -91,7 +92,7 @@ const KH = {
   cuaChinhEm: `'${M.cua_chinh_em}'::uuid`,
 }
 
-console.log(`\nTrợ giảng lớp 8A0${S19 ? ' · CÓ schema-19 (chạy thử rồi huỷ)' : ''}\n`)
+console.log(`\nTrợ giảng lớp 8A0${S19 ? ` · CÓ ${process.env.THU_SQL} (chạy thử rồi huỷ)` : ''}\n`)
 
 // ===========================================================================
 console.log('Không được cấp quyền gì')
@@ -200,18 +201,39 @@ console.log('\nChỉ viết nhận xét')
 }
 
 // ===========================================================================
-console.log('\nKhông được tự duyệt, tự chấm cho chính mình')
+console.log('\nTrợ giảng tự xử lý kế hoạch của mình (schema-20, theo yêu cầu GVCN)')
 {
   const r = await ca(`
-    ${datQuyen(QUYEN)}
     ${veAdmin}
     update public.plans set review_status = 'Chờ duyệt' where id = ${KH.cuaChinhEm};
+    -- Bài của trợ giảng có kết quả, chưa chấm, để thử tự chấm.
+    update public.reflections set rating = null, rating_by = null, teacher_comment = null
+     where plan_id = ${KH.cuaChinhEm};
+    ${datQuyen([])}
     ${vai(L.ta)}
-    ${thu('tu_duyet', `update public.plans set review_status = 'Đã duyệt' where id = ${KH.cuaChinhEm}`)}
+    ${thu('khong_quyen_tu_duyet', `update public.plans set review_status = 'Đã duyệt' where id = ${KH.cuaChinhEm}`)}
     ${veAdmin}
     select review_status into v_s from public.plans where id = ${KH.cuaChinhEm};
-    ${ghi('sau', 'v_s')}`)
-  kiem('Có đủ mọi quyền vẫn không tự duyệt kế hoạch của mình', r.sau === 'Chờ duyệt', r.sau)
+    ${ghi('khong_quyen_sau', 'v_s')}
+    ${datQuyen(['can_approve_plan', 'can_rate', 'can_comment'])}
+    ${vai(L.ta)}
+    ${thu('tu_duyet', `update public.plans set review_status = 'Đã duyệt' where id = ${KH.cuaChinhEm}`)}
+    ${thu('tu_cham', `update public.reflections set rating = 5, teacher_comment = 'Tự nhận xét' where plan_id = ${KH.cuaChinhEm}`)}
+    ${thu('sua_noi_dung_cu', `update public.plans set task = 'đổi nội dung' where id = ${KH.cuaChinhEm}`)}
+    ${veAdmin}
+    select review_status into v_s from public.plans where id = ${KH.cuaChinhEm};
+    ${ghi('sau_duyet', 'v_s')}
+    select (review_by = '${L.ta}') into v_b from public.plans where id = ${KH.cuaChinhEm};
+    ${ghi('ghi_nguoi_duyet', 'v_b')}
+    select rating::text into v_s from public.reflections where plan_id = ${KH.cuaChinhEm};
+    ${ghi('sao', 'v_s')}
+    select task into v_s from public.plans where id = ${KH.cuaChinhEm};
+    ${ghi('task', "replace(v_s, '\"', '')")}`)
+  kiem('Không được giao quyền thì không tự duyệt được', r.khong_quyen_sau === 'Chờ duyệt', r.khong_quyen_sau)
+  kiem('Được giao "Duyệt kế hoạch" thì tự duyệt được kế hoạch của mình', r.sau_duyet === 'Đã duyệt' && r.ghi_nguoi_duyet === true,
+       `${r.tu_duyet} · ${r.sau_duyet}`)
+  kiem('Được giao "Chấm sao"/"Nhận xét" thì tự chấm được bài của mình', r.sao === '5', `${r.tu_cham} · ${r.sao}`)
+  kiem('Kế hoạch đã qua thì vẫn không sửa được nội dung', r.task !== 'đổi nội dung', r.task)
 }
 
 // ===========================================================================

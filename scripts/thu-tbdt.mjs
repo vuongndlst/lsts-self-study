@@ -20,6 +20,9 @@
 import fs from 'node:fs'
 import { q } from './db.mjs'
 
+// THU_SQL=<migration> để chạy kèm một migration chưa áp, trong giao dịch rồi huỷ.
+const S20 = process.env.THU_SQL ? fs.readFileSync(process.env.THU_SQL, 'utf8') : ''
+
 let dat = 0, truot = 0
 const kiem = (ten, dung, chiTiet = '') => {
   if (dung) { dat++; console.log(`  ✓ ${ten}`) }
@@ -326,6 +329,43 @@ console.log('\nMinh chứng bắt buộc (schema-18 — đã áp từ 05/10/2026
   kiem('Xoá minh chứng cuối cùng → chặn', r.xoa_minh_chung_cuoi?.includes('cuối cùng'), r.xoa_minh_chung_cuoi)
   kiem('…và nó vẫn còn', r.con_lai === 1)
   kiem('Viết phản hồi sau khi bị chấm thì không bị luật minh chứng chặn', r.viet_phan_hoi_sau_cham === 'duoc', r.viet_phan_hoi_sau_cham)
+}
+
+// ===========================================================================
+console.log('\nKế hoạch bị từ chối không cần kết quả; minh chứng chỉ khi thiết bị đã duyệt (schema-20)')
+{
+  const r = await ca(`
+    -- Ba nhiệm vụ đã qua 10 ngày: thiết bị bị từ chối / thiết bị chưa ai duyệt / không dùng thiết bị.
+    insert into public.plans (student_id, study_date, period, activity_type, subject, task, priority, goal,
+                              use_device, device_purpose, device_status, review_status)
+    values ('${L.hs1}', public.vn_today() - 10, 5, 'Ôn tập', 'Toán', 'TB bị từ chối', 'Trung bình', 'Xong',
+            true, 'Tra cứu', 'Từ chối', 'Cần điều chỉnh')
+    returning id into v_id;
+    select progress into v_s from public.plan_status where plan_id = v_id;
+    ${ghi('tien_do_tu_choi', 'v_s')}
+    select count(*) into v_n from public.plan_status where plan_id = v_id and progress = 'Trễ hạn cập nhật';
+    ${ghi('tinh_no', 'v_n')}
+    perform public.process_self_study_deadlines();
+    select count(*) into v_n from public.reflections where plan_id = v_id;
+    ${ghi('bi_tu_cham', 'v_n')}
+    ${vai(L.hs1)}
+    ${thu('nop_khong_minh_chung_tu_choi', `insert into public.reflections (plan_id, student_id, completion_status, note)
+       values (v_id, '${L.hs1}', 'Hoàn thành', 'Em vẫn làm bài không dùng máy')`)}
+    ${veAdmin}
+    insert into public.plans (student_id, study_date, period, activity_type, subject, task, priority, goal,
+                              use_device, device_purpose, device_status, review_status)
+    values ('${L.hs1}', public.vn_today() - 9, 5, 'Ôn tập', 'Văn', 'Không thiết bị', 'Trung bình', 'Xong',
+            false, null, 'Không dùng', 'Không cần duyệt')
+    returning id into v_id;
+    ${vai(L.hs1)}
+    ${thu('nop_khong_tb', `insert into public.reflections (plan_id, student_id, completion_status, note)
+       values (v_id, '${L.hs1}', 'Hoàn thành', 'Em đọc xong bài')`)}`,
+  S20)
+  kiem('Kế hoạch bị từ chối: tiến độ "Không cần kết quả"', r.tien_do_tu_choi === 'Không cần kết quả', r.tien_do_tu_choi)
+  kiem('…không bị tính là nợ kết quả', r.tinh_no === 0)
+  kiem('…và job hằng ngày không tự chấm 1 sao', r.bi_tu_cham === 0, `${r.bi_tu_cham}`)
+  kiem('Thiết bị bị từ chối: vẫn tự nguyện nộp kết quả được, KHÔNG cần minh chứng', r.nop_khong_minh_chung_tu_choi === 'duoc', r.nop_khong_minh_chung_tu_choi)
+  kiem('Không dùng thiết bị: chỉ cần ghi kết quả, không cần minh chứng', r.nop_khong_tb === 'duoc', r.nop_khong_tb)
 }
 
 // ---- Không được để lại gì ----
