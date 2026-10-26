@@ -1710,6 +1710,12 @@ trước, lưu kết quả sau; xoá dòng minh chứng trước, xoá tệp tr�
 | Không dùng thiết bị (thiết bị bị từ chối) vẫn bị bắt minh chứng | Minh chứng chỉ bắt buộc khi thiết bị **Đã duyệt** |
 | Trợ giảng không tự duyệt / tự chấm được kế hoạch của mình | Có đúng quyền thì được. Kèm theo: chặn lỗ hổng trợ giảng có quyền duyệt sửa được *nội dung* kế hoạch đã qua của chính mình |
 
+**Cập nhật 26/10/2026:** nhiệm vụ đăng ký tự học **không dùng TBĐT** chỉ cần viết phản tư
+rồi lưu kết quả. Ô tải ảnh/PDF và liên kết được thu gọn sau nút **Thêm minh chứng (không bắt buộc)**;
+minh chứng đã nộp vẫn hiện để xem hoặc xoá. Nhiệm vụ được duyệt dùng TBĐT vẫn phải kèm
+ít nhất một ảnh, PDF hoặc liên kết. Luật CSDL đã đúng từ schema-20, không cần chạy thêm SQL.
+`node scripts/thu-tbdt.mjs` kiểm tra cả nộp/sửa phản tư không có file và xoá minh chứng tự nguyện.
+
 ## 12. Quyền dữ liệu
 
 **Học sinh** — chỉ đọc/ghi dữ liệu của chính mình; không đọc danh sách lớp; chỉ tạo kế
