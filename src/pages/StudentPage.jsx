@@ -450,6 +450,7 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
   const [ackBusy,setAckBusy]=useState(false)
   const [ackMsg,setAckMsg]=useState('')
   const [link,setLink]=useState('');const [file,setFile]=useState(null)
+  const [showOptionalEvidence,setShowOptionalEvidence]=useState(false)
   const [busy,setBusy]=useState(false);const [msg,setMsg]=useState('')
   // Minh chứng vừa thêm / vừa xoá trong lúc hộp đang mở — vẫn phải đếm đúng.
   const [daThem,setDaThem]=useState([])
@@ -458,7 +459,8 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
   const lowRating=existing?.rating!=null&&existing.rating<=2
   // Minh chứng chỉ bắt buộc khi thiết bị ĐÃ ĐƯỢC DUYỆT (schema-20). Bị từ chối
   // hay chưa duyệt thì em không được dùng máy, không có gì để chụp.
-  const canMinhChung=plan.use_device&&plan.device_status==='Đã duyệt'
+  const requiresEvidence=plan.use_device&&plan.device_status==='Đã duyệt'
+  const showEvidenceInputs=requiresEvidence||showOptionalEvidence||allEvidence.length>0
   const khongCanKetQua=progress==='Không cần kết quả'
   const canReflect=Boolean(existing)||canUpdateReflection(availableAt)||isReflectionDue(progress)||progress==='Hệ thống tự đánh giá'
 
@@ -488,9 +490,9 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
       if(file.size>limit){setBusy(false);return setMsg(file.type.startsWith('image/')?'Ảnh vượt quá 12 MB.':'File PDF vượt quá 5 MB.')}
       if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(file.type)){setBusy(false);return setMsg('Chỉ nhận JPG, PNG, WebP hoặc PDF.')}
     }
-    // Nhiệm vụ có thiết bị bắt buộc có minh chứng (CSDL cũng chặn — schema-18).
+    // Chỉ nhiệm vụ được duyệt dùng thiết bị mới bắt buộc có minh chứng (schema-20).
     // Kiểm ở đây trước để em biết ngay, không phải chờ lỗi từ máy chủ.
-    if(canMinhChung&&allEvidence.length+additions===0){setBusy(false);return setMsg('Nhiệm vụ này có dùng thiết bị điện tử nên cần ít nhất một minh chứng — ảnh, tệp PDF hoặc liên kết sản phẩm.')}
+    if(requiresEvidence&&allEvidence.length+additions===0){setBusy(false);return setMsg('Nhiệm vụ này được duyệt dùng thiết bị điện tử nên cần ít nhất một minh chứng — ảnh, tệp PDF hoặc liên kết sản phẩm.')}
     // THỨ TỰ: đính kèm minh chứng TRƯỚC, lưu kết quả SAU. Ngược lại thì luật
     // "nhiệm vụ có thiết bị phải có minh chứng" chặn ngay ở bước lưu kết quả.
     // Mỗi minh chứng thêm được thì ghi nhớ ngay (daThem), để lỡ bước sau hỏng
@@ -585,17 +587,18 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
     </div>
     <div className="toggle-row"><label className="switch"><input type="checkbox" checked={form.need_help} onChange={e=>setForm({...form,need_help:e.target.checked})}/><span/></label><div><strong>Em cần giáo viên hỗ trợ</strong><small>Bật khi em còn vướng và muốn giáo viên biết.</small></div></div>
     {form.need_help&&<input maxLength={500} value={form.help_note} onChange={e=>setForm({...form,help_note:e.target.value})} placeholder="Em cần hỗ trợ về…"/>}
-    {/* Minh chứng nói theo LOẠI HOẠT ĐỘNG. Ôn tập hay đọc sách thì vốn không có
-        gì để chụp — đòi minh chứng ở đó chỉ khiến em chụp đại một trang giấy cho
-        đủ thủ tục. Nói thẳng "không cần" ở những loại đó thì trung thực hơn. */}
-    <div className="evidence-block"><h3>Sản phẩm kèm theo {canMinhChung
+    {/* Không dùng thiết bị: phần phản tư là đủ, chỉ mở ô đính kèm khi em muốn. */}
+    <div className="evidence-block"><h3>Sản phẩm kèm theo {requiresEvidence
         ? <span className="evidence-required">(bắt buộc ít nhất 1 · tối đa 3)</span>
         : <span className="muted-text">(không bắt buộc · tối đa 3)</span>}</h3>
-      <p className="muted-text small">{canMinhChung
-        ? <>Nhiệm vụ này <strong>có dùng thiết bị điện tử</strong>, nên em phải kèm ít nhất một minh chứng kết quả: ảnh chụp màn hình/bài làm, tệp PDF, hoặc liên kết tới sản phẩm.</>
-        : prompt.sanPham
-        ? <>Việc này thường có sản phẩm. {prompt.goiYSanPham} Không có cũng không sao — phần chữ ở trên mới là chính.</>
-        : <>Việc này thường <strong>không có sản phẩm để nộp</strong>, nên em không cần đính kèm gì. Có thì thêm cũng tốt.</>}</p>
+      <p className="muted-text small">{requiresEvidence
+        ? <>Nhiệm vụ này <strong>được duyệt dùng thiết bị điện tử</strong>, nên em phải kèm ít nhất một minh chứng kết quả: ảnh chụp màn hình/bài làm, tệp PDF, hoặc liên kết tới sản phẩm.</>
+        : !plan.use_device
+        ? <>Nhiệm vụ này <strong>không dùng thiết bị điện tử</strong>. Em chỉ cần viết phần phản tư ở trên rồi bấm <strong>Lưu kết quả</strong>; không cần nộp ảnh, tệp hay liên kết.</>
+        : <>Thiết bị {plan.device_status==='Từ chối'?'bị từ chối':'chưa được duyệt'} nên em không được dùng thiết bị. Em vẫn có thể viết phản tư về việc tự học, không cần đính kèm minh chứng.</>}</p>
+      {!showEvidenceInputs&&<button type="button" className="button ghost" onClick={()=>setShowOptionalEvidence(true)}>
+        <Plus size={16}/> Thêm minh chứng (không bắt buộc)
+      </button>}
       {allEvidence.length>0&&<div className="evidence-list">{allEvidence.map(x=><span key={x.id} className="evidence-row">
         <button type="button" className="evidence-item" onClick={()=>openEvidence(x)}>
           {x.kind==='link'?'🔗':x.kind==='text'?'📝':'📎'} {x.kind==='text'?(x.body_text||'').slice(0,60)+((x.body_text||'').length>60?'…':''):(x.display_name||'Minh chứng')}
@@ -603,7 +606,7 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
         </button>
         <button type="button" className="evidence-item" title="Xóa minh chứng" onClick={()=>removeEvidence(x)}>✕</button>
       </span>)}</div>}
-      {allEvidence.length<3&&<>
+      {showEvidenceInputs&&allEvidence.length<3&&<>
         <label>Upload ảnh/PDF (ảnh ≤ 12 MB · PDF ≤ 5 MB)</label>
         <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={e=>setFile(e.target.files?.[0]||null)}/>
         {file?.type?.startsWith('image/')&&<small className="muted-text">Ảnh sẽ được tự động thu nhỏ trước khi gửi để tiết kiệm dung lượng — chất lượng vẫn đủ rõ để thầy cô xem.</small>}

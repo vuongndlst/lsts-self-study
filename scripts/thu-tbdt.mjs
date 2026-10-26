@@ -12,8 +12,8 @@
 //   4. `raise exception` ở cuối → cả giao dịch HUỶ. Không một dòng nào ở lại.
 //
 // Đã kiểm: Management API chạy cả chuỗi lệnh như MỘT giao dịch, nên raise ở
-// cuối huỷ được cả lệnh tạo bảng. Nhờ vậy ca minh chứng chạy được schema-18
-// ngay bên trong rồi tự huỷ — thử trước khi nó được áp lên CSDL thật.
+// cuối huỷ được cả lệnh tạo bảng. THU_SQL cho phép thử migration mới trong
+// giao dịch rồi tự huỷ; mặc định kiểm tra đúng luật đang chạy trên CSDL.
 //
 // Chỉ dùng lớp minh hoạ 8A0: mười học sinh bịa, không đụng học sinh thật.
 
@@ -301,9 +301,8 @@ console.log('\nThang xử lý: lần 1/2/3 độc lập, lần 4 mời phụ huy
 }
 
 // ===========================================================================
-console.log('\nMinh chứng bắt buộc (schema-18 — đã áp từ 05/10/2026; chạy lại trong giao dịch, vô hại)')
+console.log('\nMinh chứng bắt buộc khi thiết bị đã duyệt — kiểm tra luật đang chạy')
 {
-  const s17 = fs.readFileSync('supabase/schema-18-minh-chung-tbdt.sql', 'utf8')
   // Nhiệm vụ đã qua (hôm qua về trước) để được phép ghi kết quả và minh chứng.
   const r = await ca(`
     insert into public.plans (student_id, study_date, period, activity_type, subject, task, priority, goal,
@@ -322,7 +321,7 @@ console.log('\nMinh chứng bắt buộc (schema-18 — đã áp từ 05/10/2026
     select count(*) into v_n from public.evidence where plan_id = v_id;
     ${ghi('con_lai', 'v_n')}
     ${thu('viet_phan_hoi_sau_cham', `update public.reflections set student_ack_note = 'Em sẽ sửa' where plan_id = v_id`)}`,
-  s17)
+  S20)
   kiem('Lưu kết quả khi chưa có minh chứng → chặn', r.ket_qua_chua_co_minh_chung?.includes('minh chứng'), r.ket_qua_chua_co_minh_chung)
   kiem('Liên kết được tính là minh chứng', r.them_lien_ket === 'duoc', r.them_lien_ket)
   kiem('Có minh chứng rồi thì lưu kết quả được', r.ket_qua_sau_khi_co === 'duoc', r.ket_qua_sau_khi_co)
@@ -359,13 +358,24 @@ console.log('\nKế hoạch bị từ chối không cần kết quả; minh ch�
     returning id into v_id;
     ${vai(L.hs1)}
     ${thu('nop_khong_tb', `insert into public.reflections (plan_id, student_id, completion_status, note)
-       values (v_id, '${L.hs1}', 'Hoàn thành', 'Em đọc xong bài')`)}`,
+       values (v_id, '${L.hs1}', 'Hoàn thành', 'Em đọc xong bài')`)}
+    ${thu('sua_phan_tu_khong_tb', `update public.reflections
+       set note = 'Em đọc xong bài và tóm tắt được ba ý chính' where plan_id = v_id`)}
+    ${thu('them_minh_chung_tuy_chon', `insert into public.evidence
+       (plan_id, student_id, kind, external_url, display_name)
+       values (v_id, '${L.hs1}', 'link', 'https://example.com/tom-tat', 'Tóm tắt')`)}
+    ${thu('xoa_minh_chung_khong_tb', `delete from public.evidence where plan_id = v_id`)}
+    select count(*) into v_n from public.evidence where plan_id = v_id;
+    ${ghi('minh_chung_khong_tb_con_lai', 'v_n')}`,
   S20)
   kiem('Kế hoạch bị từ chối: tiến độ "Không cần kết quả"', r.tien_do_tu_choi === 'Không cần kết quả', r.tien_do_tu_choi)
   kiem('…không bị tính là nợ kết quả', r.tinh_no === 0)
   kiem('…và job hằng ngày không tự chấm 1 sao', r.bi_tu_cham === 0, `${r.bi_tu_cham}`)
   kiem('Thiết bị bị từ chối: vẫn tự nguyện nộp kết quả được, KHÔNG cần minh chứng', r.nop_khong_minh_chung_tu_choi === 'duoc', r.nop_khong_minh_chung_tu_choi)
   kiem('Không dùng thiết bị: chỉ cần ghi kết quả, không cần minh chứng', r.nop_khong_tb === 'duoc', r.nop_khong_tb)
+  kiem('Không dùng thiết bị: sửa phản tư vẫn không cần minh chứng', r.sua_phan_tu_khong_tb === 'duoc', r.sua_phan_tu_khong_tb)
+  kiem('Không dùng thiết bị: vẫn thêm minh chứng tự nguyện được', r.them_minh_chung_tuy_chon === 'duoc', r.them_minh_chung_tuy_chon)
+  kiem('Không dùng thiết bị: xoá minh chứng cuối cùng vẫn được', r.xoa_minh_chung_khong_tb === 'duoc' && r.minh_chung_khong_tb_con_lai === 0, r.xoa_minh_chung_khong_tb)
 }
 
 // ---- Không được để lại gì ----
