@@ -409,7 +409,8 @@ begin
       if v_db_name is null then
         -- Học sinh mới với toàn hệ thống.
         insert into public.students (mshs, full_name) values (v_mshs, v_name);
-        insert into public.enrollments (mshs, class_id, is_active) values (v_mshs, p_class, true);
+        insert into public.enrollments (mshs, class_id, is_active) values (v_mshs, p_class, true)
+            on conflict (mshs, class_id) do update set is_active = true;
         v_outcome := 'inserted'; n_ins := n_ins + 1;
 
       elsif public.norm_name(v_db_name) is distinct from v_name then
@@ -437,7 +438,8 @@ begin
             -- Đã có trên hệ thống (ví dụ năm ngoái học lớp 6) → CHỈ thêm ghi
             -- danh mới. Không tạo học sinh mới, nên tài khoản, ảnh đại diện và
             -- lịch sử năm cũ giữ nguyên.
-            insert into public.enrollments (mshs, class_id, is_active) values (v_mshs, p_class, true);
+            insert into public.enrollments (mshs, class_id, is_active) values (v_mshs, p_class, true)
+            on conflict (mshs, class_id) do update set is_active = true;
             v_outcome := 'linked'; n_link := n_link + 1;
           end if;
         end if;

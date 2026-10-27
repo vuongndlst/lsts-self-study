@@ -948,3 +948,19 @@ th,td{padding:11px 12px}
 .violation-preview.moi-ph{background:#fdecea;border-color:#e9a59b}
 .row-cancelled td{opacity:.55;text-decoration:line-through}
 .row-cancelled td:last-child{text-decoration:none}
+
+/* Danh sách học sinh: tiến độ, tài khoản và ghi danh chung một nơi. */
+.roster-tools{display:flex;gap:12px;margin:18px 0;flex-wrap:wrap}
+.roster-tools .search-box{flex:1;min-width:220px}
+.roster-tools select{width:auto;max-width:100%;margin:0}
+.roster-card table{min-width:1180px}
+.roster-card th:nth-child(2),.roster-card td:nth-child(2){min-width:190px}
+.roster-card th:nth-child(3),.roster-card td:nth-child(3){min-width:125px}
+.roster-card .row-actions{flex-wrap:nowrap}
+.roster-card .row-actions .button{white-space:nowrap}
+.roster-passwords{padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.roster-passwords small{display:block;margin-top:4px;line-height:1.5}
+.restore-list{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:10px}
+.restore-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.restore-list small{display:block;margin-top:4px;color:var(--muted)}
+@media(max-width:640px){.roster-tools>*{width:100%}.roster-tools select{width:100%}.roster-passwords{align-items:stretch;flex-direction:column}.roster-card .section-title{align-items:flex-start;flex-direction:column}}
