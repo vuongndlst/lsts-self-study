@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, Check, ClipboardCheck, Star, ClipboardCopy, Download, ExternalLink, KeyRound, LifeBuoy, MessageSquare, MessageSquareQuote, RefreshCw, Search, Shuffle, UsersRound, X } from 'lucide-react'
+import { AlertTriangle, Check, ClipboardCheck, Star, ClipboardCopy, Download, ExternalLink, KeyRound, LifeBuoy, MessageSquare, MessageSquareQuote, RefreshCw, Search, Shuffle, X } from 'lucide-react'
 import { supabase, callFunction } from '../lib/supabase'
 import { selectIn, daysAgoISO, LOAD_WINDOWS } from '../lib/query'
 import { useAuth } from '../context/AuthContext'
@@ -47,7 +47,7 @@ export default function TeacherPage(){
   const [bulkRate,setBulkRate]=useState(false)
   const [sortBy,setSortBy]=useState('date_desc')
   const [page,setPage]=useState(1)
-  const [selected,setSelected]=useState(new Set())
+  const [rosterVersion,setRosterVersion]=useState(0)
   const [resetTargets,setResetTargets]=useState(null)
   const [taskTarget,setTaskTarget]=useState(null)
   const [studentDetail,setStudentDetail]=useState(null)
@@ -103,6 +103,9 @@ export default function TeacherPage(){
     setLoading(false)
   }
   useEffect(()=>{load()},[context.classId,windowDays])
+  useEffect(()=>{
+    setResetTargets(null);setStudentDetail(null);setChatWith(null)
+  },[context.classId])
 
   // Em nào đang lao động công ích / phải mời phụ huynh. Nạp riêng vì bảng này
   // đếm theo HỌC KỲ, không theo khoảng ngày đang nạp của dashboard.
@@ -266,12 +269,8 @@ export default function TeacherPage(){
   // DANH SÁCH ĐI NHẮC thì phải trừ nó ra, không thầy cô đi nhắc một cái tên giả.
   const rosterThat=roster.filter(x=>!x.is_test)
   const rosterTotal=rosterThat.length
-  const claimed=rosterThat.filter(x=>x.claimed_user_id).length
-  const unclaimed=rosterThat.filter(x=>!x.claimed_user_id)
   // Thay cho email nhắc: đưa thẳng lên dashboard.
   const noPlanTomorrow=perStudent.filter(r=>r.hasAccount&&!r.isTest&&!r.plannedTomorrow)
-  const withPending=perStudent.filter(r=>r.pending>0)
-  const mustChangeList=perStudent.filter(r=>r.mustChange)
   // Trạng thái do CSDL tính (hạn 48h / tự đánh giá 120h).
   // HỘP VIỆC CẦN XỬ LÝ đếm trên TOÀN BỘ dữ liệu đã nạp, cố tình KHÔNG theo bộ lọc.
   // Nếu đếm theo `rows` (đã lọc) thì bấm "Chờ duyệt" xong mọi ô còn lại tụt về 0,
@@ -286,13 +285,6 @@ export default function TeacherPage(){
     autoRated:    plans.filter(p=>status[p.id]?.auto_evaluated).length,
     recheck:      plans.filter(p=>status[p.id]?.needs_recheck).length,
   }),[plans,status,reflections])
-
-  const selectedRows=perStudent.filter(r=>selected.has(r.mshs)&&r.hasAccount)
-  const toggle=(mshs)=>setSelected(prev=>{const n=new Set(prev);n.has(mshs)?n.delete(mshs):n.add(mshs);return n})
-  const toggleAll=()=>setSelected(prev=>{
-    const withAccount=perStudent.filter(r=>r.hasAccount).map(r=>r.mshs)
-    return prev.size===withAccount.length?new Set():new Set(withAccount)
-  })
 
   const openEvidence=async(item)=>{
     if(item.kind==='text')return window.alert(item.body_text||'')
@@ -340,8 +332,8 @@ export default function TeacherPage(){
       </div>
       <div className="button-row">
         <ClassSwitcher/>
-        <button className="button ghost" onClick={load}><RefreshCw size={17}/> Làm mới</button>
-        <button className="button primary" onClick={view==='plans'?exportCsv:exportSummaryCsv}><Download size={17}/> Xuất CSV</button>
+        <button className="button ghost" onClick={()=>{setRosterVersion(v=>v+1);load()}}><RefreshCw size={17}/> Làm mới</button>
+        {view!=='students'&&<button className="button primary" onClick={view==='plans'?exportCsv:exportSummaryCsv}><Download size={17}/> Xuất CSV</button>}
       </div>
     </section>
 
@@ -390,9 +382,8 @@ export default function TeacherPage(){
 
     <div className="segmented view-switch">
       <button type="button" className={view==='plans'?'active':''} onClick={()=>setView('plans')}>Theo kế hoạch</button>
-      <button type="button" className={view==='students'?'active':''} onClick={()=>setView('students')}>Theo học sinh</button>
+      <button type="button" className={view==='students'?'active':''} onClick={()=>setView('students')}>Học sinh</button>
       <button type="button" className={view==='analytics'?'active':''} onClick={()=>setView('analytics')}>Phân tích</button>
-      <button type="button" className={view==='roster'?'active':''} onClick={()=>setView('roster')}>Học sinh</button>
       <button type="button" className={view==='device'?'active':''} onClick={()=>setView('device')}>Thiết bị</button>
       {discOn&&<button type="button" className={view==='missing'?'active':''} onClick={()=>setView('missing')}>Chưa đăng ký</button>}
       <button type="button" className={view==='schedule'?'active':''} onClick={()=>setView('schedule')}>Lịch tự học</button>
@@ -408,7 +399,11 @@ export default function TeacherPage(){
       <LaborBoard classId={context.classId} className={context.className}/>
       <AttendancePolicyPanel classId={context.classId} className={context.className}/>
     </>}
-    {view==='roster'&&<RosterPanel classId={context.classId} className={context.className} yearName={context.yearName}/>}
+    {view==='students'&&<RosterPanel key={context.classId}
+      classId={context.classId} className={context.className} yearName={context.yearName}
+      studentStats={perStudent} statsLoading={loading} refreshKey={rosterVersion}
+      windowDays={windowDays} onWindowChange={setWindowDays}
+      onOpenStudent={setStudentDetail} onChat={openChat} onResetPassword={setResetTargets} onChanged={load}/>}
 
     {/* Số liệu MÔ TẢ (không phải việc cần làm) sống ở tab Phân tích. */}
     {view==='analytics'&&<>
@@ -516,63 +511,8 @@ export default function TeacherPage(){
       </div>
     </div>}
 
-    {/* Tình trạng tài khoản thuộc về tab này, không phải trang đầu. */}
-    {view==='students'&&<article className="card roster-card">
-      <div className="roster-head"><div><span className="eyebrow">TÀI KHOẢN HỌC SINH</span><h3>{claimed} / {rosterTotal} đã đăng ký</h3></div><UsersRound size={24}/></div>
-      <div className="roster-progress"><span style={{width:`${rosterTotal?Math.round(claimed/rosterTotal*100):0}%`}}/></div>
-      <div className="roster-unclaimed">{unclaimed.length
-        ? <>Chưa đăng ký: <strong>{unclaimed.map(x=>x.full_name).join(' · ')}</strong></>
-        : '✓ Tất cả học sinh đã tạo tài khoản.'}</div>
-      {mustChangeList.length>0&&<div className="roster-unclaimed">
-        Đang chờ tự đặt lại mật khẩu: <strong>{mustChangeList.length}</strong> em
-      </div>}
-    </article>}
-
-    {view==='students'&&<section className="card bulk-bar">
-      <div>
-        <strong>{selectedRows.length}</strong> học sinh được chọn
-        <small className="muted-text"> · chỉ chọn được em đã tạo tài khoản</small>
-      </div>
-      <button className="button primary" disabled={selectedRows.length===0} onClick={()=>setResetTargets(selectedRows)}>
-        <KeyRound size={17}/> Đặt lại mật khẩu {selectedRows.length>0?`(${selectedRows.length})`:''}
-      </button>
-    </section>}
-
-    {(view==='plans'||view==='students')&&<section className="card table-card">
+    {view==='plans'&&<section className="card table-card">
       {loading?<div className="empty-state">Đang tải dữ liệu…</div>
-      :view==='students'
-      ?<div className="table-wrap"><table>
-        <thead><tr>
-          <th className="pick"><input type="checkbox" title="Chọn tất cả" onChange={toggleAll}
-            checked={selectedRows.length>0&&selectedRows.length===perStudent.filter(r=>r.hasAccount).length}/></th>
-          <th>Học sinh</th><th>Tài khoản</th><th>Kế hoạch</th><th>Đúng hạn</th><th>Điểm TB</th>
-          <th>Chưa cập nhật</th><th>Cần hỗ trợ</th><th>Thao tác</th>
-        </tr></thead>
-        <tbody>{perStudent.map(r=><tr key={r.mshs} className={selected.has(r.mshs)?'picked':''}>
-          <td className="pick"><input type="checkbox" disabled={!r.hasAccount} checked={selected.has(r.mshs)} onChange={()=>toggle(r.mshs)}/></td>
-          <td>
-            <span className="cell-with-avatar"><Avatar name={r.name} path={r.avatarPath} size={30}/><span>
-              {r.hasAccount
-                ? <button className="link-button name-link" onClick={()=>setStudentDetail(r)}>{r.name}</button>
-                : <strong>{r.name}</strong>}
-              <small>{r.mshs}{r.isTa?' · TA':''}</small>
-            </span></span>
-          </td>
-          <td>{r.hasAccount
-            ? (r.mustChange?<StatusBadge value="Chờ duyệt" label="Chờ HS đổi"/>:<StatusBadge value="Đúng hạn" label="Đã có"/>)
-            : <StatusBadge value="Trễ" label="Chưa tạo"/>}</td>
-          <td>{r.total}</td>
-          <td>{r.total?`${Math.round(r.ontime/r.total*100)}%`:'—'}</td>
-          <td>{r.avg!=null?<span className={ratingTone(Math.round(r.avg))}>{r.avg.toFixed(1)}{r.low>0?` (${r.low}⚠)`:''}</span>:'—'}</td>
-          <td>{r.pending>0?<strong className="help-flag">{r.pending}</strong>:'—'}</td>
-          <td>{r.help>0?<strong className="help-flag">{r.help}</strong>:'—'}</td>
-          <td><span className="row-actions">
-            <button className="icon-button" title="Nhắn tin" disabled={!r.hasAccount} onClick={()=>openChat(r.id,r.name)}><MessageSquare size={16}/></button>
-            <button className="icon-button" title={r.hasAccount?'Đặt lại mật khẩu':'Em này chưa tạo tài khoản'}
-                disabled={!r.hasAccount} onClick={()=>setResetTargets([r])}><KeyRound size={16}/></button>
-          </span></td>
-        </tr>)}</tbody>
-      </table>{perStudent.length===0&&<div className="empty-state">Chưa có học sinh nào trong lớp.</div>}</div>
       :<div className="table-wrap"><table>
         <thead><tr>
           <th className="pick"><input type="checkbox" title="Chọn tất cả trên trang này"
@@ -636,7 +576,7 @@ export default function TeacherPage(){
     {bulkAction&&<BulkReviewModal action={bulkAction} plans={selectedList} studentMap={studentMap}
       onClose={()=>setBulkAction(null)}
       onDone={()=>{setBulkAction(null);setSelectedPlans(new Set());load()}}/>}
-    {resetTargets&&<ResetPasswordModal targets={resetTargets} onClose={()=>setResetTargets(null)} onDone={()=>{setSelected(new Set());load()}}/>}
+    {resetTargets&&<ResetPasswordModal targets={resetTargets} onClose={()=>setResetTargets(null)} onDone={()=>{setRosterVersion(v=>v+1);load()}}/>}
     {taskTarget&&<TaskDetailModal plan={taskTarget.plan} student={taskTarget.student}
       reflection={reflections[taskTarget.plan.id]} evidence={evidence[taskTarget.plan.id]||[]}
       onOpenEvidence={openEvidence} onClose={()=>setTaskTarget(null)} onSaved={()=>{setTaskTarget(null);load()}}/>}

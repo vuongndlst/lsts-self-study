@@ -254,6 +254,18 @@ function PhanGiaoVien() {
   return <>
     <HuongDanTaiLieu bo="giaoVien" />
 
+    <section className="card">
+      <h2><GraduationCap size={20} /> Một tab Học sinh cho cả theo dõi và quản lý lớp</h2>
+      <p>Tab <strong>Học sinh</strong> gom danh sách lớp, tình trạng tài khoản và tiến độ tự học.
+        Bấm tên để xem hồ sơ; nhập Excel và xuất CSV ngay tại đây.</p>
+      <p><strong>Đặt lại mật khẩu:</strong> giáo viên phụ trách lớp bấm nút trên dòng học sinh,
+        hoặc tick nhiều em rồi bấm nút đặt lại phía trên bảng. Chỉ áp dụng cho em đã tạo tài khoản;
+        sau khi nhận mật khẩu tạm, học sinh phải tự đặt mật khẩu riêng khi đăng nhập.</p>
+      <p><strong>Lỡ chuyển học sinh khỏi lớp:</strong> mở <em>Đã chuyển khỏi lớp</em>, tìm đúng tên/MSHS
+        rồi bấm <em>Khôi phục vào lớp</em>. Tài khoản, mật khẩu và lịch sử tự học giữ nguyên.
+        Nếu em đang thuộc lớp khác trong cùng năm, cần xử lý chuyển lớp trước.</p>
+    </section>
+
     <section className="card deadline-card">
       <div className="deadline-head"><ClipboardList size={22} /><div>
         <span className="eyebrow">LÀM MỘT LẦN ĐẦU NĂM</span>

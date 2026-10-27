@@ -111,7 +111,7 @@ nào. Chỉ Edge Function mới hạ được cờ — học sinh không tự s�
 **Đường 1 — tự đặt lại qua email.** Nút **Quên mật khẩu?** ngay trang đăng nhập. Xem mục 2b.
 
 **Đường 2 — giáo viên cấp mật khẩu tạm.** Dùng khi em không mở được hộp thư trường. Trên
-dashboard, tab **Theo học sinh** liệt kê **toàn bộ** học sinh của lớp (kể cả em chưa tạo
+dashboard, tab **Học sinh** liệt kê **toàn bộ** học sinh của lớp (kể cả em chưa tạo
 tài khoản) — tick chọn một hoặc nhiều em rồi bấm **Đặt lại mật khẩu**. Hệ thống sinh mật
 khẩu tạm cho từng em và hiện ra một lần duy nhất, kèm nút chép cả danh sách.
 
@@ -455,7 +455,7 @@ Ba quy ước giữ cho các con số không tự mâu thuẫn:
 
 Số liệu **mô tả** (lượt đăng ký, % hoàn thành, điểm trung bình…) chuyển sang tab **Phân
 tích**, và cũng tính trên toàn bộ khoảng đang nạp chứ không theo bộ lọc — bộ lọc nằm ở tab
-khác, không nhìn thấy được từ đây. Thẻ tài khoản học sinh chuyển sang tab **Theo học sinh**.
+khác, không nhìn thấy được từ đây. Tình trạng tài khoản học sinh nằm ở tab **Học sinh**.
 
 ## 8. Lịch tự học cố định và ai chưa đăng ký
 
@@ -1715,6 +1715,28 @@ rồi lưu kết quả. Ô tải ảnh/PDF và liên kết được thu gọn sa
 minh chứng đã nộp vẫn hiện để xem hoặc xoá. Nhiệm vụ được duyệt dùng TBĐT vẫn phải kèm
 ít nhất một ảnh, PDF hoặc liên kết. Luật CSDL đã đúng từ schema-20, không cần chạy thêm SQL.
 `node scripts/thu-tbdt.mjs` kiểm tra cả nộp/sửa phản tư không có file và xoá minh chứng tự nguyện.
+
+## 11o. Một tab Học sinh và khôi phục ghi danh (27/10/2026)
+
+Hai tab **Theo học sinh** và **Học sinh** gom thành **Học sinh**: một bảng có tìm kiếm,
+phân trang, khoảng số liệu tự học, hồ sơ, tin nhắn, nhập Excel, xuất CSV và quản lý ghi danh.
+Giáo viên phụ trách lớp đặt lại mật khẩu từng em hoặc chọn nhiều em để cấp mật khẩu tạm.
+Máy chủ vẫn kiểm tra giáo viên đã được duyệt, phân công đang hoạt động, học sinh đang
+ghi danh trong năm hiện tại. Học sinh phải đổi mật khẩu tạm ở lần đăng nhập kế tiếp.
+
+Nếu lỡ xác nhận **Chuyển khỏi lớp**, vào **Học sinh → Đã chuyển khỏi lớp → Khôi phục vào lớp**.
+Chỉ bật lại ghi danh cũ: tài khoản, mật khẩu, kế hoạch, phản tư và minh chứng giữ nguyên.
+Không khôi phục vào lớp cũ khi học sinh đang ở lớp khác cùng năm. Nhập lại Excel một dòng
+cũng khôi phục được; đã sửa lỗi trùng khoá `(mshs, class_id)`.
+
+Migration `supabase/migrations/20261027150208_restore_class_students.sql` đã áp lên Supabase
+ngày 27/10/2026 sau khi được thầy cho phép. Hai RPC mới `class_removed_students` và
+`restore_to_class` kiểm quyền lớp, khoá `search_path`, không cấp thực thi cho `anon`;
+khôi phục ghi vào audit log. Không tự khôi phục bất kỳ học sinh nào khi chạy migration.
+
+Kiểm tra: `npm test` (gồm quyền Edge Function đặt lại mật khẩu, dùng Auth/DB giả),
+`node scripts/thu-khoi-phuc-hoc-sinh.mjs` (quyền thật, học sinh giả lớp 8A0, giao dịch tự huỷ).
+Đặt `THU_SQL` thành đường dẫn migration để thử trước khi triển khai.
 
 ## 12. Quyền dữ liệu
 
