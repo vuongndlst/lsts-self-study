@@ -264,6 +264,10 @@ function PhanGiaoVien() {
       <p><strong>Lỡ chuyển học sinh khỏi lớp:</strong> mở <em>Đã chuyển khỏi lớp</em>, tìm đúng tên/MSHS
         rồi bấm <em>Khôi phục vào lớp</em>. Tài khoản, mật khẩu và lịch sử tự học giữ nguyên.
         Nếu em đang thuộc lớp khác trong cùng năm, cần xử lý chuyển lớp trước.</p>
+      <p><strong>Nhiệm vụ không còn cần thực hiện:</strong> mở chi tiết nhiệm vụ, bấm <em>Xóa nhiệm vụ</em>,
+        ghi lý do rồi xác nhận. Chỉ xóa được nhiệm vụ chưa có kết quả hoặc minh chứng.
+        Muốn trợ giảng làm việc này, bật quyền riêng <em>Xóa nhiệm vụ</em> ở tab Trợ giảng.
+        Học sinh chỉ tự xóa nhiệm vụ của mình trước khi tiết học bắt đầu, kể cả đăng ký trong ngày.</p>
     </section>
 
     <section className="card deadline-card">

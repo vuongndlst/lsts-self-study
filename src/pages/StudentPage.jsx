@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AlertTriangle, CalendarPlus, ChevronDown, ExternalLink, FileUp, KeyRound, MessageSquare, MessageSquareQuote, Plus, RefreshCw, Search, ShieldCheck, Trash2 } from 'lucide-react'
+import { AlertTriangle, CalendarPlus, ChevronDown, ExternalLink, FileUp, KeyRound, MessageSquare, MessageSquareQuote, Plus, RefreshCw, Search, ShieldCheck } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase, callFunction } from '../lib/supabase'
 import { shrinkImage } from '../lib/image'
 import { selectIn } from '../lib/query'
 import { formatDate, registrationStatus, todayISO } from '../utils/date'
-import { canUpdateReflection, isReflectionDue, reflectionReminder } from '../utils/studentReminders'
+import { canDeleteBeforeStart, canUpdateReflection, isReflectionDue, reflectionReminder } from '../utils/studentReminders'
 import { promptFor, noteQuality } from '../utils/reflectionPrompts'
 import { sessionTimeLabel } from '../utils/schoolSchedule'
 import { passwordChecks, validateStudentPassword } from '../utils/password'
@@ -20,6 +20,7 @@ import { StudentAnalytics } from '../components/Analytics'
 import { MyBookShare } from '../components/BookShare'
 import StudentAlerts, { MyAttendance } from '../components/StudentAlerts'
 import { MyDevice } from '../components/DeviceRules'
+import DeletePlanButton from '../components/DeletePlanButton'
 
 const activityOptions=['Bài tập cá nhân','Ôn tập','Công việc nhóm','Đọc sách','Chuẩn bị nội dung chia sẻ','Khác']
 const subjectOptions=['Toán','Ngữ văn','Tiếng Anh','Khoa học tự nhiên','Lịch sử & Địa lý','GDCD','Tin học','Công nghệ','Nghệ thuật','Khác']
@@ -164,6 +165,7 @@ export default function StudentPage(){
   },[sessions,filter,sortBy,search,reflections,todoKeys,status])
 
   const totalPages=Math.max(1,Math.ceil(filtered.length/SESSIONS_PER_PAGE))
+  useEffect(()=>{setPage(p=>Math.min(p,totalPages))},[totalPages])
   const pageSessions=useMemo(()=>filtered.slice((page-1)*SESSIONS_PER_PAGE,page*SESSIONS_PER_PAGE),[filtered,page])
   // Đổi bộ lọc thì quay về trang 1, nếu không em bấm lọc xong lại thấy trang trống.
   useEffect(()=>{setPage(1)},[filter,sortBy,search])
@@ -258,7 +260,7 @@ export default function StudentPage(){
         ? <EmptyState text={sessions.length===0?'Em chưa đăng ký buổi tự học nào.':'Không có buổi nào phù hợp với bộ lọc.'}/>
         : <>
             <div className="plan-grid">{pageSessions.map(s=><SessionCard key={s.key} session={s}
-              reflections={reflections} evidence={evidence} status={status} onOpen={setOpenPlan} onChanged={load}/>)}</div>
+              reflections={reflections} evidence={evidence} status={status} onOpen={setOpenPlan} onChanged={()=>{load();setAlertKey(k=>k+1)}}/>)}</div>
             {filtered.length>SESSIONS_PER_PAGE&&<div className="pager">
               <button className="button ghost" disabled={page===1} onClick={()=>setPage(p=>p-1)}>← Trước</button>
               <span>Trang <strong>{page}</strong> / {totalPages} · {filtered.length} buổi</span>
@@ -273,7 +275,7 @@ export default function StudentPage(){
 
     {openPlan&&(openPlan.study_date>todayISO()
       ?<EditPlanModal plan={openPlan} onClose={()=>setOpenPlan(null)} onSaved={()=>{setOpenPlan(null);load();setAlertKey(k=>k+1)}}/>
-      :<ReflectionModal plan={openPlan} progress={status[openPlan.id]?.progress} availableAt={status[openPlan.id]?.available_at} existing={reflections[openPlan.id]} evidence={evidence[openPlan.id]||[]} onClose={()=>{setOpenPlan(null);load()}} onSaved={()=>{setOpenPlan(null);load()}}/>)}
+      :<ReflectionModal plan={openPlan} progress={status[openPlan.id]?.progress} availableAt={status[openPlan.id]?.available_at} existing={reflections[openPlan.id]} evidence={evidence[openPlan.id]||[]} onClose={()=>{setOpenPlan(null);load()}} onSaved={()=>{setOpenPlan(null);load();setAlertKey(k=>k+1)}}/>)}
     {showPassword&&<ChangePasswordModal mshs={profile?.mshs} onClose={()=>setShowPassword(false)}/>}
     {showAvatar&&<AvatarUploader onClose={()=>setShowAvatar(false)}/>}
     {showChat&&<div className="modal-backdrop" onMouseDown={()=>setShowChat(false)}>
@@ -307,14 +309,8 @@ function SessionCard({session,reflections,evidence,status,onOpen,onChanged}){
   const tone=ratingTone(worst)
   const needsAck=tasks.some(t=>{const r=reflections[t.id];return r?.rating!=null&&r.rating<=2&&!r.student_ack_at})
 
-  const removeSession=async(e)=>{
-    e.stopPropagation()
-    if(!window.confirm(`Xóa cả buổi tự học ngày ${formatDate(study_date)} tiết ${period} (${tasks.length} nhiệm vụ)?`))return
-    const {error}=await supabase.from('plans').delete().in('id',tasks.map(t=>t.id))
-    if(error)return window.alert('Không thể xóa buổi này.')
-    if(session.key&&tasks[0]?.session_id)await supabase.from('self_study_sessions').delete().eq('id',tasks[0].session_id)
-    onChanged()
-  }
+  const canDeleteSession=tasks.every(t=>canDeleteBeforeStart(status[t.id]?.available_at)
+    &&!reflections[t.id]&&!(evidence[t.id]?.length))
 
   // Chỉ nhắc khi CSDL xác nhận đã hết buổi. Nhờ vậy buổi hôm nay được nhắc đúng
   // lúc, nhưng học sinh không bị thúc cập nhật khi còn đang học.
@@ -326,7 +322,7 @@ function SessionCard({session,reflections,evidence,status,onOpen,onChanged}){
       <span className="plan-card-actions">
         {needsResult&&<span className="pill-todo">Chưa có kết quả</span>}
         <StatusBadge value={regStatus}/>
-        {editable&&<button type="button" className="icon-button danger" title="Xóa cả buổi" onClick={removeSession}><Trash2 size={15}/></button>}
+        {canDeleteSession&&<DeletePlanButton plans={tasks} student label="Xóa cả buổi" onDeleted={onChanged}/>}
       </span>
     </div>
 
@@ -374,6 +370,8 @@ function SessionCard({session,reflections,evidence,status,onOpen,onChanged}){
         {editable&&<button type="button" className="button ghost task-cta" onClick={()=>onOpen(t)}>
           Chỉnh sửa nhiệm vụ
         </button>}
+        {canDeleteBeforeStart(st?.available_at)&&!r&&ev.length===0&&
+          <DeletePlanButton plans={[t]} student onDeleted={onChanged}/>}
       </li>
     })}</ul>
 
@@ -406,14 +404,6 @@ function EditPlanModal({plan,onClose,onSaved}){
     if(error)return setMsg(error.code==='P0001'?error.message:'Không thể lưu điều chỉnh. '+(error.message||''))
     onSaved()
   }
-  const remove=async()=>{
-    if(!window.confirm('Xóa hẳn kế hoạch này?'))return
-    setBusy(true)
-    const {error}=await supabase.from('plans').delete().eq('id',plan.id)
-    setBusy(false)
-    if(error)return setMsg('Không thể xóa kế hoạch này.')
-    onSaved()
-  }
   return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" onMouseDown={e=>e.stopPropagation()}>
     <div className="modal-head"><div><span className="eyebrow">CHỈNH SỬA KẾ HOẠCH</span><h2>{plan.subject}</h2></div><button className="icon-button" onClick={onClose}>✕</button></div>
     {/* Ngày và tiết thuộc về BUỔI tự học, không sửa lẻ ở đây được — sửa thì nhiệm
@@ -436,7 +426,7 @@ function EditPlanModal({plan,onClose,onSaved}){
     <label>Nếu hoàn thành sớm</label><select value={form.fallback_activity} onChange={e=>update('fallback_activity',e.target.value)}>{fallbackOptions.map(x=><option key={x}>{x}</option>)}</select>
     {msg&&<div className="form-error">{msg}</div>}
     <div className="form-actions spread">
-      <button className="button danger ghost" onClick={remove} disabled={busy}><Trash2 size={16}/> Xóa kế hoạch</button>
+      <DeletePlanButton plans={[plan]} student disabled={busy} onDeleted={onSaved}/>
       <span><button className="button ghost" onClick={onClose}>Đóng</button><button className="button primary" onClick={save} disabled={busy}>{busy?'Đang lưu…':'Lưu điều chỉnh'}</button></span>
     </div>
   </div></div>
@@ -543,6 +533,8 @@ function ReflectionModal({plan,progress,availableAt,existing,evidence,onClose,on
 	  return <div className="modal-backdrop" onMouseDown={onClose}><div className="modal" role="dialog" aria-modal="true" aria-labelledby="reflection-title" onMouseDown={e=>e.stopPropagation()}>
 	    <div className="modal-head"><div><span className="eyebrow">{formatDate(plan.study_date)} · TIẾT {plan.period}</span><h2 id="reflection-title">{plan.subject}</h2></div><button className="icon-button" onClick={onClose} aria-label="Đóng">✕</button></div>
     <div className="detail-box"><strong>Nhiệm vụ</strong><p>{plan.task}</p><strong>Mục tiêu</strong><p>{plan.goal}</p></div>
+    {canDeleteBeforeStart(availableAt)&&!existing&&allEvidence.length===0&&
+      <DeletePlanButton plans={[plan]} student onDeleted={onSaved}/>}
     {khongCanKetQua&&!existing&&<div className="detail-box">
       <strong>Kế hoạch này bị từ chối — em không cần nộp kết quả</strong>
       <p className="muted-text small">Không ai nhắc trễ hạn, hệ thống cũng không tự chấm. Nếu em vẫn làm và muốn ghi lại thì cứ cập nhật bên dưới.</p>

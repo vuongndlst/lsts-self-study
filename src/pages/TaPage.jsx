@@ -30,6 +30,7 @@ const PERM_LABEL = {
   can_comment: 'Viết nhận xét',
   can_review_device: 'Duyệt thiết bị',
   can_approve_plan: 'Duyệt kế hoạch',
+  can_delete_plans: 'Xóa nhiệm vụ chưa có kết quả',
   can_review_books: 'Theo dõi & nhận xét chia sẻ sách',
   can_track_attendance: 'Theo dõi & nhắc đăng ký',
 }
@@ -135,6 +136,7 @@ export default function TaPage() {
   const viecCham = useMemo(() => plans.filter(choCham).length, [plans, reflections])
 
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
+  useEffect(() => { setPage((p) => Math.min(p, totalPages)) }, [totalPages])
   const pageRows = useMemo(() => rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [rows, page])
 
   // Thống kê tính trên ĐÚNG khoảng đang xem, để con số khớp với bảng bên dưới.
@@ -185,7 +187,7 @@ export default function TaPage() {
   }
 
   // Có bất kỳ quyền xử lý nào thì mỗi dòng có nút "Xử lý".
-  const coXuLy = ['can_approve_plan', 'can_review_device', 'can_rate', 'can_comment', 'can_view_evidence', 'can_view_reflections']
+  const coXuLy = ['can_approve_plan', 'can_review_device', 'can_rate', 'can_comment', 'can_view_evidence', 'can_view_reflections', 'can_delete_plans']
     .some((k) => assistant[k])
 
   const granted = Object.keys(PERM_LABEL).filter((k) => assistant[k])

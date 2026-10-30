@@ -82,6 +82,7 @@ returns boolean language sql stable security definer set search_path = public as
         when 'comment'          then can_comment
         when 'review_device'    then can_review_device
         when 'approve_plan'     then can_approve_plan
+        when 'delete_plans'     then can_delete_plans
         else false
       end
       from public.class_assistants
