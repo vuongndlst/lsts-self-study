@@ -1738,6 +1738,24 @@ Kiểm tra: `npm test` (gồm quyền Edge Function đặt lại mật khẩu, d
 `node scripts/thu-khoi-phuc-hoc-sinh.mjs` (quyền thật, học sinh giả lớp 8A0, giao dịch tự huỷ).
 Đặt `THU_SQL` thành đường dẫn migration để thử trước khi triển khai.
 
+## 11p. Xoá nhiệm vụ không còn nhu cầu (31/10/2026)
+
+- Giáo viên lớp: mở chi tiết nhiệm vụ → **Xóa nhiệm vụ**, ghi lý do và xác nhận.
+- Trợ giảng: giáo viên phải bật quyền riêng **Xóa nhiệm vụ** (`can_delete_plans`, mặc định tắt).
+  Quyền này kéo theo xem kế hoạch, không kéo theo chấm sao hay đọc phản tư.
+- Học sinh: tự xoá nhiệm vụ của mình **trước giờ bắt đầu tiết học**, kể cả trong ngày và đã được duyệt thiết bị.
+  Sau mốc đó, nhờ giáo viên hoặc trợ giảng được giao quyền. Sửa nội dung nhiệm vụ vẫn theo luật cũ.
+
+Mọi vai trò đều không xoá được nhiệm vụ đã có phản tư, điểm hoặc minh chứng.
+RPC `delete_study_plans` kiểm từng nhiệm vụ; một nhiệm vụ bị chặn thì cả nhóm tự hoàn tác.
+Trigger chặn cả DELETE trực tiếp và xoá dây chuyền từ buổi học. Mỗi lần xoá có audit log
+`plan.deleted` chứa người thao tác, lý do và bản chụp nhiệm vụ. Xoá hết nhiệm vụ thì dọn buổi trống;
+đăng ký thiết bị và nhắc nộp kết quả của nhiệm vụ đó cũng không còn được tính.
+
+Migration: `supabase/migrations/20261030224110_controlled_plan_deletion.sql` (đã áp lên Supabase ngày 31/10/2026; không tự xoá nhiệm vụ nào).
+Kiểm tra trước triển khai bằng `THU_SQL=<migration> node scripts/thu-xoa-nhiem-vu.mjs`:
+chỉ dùng học sinh giả 8A0, toàn bộ giao dịch tự huỷ. `npm test` kiểm thêm đúng mốc giờ trên giao diện.
+
 ## 12. Quyền dữ liệu
 
 **Học sinh** — chỉ đọc/ghi dữ liệu của chính mình; không đọc danh sách lớp; chỉ tạo kế

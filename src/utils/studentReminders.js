@@ -11,6 +11,11 @@ export function canUpdateReflection(availableAt, now = Date.now()) {
   return Number.isFinite(timestamp) && now >= timestamp
 }
 
+export function canDeleteBeforeStart(availableAt, now = Date.now()) {
+  const timestamp = Date.parse(availableAt)
+  return Number.isFinite(timestamp) && now < timestamp
+}
+
 export function reflectionReminder(plans = [], reflections = {}, status = {}) {
   const due = plans.filter((plan) => !reflections[plan.id] && isReflectionDue(status[plan.id]?.progress))
   const overdue = due.filter((plan) => status[plan.id]?.progress === 'Trễ hạn cập nhật')

@@ -151,6 +151,7 @@ create table if not exists public.reflections (
 );
 
 alter table public.class_assistants add column if not exists can_approve_plan boolean not null default false;
+alter table public.class_assistants add column if not exists can_delete_plans boolean not null default false;
 
 -- Nhiệm vụ kéo dài 2 TIẾT LIỀN NHAU. Lưu bằng độ dài chứ không phải tiết kết thúc:
 -- period vẫn là tiết bắt đầu nên mọi truy vấn cũ theo period vẫn đúng nguyên vẹn,
@@ -480,6 +481,7 @@ returns boolean language sql stable security definer set search_path = public as
         when 'comment'          then can_comment
         when 'review_device'    then can_review_device
         when 'approve_plan'     then can_approve_plan
+        when 'delete_plans'     then can_delete_plans
         else false
       end
       from public.class_assistants

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { canUpdateReflection, isReflectionDue, reflectionReminder } from './studentReminders.js'
+import { canDeleteBeforeStart, canUpdateReflection, isReflectionDue, reflectionReminder } from './studentReminders.js'
 
 test('chỉ nhắc phản tư sau khi buổi tự học kết thúc', () => {
   assert.equal(isReflectionDue('Chưa tới buổi'), false)
@@ -30,4 +30,13 @@ test('cho cập nhật từ khi tiết bắt đầu, không cần chờ tiết k
   assert.equal(canUpdateReflection(start, Date.parse('2026-08-21T00:39:59.999Z')), false)
   assert.equal(canUpdateReflection(start, Date.parse(start)), true)
   assert.equal(canUpdateReflection(start, Date.parse('2026-08-21T01:00:00.000Z')), true)
+})
+
+test('học sinh chỉ tự xoá trước giờ tiết học; gồm cả nhiệm vụ trong ngày', () => {
+  const start = '2026-10-31T03:50:00Z' // 10:50 giờ Việt Nam
+  assert.equal(canDeleteBeforeStart(start, Date.parse('2026-10-31T03:49:59Z')), true)
+  assert.equal(canDeleteBeforeStart(start, Date.parse(start)), false)
+  assert.equal(canDeleteBeforeStart(start, Date.parse('2026-10-31T03:50:01Z')), false)
+  assert.equal(canDeleteBeforeStart(null), false)
+  assert.equal(canDeleteBeforeStart('không hợp lệ'), false)
 })

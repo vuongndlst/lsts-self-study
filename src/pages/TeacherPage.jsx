@@ -17,6 +17,7 @@ import { ClassAnalytics, StudentAnalytics } from '../components/Analytics'
 import { DisciplineBoard, AttendancePolicyPanel } from '../components/Attendance'
 import LaborBoard from '../components/LaborBoard'
 import DeviceBoard from '../components/DeviceBoard'
+import DeletePlanButton from '../components/DeletePlanButton'
 
 const PAGE_SIZE = 25
 
@@ -205,6 +206,7 @@ export default function TeacherPage(){
   useEffect(()=>{setSelectedPlans(new Set());setPage(1)},[filters,sortBy])
 
   const totalPages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE))
+  useEffect(()=>{setPage(p=>Math.min(p,totalPages))},[totalPages])
   const pageRows=useMemo(()=>rows.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE),[rows,page])
 
   // Số liệu tổng quan tính trên TOÀN BỘ khoảng đang nạp, không theo bộ lọc.
@@ -899,6 +901,8 @@ function TaskDetailModal({plan,student,reflection,evidence,onOpenEvidence,onClos
       {plan.review_status!=='Cần điều chỉnh'&&
         <button className="button ghost danger" onClick={()=>review('Cần điều chỉnh')} disabled={busy}>Yêu cầu điều chỉnh</button>}
       {plan.review_status==='Đã duyệt'&&<span className="muted-text small">Đã duyệt — có thể chấm sao và nhận xét bên dưới.</span>}
+      <DeletePlanButton plans={[plan]} onDeleted={onSaved} disabled={busy||Boolean(reflection)||evidence.length>0}
+        disabledReason={reflection||evidence.length>0?'Nhiệm vụ đã có kết quả hoặc minh chứng nên không được xóa.':''}/>
     </div>
 
     <div className="detail-box">
@@ -1027,6 +1031,7 @@ const TA_PERMS=[
   ['can_comment','Viết nhận xét','Gửi thẳng tới học sinh'],
   ['can_review_device','Duyệt đăng ký thiết bị','Đồng ý hoặc từ chối'],
   ['can_approve_plan','Duyệt kế hoạch','Kể cả duyệt hàng loạt — hệ thống ghi rõ ai duyệt'],
+  ['can_delete_plans','Xóa nhiệm vụ','Chỉ nhiệm vụ chưa có kết quả/minh chứng; bắt buộc lý do, có nhật ký'],
   // Quyền RIÊNG, không kèm "xem kế hoạch lớp": bạn được giao việc nhắc chỉ cần
   // biết ai chưa đăng ký, không cần đọc nội dung kế hoạch của cả lớp.
   ['can_track_attendance','Theo dõi & nhắc đăng ký','Xem ai chưa đăng ký và số lần quên — chỉ đọc'],
@@ -1071,8 +1076,8 @@ function AssistantsPanel({classId,perStudent,assistants,onChanged}){
     // (schema-19): không thấy bài thì không chấm được. Nói trước, kẻo thầy cô
     // bỏ tick xong thấy nó tự tick lại mà không hiểu vì sao.
     const a=byId[studentId]||{}
-    const canXem=(a.can_approve_plan||a.can_review_device||a.can_rate||a.can_comment)
-    if(!value&&key==='can_view_plans'&&canXem){setBusy('');return setMsg('Em này đang được giao duyệt / chấm / nhận xét nên phải xem được kế hoạch. Bỏ các quyền đó trước rồi mới tắt được ô này.')}
+    const canXem=(a.can_approve_plan||a.can_review_device||a.can_rate||a.can_comment||a.can_delete_plans)
+    if(!value&&key==='can_view_plans'&&canXem){setBusy('');return setMsg('Em này đang được giao duyệt / chấm / nhận xét / xóa nhiệm vụ nên phải xem được kế hoạch. Bỏ các quyền đó trước rồi mới tắt được ô này.')}
     if(!value&&key==='can_view_reflections'&&(a.can_rate||a.can_comment)){setBusy('');return setMsg('Em này đang được giao chấm sao / nhận xét nên phải đọc được phần bạn tự ghi. Bỏ các quyền đó trước rồi mới tắt được ô này.')}
     const {error}=await supabase.from('class_assistants').update({[key]:value})
       .eq('class_id',classId).eq('student_id',studentId)

@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { formatDate } from '../utils/date'
 import StatusBadge from './StatusBadge'
 import RatingStars, { ratingTone } from './RatingStars'
+import DeletePlanButton from './DeletePlanButton'
 
 // ---------------------------------------------------------------------------
 //  HỘP XỬ LÝ MỘT NHIỆM VỤ — dành cho TRỢ GIẢNG
@@ -175,6 +176,10 @@ export default function TaPlanModal({ plan, student, reflection, quyen, onClose,
       </>}
 
       {msg && <div className="form-error">{msg}</div>}
+      {quyen.can_delete_plans&&<DeletePlanButton plans={[plan]}
+        disabled={busy||Boolean(reflection)||minhChung.length>0}
+        disabledReason={reflection||minhChung.length>0?'Nhiệm vụ đã có kết quả hoặc minh chứng nên không được xóa.':''}
+        onDeleted={()=>onSaved('Đã xóa nhiệm vụ và gỡ đăng ký thiết bị đi kèm.')}/>}
       <div className="form-actions">
         <button className="button ghost" onClick={onClose}>Đóng</button>
         {coViecCham && <button className="button primary" disabled={busy} onClick={luuDanhGia}>{busy ? 'Đang lưu…' : 'Lưu đánh giá'}</button>}
